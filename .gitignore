@@ -1,0 +1,28 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Project specific
+output/
+assets/temp_*
+*.mp4
+*.mp3
+!assets/background_music.mp3
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
