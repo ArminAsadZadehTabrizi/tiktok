@@ -76,13 +76,18 @@ def main():
         print("📝 Step 1: Generating dark fact script")
         script_data = generate_script()
         
-        # Step 2: Download videos from Pexels
-        print("📹 Step 2: Downloading videos from Pexels")
-        video_paths = download_videos(script_data['keywords'], num_videos=3)
-        
-        # Step 3: Generate TTS audio
-        print("🎤 Step 3: Generating voiceover")
+        # Step 2: Generate TTS audio (moved before video download)
+        print("🎤 Step 2: Generating voiceover")
         audio_path = generate_audio(script_data)
+        
+        # Step 3: Download videos from Pexels (now with exact clip calculation)
+        print("📹 Step 3: Downloading videos from Pexels")
+        from moviepy.editor import AudioFileClip
+        audio_clip = AudioFileClip(str(audio_path))
+        audio_duration = audio_clip.duration
+        audio_clip.close()
+        
+        video_paths = download_videos(script_data['keywords'], audio_duration=audio_duration)
         
         # Step 4: Edit and compose final video
         print("🎬 Step 4: Editing and composing video")

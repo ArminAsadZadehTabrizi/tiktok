@@ -1,85 +1,99 @@
-"""Text-to-speech generation using Edge TTS"""
 import asyncio
 import edge_tts
+import json
 from pathlib import Path
 import config
 
-
-async def generate_audio_async(text, output_path):
-    """
-    Asynchronously generate TTS audio.
+async def generate_audio_with_timing(text, output_file):
+    print(f"  ⚡️ Stream starting for voice: {config.TTS_VOICE}")
+    print(f"  🔍 Attempting to capture word-level timing...")
     
-    Args:
-        text (str): The text to convert to speech
-        output_path (Path): Where to save the audio file
-    """
-    communicate = edge_tts.Communicate(
-        text=text,
-        voice=config.TTS_VOICE,
-        rate=config.TTS_RATE,
-        volume=config.TTS_VOLUME
-    )
+    # 🎬 VIRAL RETENTION #3: Faster Speech Rate (+15% for Urgency)
+    # TikTok audiences need faster pacing to stay engaged
+    communicate = edge_tts.Communicate(text, config.TTS_VOICE, rate="+15%")
+    word_timings = []
+    sentence_timings = []
     
-    await communicate.save(str(output_path))
-
+    with open(output_file, "wb") as file:
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                file.write(chunk["data"])
+            elif chunk["type"] == "WordBoundary":
+                # Capture word-level timing (best case)
+                start_time = chunk["offset"] / 10_000_000
+                duration = chunk["duration"] / 10_000_000
+                word_timings.append({
+                    "word": chunk["text"],
+                    "start": start_time,
+                    "end": start_time + duration
+                })
+            elif chunk["type"] == "SentenceBoundary":
+                # Capture sentence-level timing (fallback)
+                start_time = chunk["offset"] / 10_000_000
+                duration = chunk["duration"] / 10_000_000
+                sentence_timings.append({
+                    "text": chunk["text"],
+                    "start": start_time,
+                    "end": start_time + duration
+                })
+    
+    # If we got word timings, use them directly
+    if len(word_timings) > 0:
+        print(f"  ✅ SUCCESS: Captured {len(word_timings)} word-level timestamps!")
+        return word_timings
+    
+    # If we only got sentence timings, distribute words within sentences
+    if len(sentence_timings) > 0:
+        print(f"  ⚙️  Using {len(sentence_timings)} sentence timings to distribute words...")
+        final_timings = []
+        
+        for sent in sentence_timings:
+            words = sent["text"].split()
+            if not words:
+                continue
+                
+            # Calculate time per character for this sentence
+            total_chars = sum(len(w) for w in words)
+            if total_chars == 0:
+                continue
+                
+            sent_duration = sent["end"] - sent["start"]
+            time_per_char = sent_duration / total_chars
+            
+            current_time = sent["start"]
+            for word in words:
+                word_duration = len(word) * time_per_char
+                if word_duration < 0.15:  # Minimum readable duration
+                    word_duration = 0.15
+                    
+                final_timings.append({
+                    "word": word,
+                    "start": current_time,
+                    "end": current_time + word_duration
+                })
+                current_time += word_duration
+        
+        print(f"  ✅ Generated {len(final_timings)} word timings from sentences!")
+        return final_timings
+    
+    # No timings at all
+    print("  ⚠️ CRITICAL WARNING: No timing data received from Edge TTS!")
+    return []
 
 def generate_audio(script_data):
-    """
-    Generate TTS audio from script using Edge TTS.
-    
-    Args:
-        script_data (dict): Script with 'hook' and 'body' keys
-    
-    Returns:
-        Path: Path to the generated audio file
-    """
-    print(f"\n🎤 Generating voiceover")
-    
-    # Combine hook and body for full script
+    print(f"\n🎤 Generating voiceover...")
     full_text = f"{script_data['hook']} {script_data['body']}"
-    
     output_path = config.ASSETS_DIR / "temp_voiceover.mp3"
     
     try:
-        # Run the async function
-        asyncio.run(generate_audio_async(full_text, output_path))
+        timings = asyncio.run(generate_audio_with_timing(full_text, output_path))
         
-        print(f"✓ Audio generated: {config.TTS_VOICE}")
-        print(f"  Output: {output_path.name}\n")
-        
+        # Save timings
+        timing_path = config.ASSETS_DIR / "temp_timing.json"
+        with open(timing_path, "w") as f:
+            json.dump(timings, f, indent=2)
+            
         return output_path
-    
     except Exception as e:
-        print(f"✗ Error generating audio: {e}")
+        print(f"✗ Error: {e}")
         raise
-
-
-def get_audio_duration(audio_path):
-    """
-    Get the duration of an audio file using MoviePy.
-    
-    Args:
-        audio_path (Path): Path to audio file
-    
-    Returns:
-        float: Duration in seconds
-    """
-    from moviepy.editor import AudioFileClip
-    
-    audio = AudioFileClip(str(audio_path))
-    duration = audio.duration
-    audio.close()
-    
-    return duration
-
-
-if __name__ == "__main__":
-    # Test the audio generator
-    test_script = {
-        "hook": "Did you know that the ocean is full of terrifying creatures?",
-        "body": "In the deepest parts of the ocean, there are creatures that have never seen sunlight. Some have teeth longer than their entire body, and many produce their own eerie bioluminescent light to lure prey in the eternal darkness."
-    }
-    
-    audio_path = generate_audio(test_script)
-    duration = get_audio_duration(audio_path)
-    print(f"Audio duration: {duration:.2f} seconds")

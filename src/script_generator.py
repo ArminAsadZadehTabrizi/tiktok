@@ -14,28 +14,31 @@ def generate_script():
         dict: Contains 'hook', 'body', and 'keywords' for the video
     """
     
-    system_prompt = """You are a creative writer specializing in unsettling, creepy facts about the world, ocean, and space. 
-Your job is to create viral TikTok scripts that hook viewers with disturbing truths."""
+    system_prompt = """You are a Master Storyteller for 'Dark Facts' videos. 
+    Your goal is to write scripts that keep viewers watching for at least 65 seconds.
+    Use simple, spoken English. No complex sentences.
+    Focus on: Mystery, Fear, and Curiosity."""
     
-    user_prompt = """Create a dark, unsettling fact script for a TikTok video.
+    user_prompt = """Write a script for a TikTok video about a scary/dark fact.
+    
+    STRUCTURE (Total ~170 words):
+    1. The Hook (0-8s): A terrifying question or statement.
+    2. The Context (8-20s): Where and when? Set the scene atmospherically.
+    3. The Details (20-50s): 3 distinct, unsettling details. Build the tension.
+    4. The Mindblow (50-60s): The scariest realization or twist.
+    5. CTA (60s+): "Follow for more dark files."
 
-Requirements:
-1. Hook: Must start with "Did you know..." or "You won't believe..." (10-15 words max)
-2. Body: A scary/unsettling fact about the world, ocean, or space (approximately 40 words)
-3. Visual Keywords: Provide exactly 3 search terms for dark/moody video footage (e.g., 'dark forest', 'deep ocean', 'foggy street', 'abandoned building', 'stormy night', 'dark space')
-
-The fact should be:
-- Scientifically accurate or based on real phenomena
-- Genuinely unsettling or creepy
-- Interesting enough to make people stop scrolling
-- Related to nature, space, the ocean, or mysterious phenomena
-
-Return ONLY a valid JSON object with this exact structure:
-{
-    "hook": "Your hook here...",
-    "body": "Your unsettling fact here...",
-    "keywords": ["keyword1", "keyword2", "keyword3"]
-}"""
+    OUTPUT FORMAT (JSON):
+    {
+        "hook": "The Hook text only...",
+        "body": "The Context text. The Details text. The Mindblow text. The CTA.",
+        "keywords": ["visual1", "visual2", "visual3", "visual4", "visual5", "visual6", "visual7", "visual8"]
+    }
+    
+    CRITICAL RULES:
+    - The 'body' MUST be long enough to last 50-60 seconds when read aloud.
+    - Provide 8 visual keywords (since the video is longer).
+    - Keywords must be CONCRETE VISUALS (e.g. 'stormy ocean night', 'abandoned hospital hallway')."""
     
     try:
         response = client.chat.completions.create(
@@ -55,8 +58,8 @@ Return ONLY a valid JSON object with this exact structure:
         if not all(key in script_data for key in required_keys):
             raise ValueError("LLM response missing required keys")
         
-        if len(script_data["keywords"]) != 3:
-            raise ValueError("LLM must provide exactly 3 keywords")
+        if len(script_data["keywords"]) < 3:
+            raise ValueError("LLM must provide at least 3 keywords")
         
         print(f"✓ Script generated successfully")
         print(f"  Hook: {script_data['hook']}")
