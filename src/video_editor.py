@@ -164,6 +164,87 @@ def create_word_clip(text, start, duration, is_exact=False):
         
     return composite.set_position(('center', 'center')).set_start(start).set_duration(duration)
 
+def create_headline_hook(text, start, duration):
+    """
+    🎬 HIGH-RETENTION HOOK: Massive Headline Style
+    Renders the hook as a GIANT centered headline with attention-grabbing styling.
+    - Bright Warning Colors (Red/Yellow) to stop the scroll
+    - Heavy black background box for contrast
+    - Pulse animation for dynamic effect
+    - Much larger than normal text to dominate the screen
+    """
+    if duration < 0.3: duration = 0.3
+    
+    # 🚨 WARNING SIGN AESTHETIC: Bright Red for maximum attention
+    foreground_color = "#FF0000"  # Bright Red
+    font_size = config.CAPTION_FONTSIZE + 60  # MASSIVE size (140px typically)
+    stroke_width = 12  # Extra thick stroke for "warning sign" effect
+    
+    try:
+        # LAYER 1 (Heavy Background Box): Semi-transparent black rectangle
+        # This creates the dark box behind the text for maximum contrast
+        background_shadow = TextClip(
+            text, fontsize=font_size + 6, color="black", font="Impact",
+            stroke_color="black", stroke_width=stroke_width + 4, method='caption',
+            size=(config.VIDEO_WIDTH-100, None), align='center'
+        )
+        
+        # LAYER 2 (Bright Text): Red text with heavy black outline
+        txt = TextClip(
+            text, fontsize=font_size, color=foreground_color, font="Impact",
+            stroke_color="black", stroke_width=stroke_width, method='caption',
+            size=(config.VIDEO_WIDTH-100, None), align='center'
+        )
+        
+        # Composite the layers
+        composite = CompositeVideoClip([background_shadow, txt], size=txt.size)
+        
+        # 🎬 PULSE ANIMATION: Scale from 1.0 to 1.1 and back
+        # Creates a "breathing" effect that grabs attention
+        def pulse_effect(t):
+            # Create a sine wave pulse effect over the duration
+            progress = t / max(duration, 0.01)
+            scale = 1.0 + 0.1 * np.sin(progress * np.pi * 2)  # Oscillate between 1.0 and 1.1
+            return scale
+        
+        composite = composite.resize(lambda t: pulse_effect(t))
+        
+    except Exception as e:
+        print(f"  ⚠️ Pulse effect failed: {e}. Using static headline.")
+        # Fallback: Single layer without animation
+        composite = TextClip(
+            text, fontsize=font_size, color=foreground_color, font="Impact",
+            stroke_color="black", stroke_width=stroke_width, method='caption',
+            size=(config.VIDEO_WIDTH-100, None), align='center'
+        )
+    
+    return composite.set_position(('center', 'center')).set_start(start).set_duration(duration)
+
+
+def apply_start_glitch(clip, glitch_duration=0.5):
+    """
+    🚨 VISUAL PATTERN INTERRUPT: Start Glitch Effect
+    Applies a strong visual disruption to the first 0.5 seconds to "wake up" the viewer.
+    - Color inversion flash for 0.1s
+    - Acts as a subliminal attention grabber
+    - Prevents immediate scroll-away
+    """
+    def glitch_effect(get_frame, t):
+        """Apply color inversion during the first 0.1 seconds"""
+        frame = get_frame(t)
+        
+        # Apply color inversion for first 0.1 seconds only
+        if t < 0.1:
+            # Invert RGB values: 255 - original value
+            inverted = 255 - frame.astype('uint8')
+            return inverted
+        else:
+            # Normal video after glitch
+            return frame
+    
+    return clip.fl(glitch_effect)
+
+
 def get_smart_timings(script_data, audio_duration):
     """Calculates timing based on character count with punctuation-aware pauses for natural flow."""
     full_text = f"{script_data['hook']} {script_data['body']}"
@@ -308,14 +389,52 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     # 3. SET AUDIO TO VIDEO
     video = video.set_audio(final_audio)
     
-    # 4. CAPTIONS
+    # 4. CAPTIONS (HOOK vs BODY SPLIT)
     text_clips = []
-    for w in word_timings:
-        text_clips.append(create_word_clip(w['word'], w['start'], w['end']-w['start'], is_exact=use_exact))
-        
-    final_video = CompositeVideoClip([video] + text_clips)
-    final_video = final_video.set_duration(main_duration)  # Final duration enforcement
     
+    # 🎬 HOOK DETECTION: Find first sentence ending to separate hook from body
+    hook_timings = []
+    body_timings = []
+    
+    # Find index of first word ending with sentence punctuation
+    hook_end_idx = -1
+    for i, w in enumerate(word_timings):
+        word_text = w['word'].rstrip()
+        if any(word_text.endswith(p) for p in ['.', '?', '!']):
+            hook_end_idx = i
+            break
+    
+    # Split timings into hook and body
+    if hook_end_idx >= 0:
+        hook_timings = word_timings[:hook_end_idx + 1]
+        body_timings = word_timings[hook_end_idx + 1:]
+        print(f"  🎯 HOOK detected: {len(hook_timings)} words | BODY: {len(body_timings)} words")
+    else:
+        # Fallback: If no sentence ending found, treat all as body
+        body_timings = word_timings
+        print(f"  ⚠️ No hook punctuation found - using standard rendering")
+    
+    # HOOK: Render as single massive headline (if detected)
+    if hook_timings:
+        hook_text = ' '.join([w['word'] for w in hook_timings])
+        hook_start = hook_timings[0]['start']
+        hook_duration = hook_timings[-1]['end'] - hook_start
+        print(f"  🚨 Rendering HOOK as headline: \"{hook_text}\" ({hook_duration:.2f}s)")
+        text_clips.append(create_headline_hook(hook_text, hook_start, hook_duration))
+    
+    # BODY: Standard word-by-word karaoke
+    for w in body_timings:
+        text_clips.append(create_word_clip(w['word'], w['start'], w['end']-w['start'], is_exact=use_exact))
+    
+    # 5. COMPOSE FINAL VIDEO
+    final_video = CompositeVideoClip([video] + text_clips)
+    final_video = final_video.set_duration(main_duration)
+    
+    # 🚨 APPLY GLITCH EFFECT to opening frames
+    print(f"  ⚡ Applying glitch effect to first 0.5s...")
+    final_video = apply_start_glitch(final_video, glitch_duration=0.5)
+    
+    # 6. RENDER
     final_video.write_videofile(
         str(output_path), fps=30, codec='libx264', audio_codec='aac', 
         threads=4, preset='ultrafast'
