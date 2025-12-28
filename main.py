@@ -119,10 +119,57 @@ def main():
         print(f"  Body: {script_data['body']}")
         print()
         
-        # Cleanup
+        # Twitter Automation (Optional)
+        twitter_posted = False
+        try:
+            user_choice = input("🐦 Post to Twitter? (y/n): ").strip().lower()
+            
+            if user_choice == 'y':
+                print()
+                from src.twitter_manager import TwitterManager
+                
+                # Initialize Twitter manager
+                twitter_manager = TwitterManager()
+                
+                # Generate thread from script
+                thread_content = twitter_manager.generate_thread_from_script(script_data)
+                
+                # Preview thread for user
+                print("\n" + "=" * 60)
+                print("📋 THREAD PREVIEW")
+                print("=" * 60)
+                for i, tweet in enumerate(thread_content, 1):
+                    print(f"\nTweet {i}/{len(thread_content)} ({len(tweet)} chars):")
+                    print(f"  {tweet}")
+                print("\n" + "=" * 60)
+                print()
+                
+                # Post to Twitter
+                thread_url = twitter_manager.post_thread(final_video, thread_content)
+                twitter_posted = True
+                
+                print("\n🎉 Video and thread posted to Twitter successfully!")
+                print(f"🔗 View thread: {thread_url}")
+                print()
+            else:
+                print("\n⏭️  Skipping Twitter posting")
+                print()
+        
+        except KeyboardInterrupt:
+            print("\n\n⏭️  Twitter posting cancelled by user")
+            print()
+        except Exception as e:
+            print(f"\n⚠️  Twitter posting failed: {e}")
+            print("   Your video was still generated successfully!")
+            print()
+        
+        # Cleanup (always runs, even if Twitter fails)
         cleanup_temp_files()
         
-        print("🎉 Done! Ready to upload to TikTok!")
+        if twitter_posted:
+            print("🎉 Done! Video generated and posted to Twitter!")
+        else:
+            print("🎉 Done! Ready to upload to TikTok!")
         print()
         
     except KeyboardInterrupt:
