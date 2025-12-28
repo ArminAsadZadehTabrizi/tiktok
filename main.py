@@ -71,10 +71,16 @@ def main():
     # Validate setup
     validate_setup()
     
+    # Get custom topic from user
+    topic = input("🔥 Enter a specific Trend/Topic (or press Enter for random): ").strip()
+    if not topic:
+        topic = None
+    print()
+    
     try:
         # Step 1: Generate script using LLM
         print("📝 Step 1: Generating dark fact script")
-        script_data = generate_script()
+        script_data = generate_script(topic)
         
         # Step 2: Generate TTS audio (moved before video download)
         print("🎤 Step 2: Generating voiceover")

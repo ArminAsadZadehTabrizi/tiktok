@@ -9,6 +9,7 @@ load_dotenv()
 # API Keys
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
+PIXABAY_API_KEY = os.getenv("PIXABAY_API_KEY", "PLACEHOLDER_FOR_USER_KEY")
 
 # Paths
 BASE_DIR = Path(__file__).parent
@@ -31,6 +32,10 @@ VIDEO_DURATION_MAX = 120  # Maximum video duration in seconds
 PEXELS_API_URL = "https://api.pexels.com/videos/search"
 PEXELS_ORIENTATION = "portrait"
 PEXELS_SIZE = "medium"  # or 'large' for higher quality
+
+# Pixabay API Settings
+PIXABAY_API_KEY = "PLACEHOLDER_FOR_USER_KEY"
+PIXABAY_BASE_URL = "https://pixabay.com/api/videos/"
 
 # Audio Settings
 TTS_VOICE = "en-US-GuyNeural"

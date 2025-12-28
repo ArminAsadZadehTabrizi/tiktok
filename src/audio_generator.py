@@ -8,9 +8,9 @@ async def generate_audio_with_timing(text, output_file):
     print(f"  ⚡️ Stream starting for voice: {config.TTS_VOICE}")
     print(f"  🔍 Attempting to capture word-level timing...")
     
-    # 🎬 VIRAL RETENTION #3: Faster Speech Rate (+15% for Urgency)
-    # TikTok audiences need faster pacing to stay engaged
-    communicate = edge_tts.Communicate(text, config.TTS_VOICE, rate="+15%")
+    # 🎬 VIRAL RETENTION #3: Faster Speech Rate (+30% for Urgency)
+    # AGGRESSIVE SPEED for YouTube Shorts and TikTok Growth - creates dominance and urgency
+    communicate = edge_tts.Communicate(text, config.TTS_VOICE, rate="+30%")
     word_timings = []
     sentence_timings = []
     

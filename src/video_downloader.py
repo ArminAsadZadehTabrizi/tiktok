@@ -1,7 +1,8 @@
-"""Pexels Video API integration for downloading dark/moody footage"""
+"""Pexels Video API integration for downloading luxury/motivational footage"""
 import requests
 import time
 import math
+import random
 from pathlib import Path
 import config
 
@@ -9,9 +10,100 @@ import config
 CLIP_DURATION = 2.5  # Each video clip duration in seconds (matches video_editor.py)
 
 
+def search_pexels(query, orientation="portrait"):
+    """
+    Search for videos on Pexels.
+    
+    Args:
+        query (str): Search query
+        orientation (str): Video orientation (portrait/landscape)
+    
+    Returns:
+        list: Video URLs found
+    """
+    headers = {"Authorization": config.PEXELS_API_KEY}
+    params = {
+        "query": query,
+        "orientation": orientation,
+        "size": config.PEXELS_SIZE,
+        "per_page": 5
+    }
+    
+    try:
+        response = requests.get(config.PEXELS_API_URL, headers=headers, params=params)
+        response.raise_for_status()
+        data = response.json()
+        videos = data.get("videos", [])
+        
+        video_urls = []
+        for video in videos[:3]:  # Get up to 3 videos
+            video_files = video.get("video_files", [])
+            vertical_files = [
+                vf for vf in video_files 
+                if vf.get("height", 0) > vf.get("width", 0)
+            ]
+            
+            if vertical_files:
+                target_height = 1920
+                vertical_files.sort(key=lambda x: abs(x.get("height", 0) - target_height))
+                video_urls.append(vertical_files[0]["link"])
+        
+        return video_urls
+    
+    except Exception as e:
+        print(f"    ✗ Pexels error: {e}")
+        return []
+
+
+def search_pixabay(query, orientation="portrait"):
+    """
+    Search for videos on Pixabay.
+    
+    Args:
+        query (str): Search query
+        orientation (str): Video orientation (vertical/horizontal)
+    
+    Returns:
+        list: Video URLs found
+    """
+    # Map orientation to Pixabay format
+    pixabay_orientation = "vertical" if orientation == "portrait" else "horizontal"
+    
+    params = {
+        "key": config.PIXABAY_API_KEY,
+        "q": query,
+        "video_type": "film",
+        "orientation": pixabay_orientation,
+        "per_page": 3
+    }
+    
+    try:
+        response = requests.get(config.PIXABAY_BASE_URL, params=params)
+        response.raise_for_status()
+        data = response.json()
+        hits = data.get("hits", [])
+        
+        video_urls = []
+        for hit in hits:
+            videos = hit.get("videos", {})
+            # Prefer large or medium quality
+            if "large" in videos:
+                video_urls.append(videos["large"]["url"])
+            elif "medium" in videos:
+                video_urls.append(videos["medium"]["url"])
+            elif "small" in videos:
+                video_urls.append(videos["small"]["url"])
+        
+        return video_urls
+    
+    except Exception as e:
+        print(f"    ✗ Pixabay error: {e}")
+        return []
+
+
 def search_videos(keywords, num_videos=3):
     """
-    Search for videos on Pexels using given keywords.
+    Search for videos using HYBRID approach (Pexels + Pixabay).
     
     Args:
         keywords (list): List of search terms
@@ -20,77 +112,68 @@ def search_videos(keywords, num_videos=3):
     Returns:
         list: Video data including download URLs
     """
-    headers = {
-        "Authorization": config.PEXELS_API_KEY
-    }
-    
     all_videos = []
     
+    # SUCCESS AESTHETIC: 7 different high-value suffixes
+    success_suffixes = [
+        "luxury aesthetic",
+        "cinematic 4k",
+        "dark moody success",
+        "gym motivation",
+        "money aesthetic",
+        "business cinematic",
+        "sigma male aesthetic"
+    ]
+    
     for keyword in keywords:
-        print(f"  Searching Pexels for: '{keyword}'")
+        # Pick a random success suffix for this search
+        style = random.choice(success_suffixes)
+        search_query = f"{keyword} {style}"
         
-        params = {
-            "query": f"{keyword} horror creepy dark close up",  # HORROR AESTHETIC: Enforce scary visuals
-            "orientation": config.PEXELS_ORIENTATION,
-            "size": config.PEXELS_SIZE,
-            "per_page": 5  # Get a few options
-        }
+        # HYBRID SEARCH: Randomly choose between Pexels and Pixabay
+        if random.random() > 0.5:
+            primary_source = "pixabay"
+            secondary_source = "pexels"
+        else:
+            primary_source = "pexels"
+            secondary_source = "pixabay"
         
-        try:
-            response = requests.get(
-                config.PEXELS_API_URL,
-                headers=headers,
-                params=params
-            )
-            response.raise_for_status()
-            
-            data = response.json()
-            videos = data.get("videos", [])
-            
-            if videos:
-                # Get up to 3 videos from this keyword search for variety
-                videos_to_process = min(3, len(videos))
-                
-                for idx in range(videos_to_process):
-                    video = videos[idx]
-                    
-                    # Find the best quality vertical video file
-                    video_files = video.get("video_files", [])
-                    vertical_files = [
-                        vf for vf in video_files 
-                        if vf.get("height", 0) > vf.get("width", 0)  # Portrait orientation
-                    ]
-                    
-                    if vertical_files:
-                        # SMART SORT: Prioritize files closest to 1920px height (1080p)
-                        # This prevents downloading massive 4K files.
-                        target_height = 1920
-                        vertical_files.sort(key=lambda x: abs(x.get("height", 0) - target_height))
-                        
-                        # Add unique suffix to keyword to prevent duplicate filtering
-                        keyword_variant = f"{keyword}_var{idx+1}"
-                        
-                        video_info = {
-                            "url": vertical_files[0]["link"],
-                            "width": vertical_files[0].get("width"),
-                            "height": vertical_files[0].get("height"),
-                            "keyword": keyword_variant
-                        }
-                        all_videos.append(video_info)
-                        print(f"    ✓ Found video {idx+1} ({video_info['width']}x{video_info['height']}) - Optimized for TikTok")
-                    
-                    # Be nice to the API between videos from same keyword
-                    if idx < videos_to_process - 1:
-                        time.sleep(0.3)
+        video_urls = []
+        
+        # Try primary source first
+        if primary_source == "pixabay":
+            print(f"  🔍 Searching Pixabay for: '{search_query}'")
+            video_urls = search_pixabay(search_query)
+        else:
+            print(f"  🔍 Searching Pexels for: '{search_query}'")
+            video_urls = search_pexels(search_query)
+        
+        # Fallback to secondary source if primary returns nothing
+        if not video_urls:
+            print(f"    ↪️  Falling back to {secondary_source.capitalize()}...")
+            if secondary_source == "pixabay":
+                video_urls = search_pixabay(search_query)
             else:
-                print(f"    ✗ No videos found for '{keyword}'")
-            
-            # Be nice to the API
-            time.sleep(0.5)
-            
-        except requests.exceptions.RequestException as e:
-            print(f"    ✗ Error searching for '{keyword}': {e}")
-            continue
+                video_urls = search_pexels(search_query)
+        
+        # Process found videos
+        if video_urls:
+            for idx, url in enumerate(video_urls):
+                keyword_variant = f"{keyword}_var{idx+1}"
+                video_info = {
+                    "url": url,
+                    "width": 1080,  # Default values for hybrid sources
+                    "height": 1920,
+                    "keyword": keyword_variant,
+                    "source": primary_source if video_urls else secondary_source
+                }
+                all_videos.append(video_info)
+                print(f"    ✓ Found video {idx+1} from {video_info['source'].capitalize()}")
+        else:
+            print(f"    ✗ No videos found for '{keyword}' on either source")
+        
+        # Be nice to the APIs
+        time.sleep(0.5)
     
     # Ensure we have enough videos
     if len(all_videos) < num_videos:
