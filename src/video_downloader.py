@@ -114,20 +114,29 @@ def search_videos(keywords, num_videos=3):
     """
     all_videos = []
     
-    # DARK DISCIPLINE FILTER: Training, grind, and moody athletic visuals
-    # Goal: Faceless, disciplined training aesthetic for motivation content
+    # DARK DISCIPLINE FILTER: Strict aesthetic - NO COMEDY, high-impact visuals only
+    # Goal: Intense, disciplined training aesthetic for "Dark Psychology" content
     success_suffixes = [
-        "shadow boxing silhouette",
-        "hooded figure training dark",
-        "running in rain night",
-        "heavy bag workout dark",
-        "gym workout night mood",
-        "person training alone dark"
+        "boxing training strobe light dark",
+        "shadow boxing silhouette flickering",
+        "hooded figure rain night street",
+        "gym workout intense sweat dark",
+        "person running night backlight"
     ]
     
-    for keyword in keywords:
-        # Pick a random success suffix for this search
-        style = random.choice(success_suffixes)
+    # HIGH-IMPACT HOOK SUFFIX: Used specifically for the first video (Hook)
+    hook_suffix = "shadow boxing strobe light dark"
+    
+    for i, keyword in enumerate(keywords):
+        # FORCE HIGH-IMPACT VISUAL FOR HOOK (first video, index 0)
+        if i == 0:
+            # First video MUST be visually aggressive/striking for the Hook
+            style = hook_suffix
+            print(f"  🎯 HOOK VIDEO (High-Impact): Using '{hook_suffix}'")
+        else:
+            # All other videos: pick random from strict aesthetic filters
+            style = random.choice(success_suffixes)
+        
         search_query = f"{keyword} {style}"
         
         # HYBRID SEARCH: Randomly choose between Pexels and Pixabay

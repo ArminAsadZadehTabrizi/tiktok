@@ -328,6 +328,8 @@ def add_hook_sfx(audio_clip):
     🎬 AUDITORY HOOK: Add a sound effect at the very start (0.0s) of the video.
     Overlays hook_sfx.mp3 on top of the voiceover for a startle trigger.
     
+    🎚️ CINEMATIC AUDIO DUCKING: Triple volume (3.0x) to ensure SFX cuts through music.
+    
     Args:
         audio_clip: The base audio clip (voiceover)
     
@@ -351,11 +353,14 @@ def add_hook_sfx(audio_clip):
         if sfx.duration > audio_clip.duration:
             sfx = sfx.subclip(0, audio_clip.duration)
         
+        # 🎚️ CINEMATIC DUCKING: Triple volume for maximum impact
+        sfx = sfx.volumex(3.0)
+        
         # Composite: Mix SFX on top of voiceover
         composite_audio = CompositeAudioClip([audio_clip, sfx])
         composite_audio = composite_audio.set_duration(audio_clip.duration)
         
-        print(f"  ✓ Hook SFX added successfully at 0.0s (duration: {sfx.duration:.2f}s)")
+        print(f"  ✓ Hook SFX added successfully at 0.0s (duration: {sfx.duration:.2f}s, volume: 3.0x)")
         return composite_audio
         
     except Exception as e:
@@ -541,13 +546,16 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     audio = AudioFileClip(str(audio_path))
     main_duration = audio.duration  # Store main duration for reference
     
-    # 1. HOOK SFX OVERLAY (Auditory Hook)
+    # 1. VOICEOVER POLISH: Slight volume boost for clarity against loud music
+    audio = audio.volumex(1.1)
+    
+    # 2. HOOK SFX OVERLAY (Auditory Hook)
     audio = add_hook_sfx(audio)
 
-    # 2. CLEAN AUDIO (No jumpscares)
+    # 3. CLEAN AUDIO (No jumpscares)
     final_audio = audio
 
-    # 2. BACKGROUND MUSIC MIX (Random Track Selection)
+    # 4. BACKGROUND MUSIC MIX (Random Track Selection + Cinematic Fade-In)
     music_dir = config.ASSETS_DIR / "music"
     music_files = list(music_dir.glob("*.mp3")) if music_dir.exists() else []
     
@@ -565,8 +573,16 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
                 # Concatenate audio clips, not video clips
                 from moviepy.editor import concatenate_audioclips
                 bg = concatenate_audioclips(bg_clips)
-            bg = bg.subclip(0, main_duration).volumex(config.BG_MUSIC_VOLUME)
+            
+            # 🎚️ CINEMATIC AUDIO DUCKING: Fade-In Build-Up Effect
+            # First 0.5s nearly silent (SFX + TTS dominate), then music swells dramatically
+            bg = bg.subclip(0, main_duration)
+            bg = bg.audio_fadein(3.0)  # 3-second fade-in for dramatic build-up
+            bg = bg.volumex(config.BG_MUSIC_VOLUME)  # Apply final volume level
             bg = bg.set_duration(main_duration)  # Explicit duration
+            
+            print(f"  🎬 Music fade-in applied: 3.0s build-up for cinematic impact")
+            
             final_audio = CompositeAudioClip([final_audio, bg])
             final_audio = final_audio.set_duration(main_duration)  # Re-enforce duration
         except Exception as e:
