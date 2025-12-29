@@ -48,7 +48,7 @@ def generate_script(topic=None):
     CRITICAL RULES:
     - NEVER use generic phrases like "Get uncomfortable", "Embrace the grind", or "Hustle hard".
     - ALWAYS name the specific theory/law (e.g. "This is called the Spotlight Effect").
-    - Keywords MUST be CONCRETE NOUNS (e.g., 'chess board', 'mirror', 'wolf pack', 'ancient statue', 'stormy ocean'). No abstract concepts.
+    - Keywords MUST be CONCRETE NOUNS matching Dark Discipline/Training visuals (e.g., 'boxing gloves', 'rain puddle', 'hoodie', 'gym equipment', 'running shoes', 'punching bag', 'weights', 'treadmill'). NO abstract concepts or nature scenes.
     - The Hook MUST be MAXIMUM 7 words and formatted as a complete sentence with ending punctuation.
     - The Hook MUST be punchy and direct. Think: "Stop scrolling." or "You are being manipulated." - short, brutal, immediate.
     - The Hook MUST grab attention by directly addressing the viewer with "You", "Stop", "Never", or similar direct commands.

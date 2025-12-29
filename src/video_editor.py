@@ -363,6 +363,178 @@ def add_hook_sfx(audio_clip):
         return audio_clip
 
 
+def analyze_sentences_from_timings(word_timings, total_duration):
+    """
+    🎬 DYNAMIC CUTTING: Analyze word timings to identify sentence boundaries.
+    Creates "scenes" based on natural sentence endings for better video flow.
+    
+    Args:
+        word_timings: List of {'word': str, 'start': float, 'end': float}
+        total_duration: Total audio duration for validation
+    
+    Returns:
+        List of scenes: [{'start_time': float, 'end_time': float, 'duration': float, 'text': str}]
+        or None if word_timings is invalid
+    """
+    if not word_timings or len(word_timings) == 0:
+        return None
+    
+    # Sentence-ending punctuation
+    sentence_endings = ('.', '?', '!')
+    
+    scenes = []
+    current_scene_words = []
+    scene_start_time = word_timings[0]['start']
+    
+    for i, word_data in enumerate(word_timings):
+        word = word_data['word']
+        current_scene_words.append(word)
+        
+        # Check if this word ends a sentence
+        is_sentence_end = any(word.rstrip().endswith(punct) for punct in sentence_endings)
+        is_last_word = (i == len(word_timings) - 1)
+        
+        if is_sentence_end or is_last_word:
+            # Complete this scene
+            scene_end_time = word_data['end']
+            scene_duration = scene_end_time - scene_start_time
+            scene_text = ' '.join(current_scene_words)
+            
+            # 🎬 LONG SENTENCE HANDLING: Split if >5 seconds
+            if scene_duration > 5.0 and len(current_scene_words) > 2:
+                # Split at the middle word boundary
+                mid_point = len(current_scene_words) // 2
+                
+                # First half
+                first_half_words = current_scene_words[:mid_point]
+                first_half_end_idx = i - (len(current_scene_words) - mid_point)
+                first_half_end_time = word_timings[first_half_end_idx]['end']
+                first_duration = first_half_end_time - scene_start_time
+                
+                scenes.append({
+                    'start_time': scene_start_time,
+                    'end_time': first_half_end_time,
+                    'duration': first_duration,
+                    'text': ' '.join(first_half_words)
+                })
+                
+                # Second half
+                second_half_words = current_scene_words[mid_point:]
+                second_half_start_time = word_timings[first_half_end_idx + 1]['start']
+                
+                scenes.append({
+                    'start_time': second_half_start_time,
+                    'end_time': scene_end_time,
+                    'duration': scene_end_time - second_half_start_time,
+                    'text': ' '.join(second_half_words)
+                })
+                
+                print(f"  ✂️ Split long sentence ({scene_duration:.2f}s) into 2 clips: {first_duration:.2f}s + {scene_end_time - second_half_start_time:.2f}s")
+            else:
+                # Normal scene (including short sentences <1.5s)
+                scenes.append({
+                    'start_time': scene_start_time,
+                    'end_time': scene_end_time,
+                    'duration': scene_duration,
+                    'text': scene_text
+                })
+                
+                if scene_duration < 1.5:
+                    print(f"  ⚡ Fast cut: \"{scene_text[:30]}...\" ({scene_duration:.2f}s)")
+            
+            # Reset for next sentence
+            current_scene_words = []
+            if i < len(word_timings) - 1:
+                scene_start_time = word_timings[i + 1]['start']
+    
+    print(f"  📊 Analyzed {len(scenes)} scenes from {len(word_timings)} words")
+    return scenes
+
+
+def create_fixed_duration_scenes(total_duration, fixed_duration=2.5):
+    """
+    🎬 FALLBACK: Create scenes with fixed duration when word_timings is unavailable.
+    
+    Args:
+        total_duration: Total video duration
+        fixed_duration: Duration for each scene (default 2.5s)
+    
+    Returns:
+        List of scenes with fixed intervals
+    """
+    scenes = []
+    current_time = 0.0
+    scene_index = 1
+    
+    while current_time < total_duration:
+        end_time = min(current_time + fixed_duration, total_duration)
+        scenes.append({
+            'start_time': current_time,
+            'end_time': end_time,
+            'duration': end_time - current_time,
+            'text': f"Scene {scene_index}"
+        })
+        current_time = end_time
+        scene_index += 1
+    
+    print(f"  📊 Fallback: Created {len(scenes)} fixed-duration scenes ({fixed_duration}s each)")
+    return scenes
+
+
+def assign_clips_to_scenes(scenes, video_paths):
+    """
+    🎬 CLIP ASSIGNMENT: Match video clips to sentence scenes dynamically.
+    
+    Args:
+        scenes: List of scene dictionaries from analyze_sentences_from_timings
+        video_paths: List of video file paths
+    
+    Returns:
+        List of positioned video clips ready for concatenation
+    """
+    positioned_clips = []
+    
+    for i, scene in enumerate(scenes):
+        # Circular rotation through available videos
+        video_path = video_paths[i % len(video_paths)]
+        duration = scene['duration']
+        
+        try:
+            clip = VideoFileClip(str(video_path))
+            clip = resize_to_vertical(clip)
+            
+            # Apply visual effects (Success Aesthetic Pipeline)
+            clip = apply_ken_burns_zoom(clip, zoom_factor=1.25)
+            clip = clip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
+            clip = apply_high_contrast_filter(clip, contrast=1.2, saturation=1.3)
+            clip = clip.without_audio()
+            
+            # Match clip duration to scene duration
+            if clip.duration < duration:
+                # Loop clip if too short
+                num_loops = int(np.ceil(duration / clip.duration))
+                looped_clips = [clip] * num_loops
+                clip = concatenate_videoclips(looped_clips, method="compose")
+            
+            # Trim to exact duration needed
+            if clip.duration > duration:
+                start_offset = 0
+                clip = clip.subclip(start_offset, start_offset + duration)
+            
+            # Set exact duration
+            clip = clip.set_duration(duration)
+            positioned_clips.append(clip)
+            
+            print(f"  🎥 Scene {i+1}: {duration:.2f}s - \"{scene['text'][:40]}...\"")
+            
+        except Exception as e:
+            print(f"  ⚠️ Error loading video {video_path}: {e}")
+            # Skip this clip, will reuse previous or next
+            continue
+    
+    return positioned_clips
+
+
 def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     print(f"🎬 Editing video (Success Aesthetic)...")
     
@@ -424,43 +596,31 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
         word_timings = get_smart_timings(script_data, audio.duration)
         use_exact = False
         
-    # 2. VISUALS
-    clips = []
-    scene_duration = 2.5 
+    # 2. VISUALS - DYNAMIC SENTENCE-BASED CUTTING
+    print(f"  🎬 Analyzing scenes for dynamic cutting...")
     
-    for video_path in video_paths:
-        try:
-            clip = VideoFileClip(str(video_path))
-            clip = resize_to_vertical(clip)
-            # 🎬 SUCCESS AESTHETIC PIPELINE (Premium Instagram Look)
-            clip = apply_ken_burns_zoom(clip, zoom_factor=1.25)  # FASTER ZOOM for mobile screens (25% zoom)
-            # SAFETY: Force exact resolution to prevent 1-pixel rounding errors from zoom
-            clip = clip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
-            clip = apply_high_contrast_filter(clip, contrast=1.2, saturation=1.3)  # BOOSTED for mobile screens (eye-catching)
-            clip = clip.without_audio()
-            
-            if clip.duration > scene_duration:
-                start_t = 0
-                clip = clip.subclip(start_t, start_t + scene_duration)
-            clips.append(clip)
-        except Exception as e:
-            print(f"  Skipping bad video file: {e}")
-
-    if not clips:
+    # Analyze sentences from word timings to create dynamic scenes
+    scenes = analyze_sentences_from_timings(word_timings, main_duration)
+    
+    # Fallback to fixed duration if no word_timings available
+    if scenes is None:
+        print(f"  ⚠️ No word timings available - using fallback fixed duration")
+        scenes = create_fixed_duration_scenes(main_duration, fixed_duration=2.5)
+    
+    # Assign video clips to scenes
+    video_clips = assign_clips_to_scenes(scenes, video_paths)
+    
+    if not video_clips:
         raise Exception("No valid video clips could be loaded.")
-
-    final_visuals = []
-    curr_t = 0
-    idx = 0
-    while curr_t < main_duration:
-        clip = clips[idx % len(clips)]
-        final_visuals.append(clip)
-        curr_t += clip.duration
-        idx += 1
-        
-    video = concatenate_videoclips(final_visuals, method="compose")
-    video = video.subclip(0, main_duration)
-    video = video.set_duration(main_duration)  # Explicit duration enforcement
+    
+    # Concatenate all positioned clips
+    video = concatenate_videoclips(video_clips, method="compose")
+    
+    # Ensure exact duration match with audio
+    if video.duration != main_duration:
+        print(f"  ⚠️ Adjusting video duration from {video.duration:.2f}s to {main_duration:.2f}s")
+        video = video.subclip(0, min(video.duration, main_duration))
+        video = video.set_duration(main_duration)
     
     # 3. SET AUDIO TO VIDEO
     video = video.set_audio(final_audio)
@@ -468,27 +628,40 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     # 4. CAPTIONS (HOOK vs BODY SPLIT)
     text_clips = []
     
-    # 🎬 HOOK DETECTION: Find first sentence ending to separate hook from body
+    # 🎬 HOOK DETECTION: Use explicit hook text from script_data instead of guessing
     hook_timings = []
     body_timings = []
     
-    # Find index of first word ending with sentence punctuation
-    hook_end_idx = -1
-    for i, w in enumerate(word_timings):
-        word_text = w['word'].rstrip()
-        if any(word_text.endswith(p) for p in ['.', '?', '!']):
-            hook_end_idx = i
-            break
+    # Get the explicit hook text from the LLM
+    hook_text = script_data['hook'].strip()
+    hook_words = hook_text.split()
     
-    # Split timings into hook and body
+    # Match words from word_timings to hook_words
+    hook_end_idx = -1
+    matched_count = 0
+    
+    for i, w in enumerate(word_timings):
+        # Clean word for comparison (remove punctuation)
+        clean_word = w['word'].strip().rstrip('.,!?;:').lower()
+        
+        if matched_count < len(hook_words):
+            hook_word = hook_words[matched_count].strip().rstrip('.,!?;:').lower()
+            if clean_word == hook_word:
+                matched_count += 1
+                # If we've matched all hook words, mark this as the end
+                if matched_count == len(hook_words):
+                    hook_end_idx = i
+                    break
+    
+    # Split timings into hook and body based on matched index
     if hook_end_idx >= 0:
         hook_timings = word_timings[:hook_end_idx + 1]
         body_timings = word_timings[hook_end_idx + 1:]
-        print(f"  🎯 HOOK detected: {len(hook_timings)} words | BODY: {len(body_timings)} words")
+        print(f"  🎯 HOOK detected (exact match): {len(hook_timings)} words | BODY: {len(body_timings)} words")
     else:
-        # Fallback: If no sentence ending found, treat all as body
+        # Fallback: If no match found, treat all as body
         body_timings = word_timings
-        print(f"  ⚠️ No hook punctuation found - using standard rendering")
+        print(f"  ⚠️ No hook match found - using standard rendering for all text")
     
     # HOOK: Render as single massive headline (if detected)
     if hook_timings:

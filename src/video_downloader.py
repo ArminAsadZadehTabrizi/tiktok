@@ -114,19 +114,15 @@ def search_videos(keywords, num_videos=3):
     """
     all_videos = []
     
-    # NO-HUMANS FILTER: Inanimate, atmospheric, and animal subjects only
-    # Goal: Moody visuals without human actors breaking immersion
+    # DARK DISCIPLINE FILTER: Training, grind, and moody athletic visuals
+    # Goal: Faceless, disciplined training aesthetic for motivation content
     success_suffixes = [
-        "stormy ocean night",
-        "thunderstorm",
-        "ancient greek statue",
-        "burning candle dark",
-        "wolf eyes",
-        "chess piece dark",
-        "hourglass sand",
-        "dark forest fog",
-        "ink in water",
-        "abstract black texture"
+        "shadow boxing silhouette",
+        "hooded figure training dark",
+        "running in rain night",
+        "heavy bag workout dark",
+        "gym workout night mood",
+        "person training alone dark"
     ]
     
     for keyword in keywords:
