@@ -225,12 +225,30 @@ def create_headline_hook(text, start, duration):
 def apply_flash_zoom(clip, flash_duration=0.3, zoom_factor=1.08):
     """
     🎬 CINEMATIC VISUAL HOOK: Enhanced Zoom Effect
-    Simplified to avoid MoviePy .fl() issues.
-    Currently disabled due to get_frame compatibility issues.
+    Creates a dramatic zoom-in effect for the hook scene.
+    Now safe to use since clips remain open during rendering.
     """
-    # TODO: Re-implement without using .fl() method
-    # For now, return clip unchanged to avoid errors
-    return clip
+    w, h = clip.w, clip.h
+    
+    def zoom_effect(get_frame, t):
+        """Progressive zoom from 1.0 to zoom_factor"""
+        progress = min(t / clip.duration, 1.0) if clip.duration > 0 else 0
+        current_zoom = 1.0 + (zoom_factor - 1.0) * progress
+        
+        frame = get_frame(t)
+        
+        # Crop to simulate zoom
+        import cv2
+        new_w = int(w / current_zoom)
+        new_h = int(h / current_zoom)
+        x1 = (w - new_w) // 2
+        y1 = (h - new_h) // 2
+        cropped = frame[y1:y1+new_h, x1:x1+new_w]
+        resized = cv2.resize(cropped, (w, h), interpolation=cv2.INTER_LINEAR)
+        
+        return resized
+    
+    return clip.fl(zoom_effect)
 
 
 def get_smart_timings(script_data, audio_duration):
@@ -512,9 +530,9 @@ def assign_clips_to_scenes(scenes, video_paths):
                 subclip = subclip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
                 subclip = apply_high_contrast_filter(subclip, contrast=1.4, saturation=1.5)
             else:
-                # Standard scenes: No zoom for now (Ken Burns causes .fl() errors)
-                # TODO: Re-implement zoom without .fl() method
-                # subclip = apply_ken_burns_zoom(subclip, zoom_factor=1.25)
+                # Standard scenes: Ken Burns zoom for cinematic motion
+                print(f"  🎬 STANDARD SCENE: Applying Ken Burns zoom")
+                subclip = apply_ken_burns_zoom(subclip, zoom_factor=1.05)
                 subclip = subclip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
                 subclip = apply_high_contrast_filter(subclip, contrast=1.2, saturation=1.3)
             
@@ -522,7 +540,7 @@ def assign_clips_to_scenes(scenes, video_paths):
             subclip = subclip.set_duration(duration)
             
             positioned_clips.append(subclip)
-            clip.close()  # Clean up original clip
+            # Keep clip open until final render - MoviePy needs source connection
             
             print(f"  🎥 Scene {i+1}/{len(scenes)}: {duration:.2f}s - \"{scene['text'][:40]}...\"")
             
@@ -695,9 +713,8 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     final_video = final_video.set_duration(main_duration)
     
     # 🎬 SUBLIMINAL INTERRUPT: Insert pattern-breaking flash at mid-video
-    # TODO: Fix get_frame issue - temporarily disabled
-    # print(f"  ⚡ Applying subliminal flash interrupt...")
-    # final_video = insert_subliminal_flash(final_video, flash_position_percent=0.55, flash_duration=0.12)
+    print(f"  ⚡ Applying subliminal flash interrupt...")
+    final_video = insert_subliminal_flash(final_video, flash_position_percent=0.55, flash_duration=0.12)
     
     # 6. RENDER
     final_video.write_videofile(
