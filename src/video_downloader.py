@@ -114,15 +114,19 @@ def search_videos(keywords, num_videos=3):
     """
     all_videos = []
     
-    # SUCCESS AESTHETIC: 7 different high-value suffixes
+    # NO-HUMANS FILTER: Inanimate, atmospheric, and animal subjects only
+    # Goal: Moody visuals without human actors breaking immersion
     success_suffixes = [
-        "luxury aesthetic",
-        "cinematic 4k",
-        "dark moody success",
-        "gym motivation",
-        "money aesthetic",
-        "business cinematic",
-        "sigma male aesthetic"
+        "stormy ocean night",
+        "thunderstorm",
+        "ancient greek statue",
+        "burning candle dark",
+        "wolf eyes",
+        "chess piece dark",
+        "hourglass sand",
+        "dark forest fog",
+        "ink in water",
+        "abstract black texture"
     ]
     
     for keyword in keywords:

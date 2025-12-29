@@ -33,11 +33,11 @@ def apply_high_contrast_filter(clip, contrast=1.2, saturation=1.3):
     
     return clip.fl_image(enhance)
 
-def apply_darken_filter(clip, factor=0.7):
+def apply_darken_filter(clip, factor=0.6):
     """
     Darkens the clip manually using numpy to avoid import errors.
     Factor: 1.0 = Original, 0.0 = Black. 
-    0.7 is a good 'Sunglasses' effect for readability.
+    0.6 creates a strong 'Dark Aesthetic' for white text to pop aggressively.
     """
     def darken(image):
         # Convert to float to avoid overflow, multiply, convert back to uint8
@@ -221,28 +221,61 @@ def create_headline_hook(text, start, duration):
     return composite.set_position(('center', 'center')).set_start(start).set_duration(duration)
 
 
-def apply_start_glitch(clip, glitch_duration=0.5):
+def apply_flash_zoom(clip, flash_duration=0.3, zoom_factor=1.08):
     """
-    🚨 VISUAL PATTERN INTERRUPT: Start Glitch Effect
-    Applies a strong visual disruption to the first 0.5 seconds to "wake up" the viewer.
-    - Color inversion flash for 0.1s
-    - Acts as a subliminal attention grabber
-    - Prevents immediate scroll-away
+    🎬 CINEMATIC VISUAL HOOK: Flash + Zoom Effect
+    Creates a revelatory "white flash" exposure effect combined with a slow zoom-in.
+    - Brightness starts high and fades to normal over 0.3s (cinematic reveal)
+    - Slow zoom-in for "creeping realization" effect
+    - Feels more philosophical/revelatory rather than broken/horror
     """
-    def glitch_effect(get_frame, t):
-        """Apply color inversion during the first 0.1 seconds"""
+    def flash_effect(get_frame, t):
+        """Apply white flash fade during the first 0.3 seconds"""
         frame = get_frame(t)
         
-        # Apply color inversion for first 0.1 seconds only
-        if t < 0.1:
-            # Invert RGB values: 255 - original value
-            inverted = 255 - frame.astype('uint8')
-            return inverted
+        if t < flash_duration:
+            # Calculate flash intensity (starts at 1.5, fades to 1.0)
+            progress = t / flash_duration  # 0 to 1
+            flash_intensity = 1.5 - (0.5 * progress)  # 1.5 to 1.0
+            
+            # Apply brightness boost (overexposure effect)
+            flashed = np.clip(frame * flash_intensity, 0, 255).astype('uint8')
+            return flashed
         else:
-            # Normal video after glitch
             return frame
     
-    return clip.fl(glitch_effect)
+    # Apply flash effect
+    flashed_clip = clip.fl(flash_effect)
+    
+    # Apply slow zoom-in effect (reuse Ken Burns logic)
+    # Zoom progresses over the entire clip duration
+    def zoom_effect(get_frame, t):
+        """Progressive zoom-in effect"""
+        frame = get_frame(t)
+        h, w = frame.shape[:2]
+        
+        # Calculate zoom progress (slow and subtle)
+        duration = clip.duration
+        progress = min(t / duration, 1.0)  # 0 to 1
+        current_zoom = 1 + (zoom_factor - 1) * progress  # 1.0 to zoom_factor
+        
+        # Calculate crop dimensions
+        new_h = int(h / current_zoom)
+        new_w = int(w / current_zoom)
+        
+        # Center crop
+        y_offset = (h - new_h) // 2
+        x_offset = (w - new_w) // 2
+        
+        # Crop and resize back to original dimensions
+        cropped = frame[y_offset:y_offset+new_h, x_offset:x_offset+new_w]
+        from PIL import Image
+        img = Image.fromarray(cropped)
+        resized = img.resize((w, h), Image.LANCZOS)
+        
+        return np.array(resized)
+    
+    return flashed_clip.fl(zoom_effect)
 
 
 def get_smart_timings(script_data, audio_duration):
@@ -290,13 +323,56 @@ def get_smart_timings(script_data, audio_duration):
         
     return segments
 
+def add_hook_sfx(audio_clip):
+    """
+    🎬 AUDITORY HOOK: Add a sound effect at the very start (0.0s) of the video.
+    Overlays hook_sfx.mp3 on top of the voiceover for a startle trigger.
+    
+    Args:
+        audio_clip: The base audio clip (voiceover)
+    
+    Returns:
+        CompositeAudioClip with SFX overlaid, or original audio if SFX file not found
+    """
+    sfx_path = config.ASSETS_DIR / "hook_sfx.mp3"
+    
+    if not sfx_path.exists():
+        print(f"  ⚠️ Hook SFX not found at {sfx_path} - proceeding without auditory hook")
+        return audio_clip
+    
+    try:
+        print(f"  🔊 Loading hook SFX: {sfx_path.name}")
+        sfx = AudioFileClip(str(sfx_path))
+        
+        # Position SFX at the very start (0.0s)
+        sfx = sfx.set_start(0.0)
+        
+        # Trim SFX if it's longer than the audio clip
+        if sfx.duration > audio_clip.duration:
+            sfx = sfx.subclip(0, audio_clip.duration)
+        
+        # Composite: Mix SFX on top of voiceover
+        composite_audio = CompositeAudioClip([audio_clip, sfx])
+        composite_audio = composite_audio.set_duration(audio_clip.duration)
+        
+        print(f"  ✓ Hook SFX added successfully at 0.0s (duration: {sfx.duration:.2f}s)")
+        return composite_audio
+        
+    except Exception as e:
+        print(f"  ⚠️ Failed to add hook SFX: {e} - proceeding without auditory hook")
+        return audio_clip
+
+
 def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     print(f"🎬 Editing video (Success Aesthetic)...")
     
     audio = AudioFileClip(str(audio_path))
     main_duration = audio.duration  # Store main duration for reference
     
-    # 1. CLEAN AUDIO (No jumpscares)
+    # 1. HOOK SFX OVERLAY (Auditory Hook)
+    audio = add_hook_sfx(audio)
+
+    # 2. CLEAN AUDIO (No jumpscares)
     final_audio = audio
 
     # 2. BACKGROUND MUSIC MIX (Random Track Selection)
@@ -432,7 +508,7 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     
     # 🚨 APPLY GLITCH EFFECT to opening frames
     print(f"  ⚡ Applying glitch effect to first 0.5s...")
-    final_video = apply_start_glitch(final_video, glitch_duration=0.5)
+    final_video = apply_flash_zoom(final_video, flash_duration=0.3, zoom_factor=1.08)
     
     # 6. RENDER
     final_video.write_videofile(

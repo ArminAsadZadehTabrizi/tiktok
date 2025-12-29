@@ -25,14 +25,15 @@ def generate_script(topic=None):
     system_prompt = """You are a master of Dark Psychology, Human Nature, and Strategy. 
     You do not give generic advice like 'work hard'. 
     Instead, you explain specific psychological biases, economic laws, or uncomfortable truths about human nature.
-    Your tone is analytical, slightly dark, and revealing. You are teaching the viewer a secret weapon."""
+    Your tone is analytical, slightly dark, and revealing. You are teaching the viewer a secret weapon.
+    Your hooks are SHORT and BRUTAL. Never exceed 7 words for hooks."""
     
     # BASE PROMPT: Defines the structure (No f-strings here to avoid JSON conflicts)
     base_prompt = """
     Write a script for a viral YouTube Short/TikTok.
     
     STRUCTURE (Total word count MUST be 130-140 words. Video MUST be under 55 seconds):
-    1. The Hook (0-3s): MAXIMUM 7-10 words. MUST start with direct viewer address ("You...", "Stop scrolling...", "Never..."). State a counter-intuitive fact or shocking question. End with punctuation (. ? !). (e.g. "You are being manipulated daily." or "Stop scrolling. You need this.")
+    1. The Hook (0-3s): MAXIMUM 7 words. MUST be a punchy one-liner. Start with direct viewer address ("You...", "Stop scrolling...", "Never..."). State a shocking fact or command. End with punctuation (. ? !). Examples: "Stop scrolling." / "You are being lied to." / "Never trust first impressions."
     2. The Concept (3-20s): Explain the SPECIFIC psychological concept or law (Name the law/theory!). Explain HOW it works mechanically.
     3. The Application (20-45s): Give ONE specific example of this in real life and ONE specific thing to do differently. 
     4. Call to Action (45-55s): A final dark truth or realization. Then "Subscribe for more psychology."
@@ -48,7 +49,8 @@ def generate_script(topic=None):
     - NEVER use generic phrases like "Get uncomfortable", "Embrace the grind", or "Hustle hard".
     - ALWAYS name the specific theory/law (e.g. "This is called the Spotlight Effect").
     - Keywords MUST be CONCRETE NOUNS (e.g., 'chess board', 'mirror', 'wolf pack', 'ancient statue', 'stormy ocean'). No abstract concepts.
-    - The Hook MUST be 7-10 words MAXIMUM and formatted as a complete sentence with ending punctuation.
+    - The Hook MUST be MAXIMUM 7 words and formatted as a complete sentence with ending punctuation.
+    - The Hook MUST be punchy and direct. Think: "Stop scrolling." or "You are being manipulated." - short, brutal, immediate.
     - The Hook MUST grab attention by directly addressing the viewer with "You", "Stop", "Never", or similar direct commands.
     """
 

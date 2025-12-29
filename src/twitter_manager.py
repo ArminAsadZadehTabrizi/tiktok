@@ -92,6 +92,13 @@ CRITICAL RULES:
 - Use numbering (1/6, 2/6, etc.) at the END of each tweet
 - Make it feel text-native (not like a video transcript)
 
+EMOJI USAGE:
+- Use 1-2 relevant emojis per tweet to break up text visually
+- Place them at line breaks or for emphasis
+- Do NOT overuse (no emoji walls)
+- Tone: Serious/Mysterious emojis only (e.g., 🧠, 👁️, ♟️, 🌑, ⚖️, 🎭, 🔬, 💀, ⚡, 🎯)
+- Avoid casual/playful emojis (no 😊, 🎉, 💪, etc.)
+
 OUTPUT FORMAT (JSON):
 {{
     "tweets": ["tweet 1 text (1/6)", "tweet 2 text (2/6)", ... "tweet 6 text (6/6)"]
