@@ -669,10 +669,14 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
                 # Trim SFX if longer than 1.0s for quick punchy effect
                 sfx_duration = min(sfx.duration, 1.0)
                 sfx = sfx.subclip(0, sfx_duration)
-                sfx = sfx.set_start(start_time)
                 
-                # Subtle volume for blending (0.8x) - now acts as "glue" rather than startle
-                sfx = sfx.volumex(0.8)
+                # 🎚️ SEAMLESS BLENDING: Apply fades to eliminate abrupt attack/release
+                sfx = sfx.audio_fadein(0.2).audio_fadeout(0.2)
+                
+                # Very subtle volume (0.4x) - background texture, not a focal point
+                sfx = sfx.volumex(0.4)
+                
+                sfx = sfx.set_start(start_time)
                 
                 transition_audio_clips.append(sfx)
                 print(f"    🎚️ Transition {i+1}: {sfx_path.name} at {start_time:.2f}s (pre-roll: -0.3s)")
