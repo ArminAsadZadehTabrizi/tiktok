@@ -662,24 +662,24 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
                 sfx_path = random.choice(sfx_files)
                 sfx = AudioFileClip(str(sfx_path))
                 
-                # 🎬 PRE-ROLL OFFSET: Start SFX 0.3s BEFORE the visual cut
-                # This allows the build-up to be heard, with the peak hitting exactly at the cut
-                start_time = max(0, scene_end_time - 0.3)
+                # 🎬 TIGHTER OFFSET: Start SFX 0.1s BEFORE the visual cut
+                # Tighter timing for fast-paced edits - peak aligns with the cut
+                start_time = max(0, scene_end_time - 0.1)
                 
                 # Trim SFX if longer than 1.0s for quick punchy effect
                 sfx_duration = min(sfx.duration, 1.0)
                 sfx = sfx.subclip(0, sfx_duration)
                 
-                # 🎚️ SEAMLESS BLENDING: Apply fades to eliminate abrupt attack/release
-                sfx = sfx.audio_fadein(0.2).audio_fadeout(0.2)
+                # 🎚️ SOFT FADES: Apply tight fades to prevent clicking
+                sfx = sfx.audio_fadein(0.1).audio_fadeout(0.1)
                 
-                # Very subtle volume (0.4x) - background texture, not a focal point
-                sfx = sfx.volumex(0.4)
+                # Very low volume (0.2x) - subtle texture, felt not heard
+                sfx = sfx.volumex(0.2)
                 
                 sfx = sfx.set_start(start_time)
                 
                 transition_audio_clips.append(sfx)
-                print(f"    🎚️ Transition {i+1}: {sfx_path.name} at {start_time:.2f}s (pre-roll: -0.3s)")
+                print(f"    🎚️ Transition {i+1}: {sfx_path.name} at {start_time:.2f}s (pre-roll: -0.1s)")
             except Exception as e:
                 print(f"  ⚠️ Failed to add transition SFX at {scene_end_time:.2f}s: {e}")
     
