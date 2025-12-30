@@ -37,6 +37,8 @@ def generate_script(topic=None):
     2. The Concept (3-20s): Explain the SPECIFIC psychological concept or law (Name the law/theory!). Explain HOW it works mechanically.
     3. The Application (20-45s): Give ONE specific example of this in real life and ONE specific thing to do differently. 
     4. Call to Action (45-55s): A final dark truth or realization. Then "Subscribe for more psychology."
+    
+    CRITICAL: The script MUST be a perfect loop. The last sentence must NOT be a goodbye or Call to Action. It must grammatically lead back into the Hook. Example End: 'And that is the terrifying reason...' (Loops to Start) '...why you are always tired.'
 
     OUTPUT FORMAT (JSON):
     {

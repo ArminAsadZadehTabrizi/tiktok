@@ -532,7 +532,7 @@ def assign_clips_to_scenes(scenes, video_paths):
             else:
                 # Standard scenes: Ken Burns zoom for cinematic motion
                 print(f"  🎬 STANDARD SCENE: Applying Ken Burns zoom")
-                subclip = apply_ken_burns_zoom(subclip, zoom_factor=1.05)
+                subclip = apply_ken_burns_zoom(subclip, zoom_factor=1.25)
                 subclip = subclip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
                 subclip = apply_high_contrast_filter(subclip, contrast=1.2, saturation=1.3)
             
@@ -540,7 +540,8 @@ def assign_clips_to_scenes(scenes, video_paths):
             subclip = subclip.set_duration(duration)
             
             positioned_clips.append(subclip)
-            # Keep clip open until final render - MoviePy needs source connection
+            # CRITICAL: Do NOT close clips here - MoviePy needs them open for lazy evaluation
+            # Closing clips breaks .fl() and other effects, causing 'NoneType' get_frame errors
             
             print(f"  🎥 Scene {i+1}/{len(scenes)}: {duration:.2f}s - \"{scene['text'][:40]}...\"")
             
@@ -568,7 +569,13 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     # 2. HOOK SFX OVERLAY (Auditory Hook)
     audio = add_hook_sfx(audio)
 
-    # 3. CLEAN AUDIO (No jumpscares)
+    # 3. TRANSITION SFX: Add whoosh/boom sounds at scene changes
+    sfx_dir = config.ASSETS_DIR / "sfx"
+    sfx_files = [f for f in sfx_dir.glob("*.mp3") if f.name != ".DS_Store"] if sfx_dir.exists() else []
+    
+    if sfx_files:
+        print(f"  🔊 Found {len(sfx_files)} transition SFX files")
+    
     final_audio = audio
 
     # 4. BACKGROUND MUSIC MIX (Random Track Selection + Cinematic Fade-In)
@@ -590,14 +597,15 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
                 from moviepy.editor import concatenate_audioclips
                 bg = concatenate_audioclips(bg_clips)
             
-            # 🎚️ CINEMATIC AUDIO DUCKING: Fade-In Build-Up Effect
-            # First 0.5s nearly silent (SFX + TTS dominate), then music swells dramatically
-            bg = bg.subclip(0, main_duration)
-            bg = bg.audio_fadein(3.0)  # 3-second fade-in for dramatic build-up
+            # 🎚️ CINEMATIC AUDIO DUCKING: Randomized Start + Fast Fade-In
+            # Randomize music start to avoid silent intros (songs often have 2-3s silence at 0.0s)
+            start_time = random.uniform(0, max(0, bg.duration - main_duration))
+            bg = bg.subclip(start_time, min(start_time + main_duration, bg.duration))
+            bg = bg.audio_fadein(0.5)  # 0.5-second fade-in for immediate impact
             bg = bg.volumex(config.BG_MUSIC_VOLUME)  # Apply final volume level
             bg = bg.set_duration(main_duration)  # Explicit duration
             
-            print(f"  🎬 Music fade-in applied: 3.0s build-up for cinematic impact")
+            print(f"  🎬 Music randomized: start={start_time:.2f}s, fade-in=0.5s for instant impact")
             
             final_audio = CompositeAudioClip([final_audio, bg])
             final_audio = final_audio.set_duration(main_duration)  # Re-enforce duration
@@ -641,6 +649,38 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     
     # Assign video clips to scenes
     video_clips = assign_clips_to_scenes(scenes, video_paths)
+    
+    # 🎬 ADD TRANSITION SFX AT SCENE CHANGES (Dopamine Triggers)
+    # Overlay random whoosh/boom sounds at each cut for engagement
+    transition_audio_clips = []
+    if sfx_files and scenes:
+        print(f"  🔊 Adding transition SFX at {len(scenes)-1} scene changes...")
+        for i in range(len(scenes) - 1):  # Add SFX at every cut (except last scene)
+            scene_end_time = scenes[i]['end_time']
+            try:
+                # Pick random SFX from pool
+                sfx_path = random.choice(sfx_files)
+                sfx = AudioFileClip(str(sfx_path))
+                
+                # Position SFX at the scene transition (cut point)
+                # Trim SFX if longer than 1.0s for quick punchy effect
+                sfx_duration = min(sfx.duration, 1.0)
+                sfx = sfx.subclip(0, sfx_duration)
+                sfx = sfx.set_start(scene_end_time)
+                
+                # Volume boost for clarity
+                sfx = sfx.volumex(1.5)
+                
+                transition_audio_clips.append(sfx)
+                print(f"    🎚️ Transition {i+1}: {sfx_path.name} at {scene_end_time:.2f}s")
+            except Exception as e:
+                print(f"  ⚠️ Failed to add transition SFX at {scene_end_time:.2f}s: {e}")
+    
+    # Mix transition SFX into final audio
+    if transition_audio_clips:
+        final_audio = CompositeAudioClip([final_audio] + transition_audio_clips)
+        final_audio = final_audio.set_duration(main_duration)
+        print(f"  ✓ {len(transition_audio_clips)} transition SFX added to audio mix")
     
     if not video_clips:
         raise Exception("No valid video clips could be loaded.")
