@@ -662,17 +662,20 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
                 sfx_path = random.choice(sfx_files)
                 sfx = AudioFileClip(str(sfx_path))
                 
-                # Position SFX at the scene transition (cut point)
+                # 🎬 PRE-ROLL OFFSET: Start SFX 0.3s BEFORE the visual cut
+                # This allows the build-up to be heard, with the peak hitting exactly at the cut
+                start_time = max(0, scene_end_time - 0.3)
+                
                 # Trim SFX if longer than 1.0s for quick punchy effect
                 sfx_duration = min(sfx.duration, 1.0)
                 sfx = sfx.subclip(0, sfx_duration)
-                sfx = sfx.set_start(scene_end_time)
+                sfx = sfx.set_start(start_time)
                 
-                # Volume boost for clarity
-                sfx = sfx.volumex(1.5)
+                # Subtle volume for blending (0.8x) - now acts as "glue" rather than startle
+                sfx = sfx.volumex(0.8)
                 
                 transition_audio_clips.append(sfx)
-                print(f"    🎚️ Transition {i+1}: {sfx_path.name} at {scene_end_time:.2f}s")
+                print(f"    🎚️ Transition {i+1}: {sfx_path.name} at {start_time:.2f}s (pre-roll: -0.3s)")
             except Exception as e:
                 print(f"  ⚠️ Failed to add transition SFX at {scene_end_time:.2f}s: {e}")
     
