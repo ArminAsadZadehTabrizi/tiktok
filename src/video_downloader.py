@@ -10,18 +10,18 @@ import config
 CLIP_DURATION = 2.5  # Each video clip duration in seconds (matches video_editor.py)
 MIN_VIDEO_DURATION = 15  # Minimum video duration in seconds to avoid looping with sped-up edits
 
-# Tate/Mafia aesthetic fallback keywords for when specific searches fail
+# Ultra-Luxury / High-Value Man aesthetic fallback keywords for when specific searches fail
 DARK_AESTHETIC_FALLBACKS = [
-    "mafia aesthetic dark",
-    "luxury car night drive cinematic",
-    "boxing intense dark gym",
-    "lamborghini night city lights",
-    "man suit smoking dark",
-    "private jet interior luxury",
-    "shadow boxing dark moody",
-    "greek statue dark marble",
-    "wolf pack night moody",
-    "stormy ocean dramatic 4k"
+    "luxury car night drive 4k",
+    "dubai night city cinematic",
+    "boxer training sweat slow motion",
+    "lion walking dark",
+    "yacht ocean sunset luxury",
+    "man suit walking skyscraper",
+    "bugatti interior luxury 4k",
+    "kickboxing professional training",
+    "greek statue marble luxury",
+    "penthouse view night expensive"
 ]
 
 

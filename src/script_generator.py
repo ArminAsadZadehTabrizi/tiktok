@@ -43,67 +43,73 @@ def generate_script(topic=None):
     ❌ NO ocean, water, waves (generic atmosphere)
     ❌ NO slow atmospheric/moody footage
     ❌ NO literal re-enactments of the narration
+    ❌ NO guns, drugs, dirty rooms, grunge, horror, or prison cells
+    
+    🎯 DARKNESS FROM CONTRAST, NOT GRIME: Use premium black backgrounds, night cityscapes, and high-contrast luxury settings.
     
     
-    🎯 YOU MUST ONLY USE THESE 3 TATE/MAFIA AESTHETIC CATEGORIES:
+    🎯 YOU MUST ONLY USE THESE 3 ULTRA-LUXURY AESTHETIC CATEGORIES:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     
-    A. 💰🔫 WEALTH/MAFIA (Use 40% of segments - Luxury, Power, Dominance):
-    - 'Supercar night drive fast tracking shot dark cinematic moody'
-    - 'Lamborghini headlights close up night moody 4k'
-    - 'Man in suit smoking cigar low angle dark dramatic cinematic'
-    - 'Private jet interior luxury leather seats fast pan cinematic'
-    - 'Counting money dark hands close up fast motion dramatic lighting'
-    - 'Poker chips stack close up casino dark cinematic moody'
-    - 'Gold watch close up wrist luxury dark moody 4k'
-    - 'Luxury car interior leather steering wheel night cinematic'
-    - 'Man suit walking confident night city low angle dark'
+    A. 💎🏆 ULTRA-LUXURY & STATUS (Use 40% of segments - Extreme Wealth, High Status, Power):
+    - 'Bugatti interior leather seats night luxury 4k cinematic expensive'
+    - 'Ferrari dashboard close up night city lights luxury 4k'
+    - 'Dubai skyline night skyscrapers luxury cinematic 4k expensive'
+    - 'Monaco yacht harbor sunset luxury boats 4k cinematic'
+    - 'Private jet leather seats close up luxury expensive 4k'
+    - 'Rolls Royce steering wheel close up night luxury 4k'
+    - 'Penthouse view night city lights luxury expensive cinematic'
+    - 'Man bespoke suit checking Rolex watch luxury close up 4k'
+    - 'Champagne pouring luxury glass slow motion expensive 4k'
+    - 'Luxury penthouse interior marble gold accents 4k expensive'
     
-    B. 🥊💪 COMBAT/GRIND (Use 35% of segments - Aggression, Strength, Hustle):
-    - 'Shadow boxing dark gym silhouette fast punches low angle moody'
-    - 'Boxing training intense heavy bag fast motion dark cinematic'
-    - 'Man sprinting night city rain fast tracking shot dramatic'
-    - 'Hoodie workout gym dark close up intense moody lighting'
-    - 'Sweat face gym close up struggle dark dramatic 4k'
-    - 'Heavy deadlift veins dark gym low angle cinematic'
-    - 'Hooded fighter shadow dark intense eyes close up moody'
-    - 'Running stairs night fast motion dark city cinematic'
+    B. 🥊⚡ COMBAT & DISCIPLINE (Use 35% of segments - Professional Training, Power, Focus):
+    - 'Kickboxing training professional gym discipline 4k luxury'
+    - 'Heavy bag workout shirtless muscles slow motion luxury gym 4k'
+    - 'Sprinting hill night city lights discipline luxury 4k'
+    - 'Shadow boxing luxury gym mirrors professional 4k expensive'
+    - 'Boxing gloves close up taping hands discipline luxury 4k'
+    - 'Athletic training professional focus intensity luxury gym 4k'
+    - 'Bodybuilder posing luxury gym professional 4k expensive'
+    - 'Martial arts training professional discipline luxury 4k'
     
-    C. 🗿🐺 STOIC/PHILOSOPHY (Use 25% of segments - Wisdom, Nature, Timeless):
-    - 'Greek statue dark museum close up marble cinematic moody'
-    - 'Marble sculpture face close up dark dramatic lighting'
-    - 'Lion walking savanna dusk slow motion cinematic 4k'
-    - 'Wolf pack forest night dark moody cinematic'
-    - 'Stormy ocean waves dark dramatic sky 4k slow motion'
-    - 'Chess board dark pieces moving close up cinematic'
-    - 'Ancient Roman bust marble museum dark moody 4k'
-    - 'Eagle flying mountain sunset cinematic slow motion dark'
+    C. 🏛️♟️ STOIC & OLD MONEY (Use 25% of segments - Wisdom, Timeless Elegance, Class):
+    - 'Greek statue marble museum close up luxury 4k expensive'
+    - 'Classic architecture marble columns luxury 4k cinematic'
+    - 'Chess board marble pieces luxury close up 4k expensive'
+    - 'Hourglass golden sand luxury close up 4k cinematic'
+    - 'Ancient Roman bust marble dramatic lighting luxury 4k'
+    - 'Lion walking savanna golden hour luxury 4k cinematic'
+    - 'Vintage library leather books luxury 4k expensive'
+    - 'Classic mansion interior luxury expensive 4k cinematic'
     
     🔄 3-CATEGORY ROTATION RULE (MANDATORY):
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     Rotate through categories - NEVER use the same category twice in a row:
-    1. WEALTH/MAFIA → 2. COMBAT/GRIND → 3. STOIC/PHILOSOPHY → (repeat)
+    1. ULTRA-LUXURY & STATUS → 2. COMBAT & DISCIPLINE → 3. STOIC & OLD MONEY → (repeat)
     
     Example sequence (10 segments):
-    Segment 1: WEALTH/MAFIA (Lamborghini night)
-    Segment 2: COMBAT/GRIND (Shadow boxing)
-    Segment 3: STOIC/PHILOSOPHY (Greek statue)
-    Segment 4: WEALTH/MAFIA (Man in suit smoking)
-    Segment 5: COMBAT/GRIND (Heavy deadlift)
-    Segment 6: STOIC/PHILOSOPHY (Wolf pack)
-    Segment 7: WEALTH/MAFIA (Poker chips)
-    Segment 8: COMBAT/GRIND (Hooded fighter)
-    Segment 9: STOIC/PHILOSOPHY (Stormy ocean)
-    Segment 10: WEALTH/MAFIA (Private jet)
+    Segment 1: ULTRA-LUXURY & STATUS (Bugatti interior)
+    Segment 2: COMBAT & DISCIPLINE (Kickboxing professional)
+    Segment 3: STOIC & OLD MONEY (Greek statue)
+    Segment 4: ULTRA-LUXURY & STATUS (Dubai skyline night)
+    Segment 5: COMBAT & DISCIPLINE (Heavy bag workout)
+    Segment 6: STOIC & OLD MONEY (Chess board marble)
+    Segment 7: ULTRA-LUXURY & STATUS (Monaco yacht harbor)
+    Segment 8: COMBAT & DISCIPLINE (Shadow boxing luxury gym)
+    Segment 9: STOIC & OLD MONEY (Classic architecture)
+    Segment 10: ULTRA-LUXURY & STATUS (Penthouse view)
     
-    ⚡ MANDATORY: COMBINE WITH "DARK CINEMATIC" OR "MOODY":
+    ⚡ MANDATORY: COMBINE WITH LUXURY QUALITY KEYWORDS:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    EVERY visual query MUST include at least ONE of these mood keywords:
-    - "dark cinematic"
-    - "dark moody"
-    - "moody 4k"
-    - "dark dramatic"
-    - "cinematic moody"
+    EVERY visual query MUST include at least TWO of these high-quality keywords:
+    - "luxury"
+    - "expensive"
+    - "4k"
+    - "cinematic"
+    - "premium"
+    
+    This filters out low-quality stock footage and ensures premium aesthetic.
     
     🎥 MANDATORY KEYWORDS IN EVERY VISUAL:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -116,8 +122,8 @@ def generate_script(topic=None):
        'low angle' | 'close up' | 'tracking shot' | 'fast pan' | 
        'slow zoom in' | 'tilt up' | 'dolly zoom'
     
-    3. 💡 CINEMATIC QUALITY (MANDATORY):
-       'dark cinematic' | 'dark moody' | 'moody 4k' | 'dark dramatic' | 'cinematic moody'
+    3. 💎 LUXURY QUALITY (MANDATORY - Pick TWO):
+       'luxury' | 'expensive' | '4k' | 'cinematic' | 'premium'
     
     📐 VISUAL QUERY STRUCTURE FORMULA:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -125,24 +131,24 @@ def generate_script(topic=None):
     
     [SUBJECT] + [ACTION] + [CAMERA MOVE] + [DARK CINEMATIC/MOODY]
     
-    ✅ GOOD EXAMPLES (TATE AESTHETIC):
-    - "Man in suit smoking cigar slow motion low angle dark dramatic cinematic"
-    - "Shadow boxing dark gym fast punches tracking shot moody 4k"
-    - "Greek statue marble close up face tilt up dark cinematic moody"
-    - "Lamborghini driving night speeding city lights tracking shot 4k dark"
-    - "Heavy deadlift veins popping struggle close up dark dramatic"
-    - "Wolf eyes close up night forest dark cinematic moody"
+    ✅ GOOD EXAMPLES (ULTRA-LUXURY AESTHETIC):
+    - "Bugatti interior leather seats night luxury expensive 4k cinematic"
+    - "Kickboxing training professional gym discipline luxury 4k expensive"
+    - "Greek statue marble close up museum luxury expensive 4k"
+    - "Dubai skyline night skyscrapers luxury expensive cinematic 4k"
+    - "Heavy bag workout shirtless muscles luxury gym 4k expensive"
+    - "Monaco yacht harbor luxury boats sunset cinematic 4k expensive"
     
     ❌ BAD EXAMPLES (TOO VAGUE OR FORBIDDEN):
-    - "money" (Missing action, camera, lighting)
-    - "car driving" (Missing dark/moody keywords)
-    - "gym workout" (Too generic, no specifics)
+    - "money" (Missing action, camera, luxury keywords)
+    - "car driving" (no luxury brand, no 4k/expensive keywords)
+    - "gym workout" (too vague, missing luxury/expensive)
     - "rain window" (FORBIDDEN)
-    - "smoke clouds" (FORBIDDEN)
-    - "tree forest" (FORBIDDEN - use wolves/animals in forest instead)
+    - "guns" (FORBIDDEN)
+    - "prison cells" (FORBIDDEN)
     
-    The visual must convey POWER, WEALTH, WISDOM, and DOMINANCE.
-    Think: TATE LIFESTYLE meets DARK PHILOSOPHER - not generic stock footage."""
+    The visual must convey EXTREME WEALTH, DISCIPLINE, TIMELESS CLASS, and HIGH STATUS.
+    Think: BILLIONAIRE LIFESTYLE + PROFESSIONAL ATHLETE + OLD MONEY - not crime movies or generic stock footage."""
     
     # BASE PROMPT: Defines the structure with ENFORCED VISUAL FORMATTING
     base_prompt = """
@@ -180,16 +186,16 @@ def generate_script(topic=None):
        [SUBJECT] + [ACTION] + [CAMERA MOVE] + [LIGHTING]
     
     2. SUBJECT must be one of:
-       - Money/Wealth (counting bills, stacks, gold, watch)
-       - Luxury Cars (Lamborghini, Ferrari, steering wheel, drift)
-       - Gym/Fitness (lifting, boxing, running, muscles)
-       - Business/Suits (walking confident, handshake, penthouse)
+       - Ultra-Luxury (Bugatti/Ferrari/Rolls Royce interior, Dubai skyline, Monaco harbor, Penthouse)
+       - High-Status Fashion (Bespoke suit, Rolex watch, designer items)
+       - Professional Training (Kickboxing, Heavy bag, Athletic performance)
+       - Old Money (Classic architecture, Marble, Chess, Vintage luxury)
     
-    3. ACTION must show movement:
-       - "counting fast hands"
-       - "driving speeding night"
-       - "lifting heavy veins"
-       - "walking confident city"
+    3. ACTION must show movement or premium detail:
+       - "interior leather seats night"
+       - "skyline night city lights"
+       - "training professional discipline"
+       - "checking watch luxury close up"
     
     4. CAMERA MOVE (pick one per visual):
        - low angle
@@ -200,43 +206,47 @@ def generate_script(topic=None):
        - slow zoom in
        - tilt up
     
-    5. LIGHTING must include:
-       - "cinematic" OR "4k" (mandatory)
-       - Plus mood: "dark", "dramatic", "high contrast"
+    5. LUXURY QUALITY must include (pick TWO):
+       - "luxury"
+       - "expensive"
+       - "4k"
+       - "cinematic"
+       - "premium"
     
     6. MANDATORY keywords in EVERY visual:
-       - At least ONE of: "fast motion", "action", "4k", "cinematic"
+       - At least TWO of: "luxury", "expensive", "4k", "cinematic", "premium"
     
     7. FORBIDDEN visuals:
        ❌ "clouds", "rain window", "forest", "shadows", "smoke", "ink water"
+       ❌ "guns", "drugs", "dirty rooms", "grunge", "horror", "prison cells"
     
     SEGMENT STRUCTURE RULES:
     - Break the body into 8-12 logical sentences for 45s+ video
     - Each segment text = ONE complete sentence
     - Each visual = FULL CINEMATIC QUERY following the formula above
     
-    ✅ CORRECT VISUAL EXAMPLES (3-CATEGORY TATE AESTHETIC):
-    - "Man in suit smoking cigar slow motion low angle dark dramatic cinematic"
-    - "Shadow boxing dark gym fast punches tracking shot moody 4k"
-    - "Greek statue marble close up face tilt up dark cinematic moody"
-    - "Lamborghini driving night speeding city lights tracking shot 4k dark"
-    - "Heavy deadlift veins popping struggle close up dark dramatic"
-    - "Wolf eyes close up night forest dark cinematic moody"
+    ✅ CORRECT VISUAL EXAMPLES (3-CATEGORY ULTRA-LUXURY AESTHETIC):
+    - "Bugatti interior leather seats night luxury expensive 4k cinematic"
+    - "Kickboxing training professional gym discipline luxury 4k expensive"
+    - "Greek statue marble close up museum luxury expensive 4k cinematic"
+    - "Dubai skyline night skyscrapers luxury expensive cinematic 4k"
+    - "Heavy bag workout shirtless muscles luxury gym 4k expensive"
+    - "Monaco yacht harbor luxury boats sunset cinematic 4k expensive"
     
     ❌ WRONG VISUAL EXAMPLES (DO NOT USE):
-    - "money" (too short)
-    - "car driving" (no camera, no lighting, not specific)
-    - "gym workout" (too vague)
+    - "money" (too short, missing luxury keywords)
+    - "car driving" (no brand, no luxury/expensive)
+    - "gym workout" (too vague, missing luxury/expensive)
     - "rain on window" (FORBIDDEN)
-    - "smoke clouds" (FORBIDDEN)
-    - "tree forest" (FORBIDDEN - use wolves/animals in forest instead)
+    - "guns" (FORBIDDEN)
+    - "prison" (FORBIDDEN)
     
     CRITICAL RULES:
     - NEVER use generic phrases like "Get uncomfortable" or "Hustle hard"
     - ALWAYS name the specific theory/law
     - The Hook MUST be MAXIMUM 7 words with ending punctuation
-    - EVERY visual must be a COMPLETE query with Subject + Action + Camera + Lighting
-    - Rotate through the 3 categories: WEALTH/MAFIA → COMBAT/GRIND → STOIC/PHILOSOPHY
+    - EVERY visual must be a COMPLETE query with Subject + Action + Camera + Luxury Keywords (TWO of: luxury/expensive/4k/cinematic/premium)
+    - Rotate through the 3 categories: ULTRA-LUXURY & STATUS → COMBAT & DISCIPLINE → STOIC & OLD MONEY
     """
 
     # DYNAMIC TOPIC INSERTION
