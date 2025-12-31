@@ -658,13 +658,16 @@ def insert_subliminal_flash(video_clip, flash_position_percent=0.55, flash_durat
 
 def assign_clips_to_scenes(scenes, video_paths):
     """
-    🎬 REFACTORED: Jump Cuts for Sub-Cutting
+    🎬 STATEFUL VIDEO PLAYBACK: Continuous Story with Jump Cuts
     
-    NEW LOGIC:
-    1. Track current_video_offset for each source video
-    2. Standard Cut: Start video at 0.0s
-    3. Sub-Cut (Jump Cut): If is_subcut=True, jump forward (previous_end + 1.0s)
-    4. Videos loop if they run out of footage
+    NEW LOGIC - Cursor Tracking:
+    1. video_cursors = {} tracks last used end timestamp for EACH video file path
+    2. First Use: Start at 0.0s (or small random offset)
+    3. Subsequent Use (Sub-Cut): Retrieve last_end_time, set start_time = last_end_time + 0.5s (Jump Cut)
+    4. Looping Safety: If start_time + duration > video.duration, loop back to 0.0s
+    5. Update Cursor: After creating subclip, update video_cursors[path] = new_end_time
+    
+    This ensures Scene 1: segment_0.mp4 (0-2s), Scene 2: segment_0.mp4 (2.5s-4.5s) → Continuous Story
     
     Args:
         scenes: List of scene dictionaries (may include sub-cuts with same segment_index)
@@ -675,9 +678,9 @@ def assign_clips_to_scenes(scenes, video_paths):
     """
     positioned_clips = []
     
-    # Track the current offset for each video file (for sub-cutting)
-    # Format: {segment_index: current_offset_in_seconds}
-    video_offsets = {}
+    # 🎯 STATEFUL PLAYBACK: Track the last used end timestamp for EACH video file path
+    # Format: {video_path_str: last_end_time_in_seconds}
+    video_cursors = {}
     
     for i, scene in enumerate(scenes):
         duration = scene['duration']
@@ -693,60 +696,46 @@ def assign_clips_to_scenes(scenes, video_paths):
             video_index = i % len(video_paths)
         
         video_path = video_paths[video_index]
+        video_path_str = str(video_path)  # Convert to string for dictionary key
         
         try:
-            clip = VideoFileClip(str(video_path))
+            clip = VideoFileClip(video_path_str)
             video_duration = clip.duration
             
-            # 🎯 JUMP CUT LOGIC: Track offset for sub-cuts
-            if segment_index not in video_offsets:
-                # First time using this video - start at 0.0s
-                video_offsets[segment_index] = 0.0
-            
-            current_offset = video_offsets[segment_index]
-            
-            # Determine if this is a sub-cut
-            is_subcut = scene.get('is_subcut', False)
-            
-            if is_subcut:
-                # 🎬 HYPER JUMP CUT: Skip forward 1.5s from previous end for visible movement
-                start_time = current_offset + 1.5
-                end_time = start_time + duration
-                
-                # If we exceed video duration, loop back to start or mirror
-                if end_time > video_duration:
-                    print(f"  🔁 Jump cut: video exhausted, looping from start")
-                    start_time = 0.0
-                    end_time = duration
-                    
-                    # Handle case where duration > video_duration (will loop in extraction)
-                    if end_time > video_duration:
-                        start_time = 0.0
-                        end_time = min(duration, video_duration)
-                # If we're approaching the end but can still fit with offset, continue
-                elif start_time > video_duration:
-                    # Loop back with offset
-                    start_time = start_time % video_duration
-                    end_time = start_time + duration
-                    if end_time > video_duration:
-                        start_time = 0.0
-                        end_time = duration
-                
-                # Update offset for next sub-cut
-                video_offsets[segment_index] = end_time
-                
-                subcut_idx = scene.get('subcut_index', 0)
-                total_subcuts = scene.get('total_subcuts', 1)
-                print(f"  ✂️ Sub-cut {subcut_idx+1}/{total_subcuts} (HYPER JUMP +1.5s): {video_path.name} [{start_time:.1f}s - {end_time:.1f}s]")
+            # 🎯 STATEFUL PLAYBACK LOGIC: Smart Assignment Based on Usage History
+            if video_path_str not in video_cursors:
+                # ✨ FIRST USE: Start at 0.0s (or small random offset for variety)
+                start_time = random.uniform(0.0, 0.3)  # 0-0.3s random start
+                video_cursors[video_path_str] = 0.0  # Initialize cursor
+                print(f"  🆕 First use of {video_path.name}: starting at {start_time:.2f}s")
             else:
-                # 🎯 STANDARD CUT: Start at 0.0s
-                start_time = 0.0
-                end_time = start_time + duration
+                # 🔄 SUBSEQUENT USE (SUB-CUT): Retrieve last end time and create jump cut
+                last_end_time = video_cursors[video_path_str]
+                start_time = last_end_time + 0.5  # Jump forward 0.5s for dynamic cut
                 
-                # Reset offset for this video
-                video_offsets[segment_index] = end_time
-                
-                print(f"  🎯 Standard scene: {video_path.name} (Scene {i}) [{start_time:.1f}s - {end_time:.1f}s]")
+                # 🔁 LOOPING SAFETY: If we exceed video duration, loop back to beginning
+                if start_time + duration > video_duration:
+                    print(f"  🔁 Video exhausted ({start_time + duration:.1f}s > {video_duration:.1f}s), looping to 0.0s")
+                    start_time = 0.0
+                    video_cursors[video_path_str] = 0.0  # Reset cursor
+                else:
+                    print(f"  🔄 Continuing {video_path.name}: jump cut from {last_end_time:.2f}s → {start_time:.2f}s (+0.5s)")
+            
+            end_time = start_time + duration
+            
+            # 🔁 ADDITIONAL SAFETY: Handle edge case where duration itself is too long
+            if end_time > video_duration:
+                if start_time == 0.0 and duration > video_duration:
+                    # Video is shorter than requested duration - will need to loop
+                    print(f"  ⚠️ Duration {duration:.2f}s exceeds video length {video_duration:.2f}s - will loop")
+                    end_time = duration  # Will be handled by looping logic below
+                else:
+                    # Clip to video end
+                    end_time = video_duration
+                    duration = end_time - start_time
+            
+            # 📹 UPDATE CURSOR: Track where we ended for next use of this video
+            video_cursors[video_path_str] = end_time
             
             # Extract subclip
             if video_duration >= end_time:
@@ -760,6 +749,9 @@ def assign_clips_to_scenes(scenes, video_paths):
             
             # Apply visual transformations
             subclip = resize_to_vertical(subclip)
+            
+            # Determine if this is a sub-cut (for visual effects)
+            is_subcut = scene.get('is_subcut', False)
             
             # 🚨 HOOK OPTIMIZATION: Extra aggressive effect for first scene (0-1.5s)
             if i == 0:
@@ -788,7 +780,7 @@ def assign_clips_to_scenes(scenes, video_paths):
             # CRITICAL: Do NOT close clips here - MoviePy needs them open for lazy evaluation
             # Closing clips breaks .fl() and other effects, causing 'NoneType' get_frame errors
             
-            print(f"  🎥 Scene {i+1}/{len(scenes)}: {duration:.2f}s - \"{scene['text'][:40]}...\"")
+            print(f"  🎥 Scene {i+1}/{len(scenes)}: {duration:.2f}s [{start_time:.2f}s-{end_time:.2f}s] - \"{scene['text'][:40]}...\"")
             
         except Exception as e:
             print(f"  ⚠️ Error processing {video_path}: {e}")

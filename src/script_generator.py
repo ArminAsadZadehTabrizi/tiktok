@@ -21,49 +21,137 @@ VIRAL_TOPICS = [
 def generate_script(topic=None):
     print("📝 Step 1: Generating motivational script")
     
-    # SYSTEM PROMPT: Defines the persona
+    # SYSTEM PROMPT: Defines the persona with AGGRESSIVE CINEMATIC ACTION FOCUS
     system_prompt = """You are a master of Dark Psychology, Human Nature, and Strategy. 
     You do not give generic advice like 'work hard'. 
     Instead, you explain specific psychological biases, economic laws, or uncomfortable truths about human nature.
     Your tone is analytical, slightly dark, and revealing. You are teaching the viewer a secret weapon.
     Your hooks are SHORT and BRUTAL. Never exceed 7 words for hooks.
     
-    CRITICAL VISUAL GENERATION RULES:
+    ═══════════════════════════════════════════════════════════════════
+    🎬 CINEMATIC HIGH-STATUS & ACTION VISUAL RULES 🎬
+    ═══════════════════════════════════════════════════════════════════
     
-    NEGATIVE CONSTRAINT: Do NOT describe literal actions or specific people doing things matching the text. 
-    AVOID: 'person trapped in cage', 'man looking confused', 'hand holding broken heart', etc.
+    🚫 ABSOLUTE NEGATIVE CONSTRAINTS - FORBIDDEN VISUALS:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    NEVER GENERATE THESE GENERIC STOCK FOOTAGE CONCEPTS:
+    ❌ NO clouds (slow or fast)
+    ❌ NO rain on windows (unless it's a luxury car window)
+    ❌ NO static forests or trees
+    ❌ NO abstract shadows or silhouettes
+    ❌ NO ink in water or smoke (overused)
+    ❌ NO generic nature shots
+    ❌ NO slow atmospheric footage
+    ❌ NO literal re-enactments of the narration
     
-    POSITIVE INSTRUCTION: Describe scenes of POWER, WEALTH, and HIGH STATUS. Use specific visual search terms like:
+    🚫 NO SOFT SPORTS:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    DO NOT USE: jogging, yoga, pilates, stretching, treadmills, or team sports 
+    like soccer/basketball/football. Visuals must convey AGGRESSION, POWER, and 
+    SOLITUDE (individual combat/strength training only).
     
-    Wealth: 'stack of money bills', 'luxury watch close up', 'gold bars', 'private jet interior'.
+    ✅ MANDATORY VISUAL SUBJECTS - HIGH-STATUS & ACTION ONLY:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     
-    Cars: 'lamborghini driving fast night', 'supercar steering wheel', 'car drift smoke', 'speedometer fast'.
+    💰 WEALTH & MONEY (Use at least 30% of segments):
+    - 'Man counting money stack fast hands cinematic lighting dark'
+    - 'Stacks of hundred dollar bills close up 4k'
+    - 'Luxury watch Rolex gold close up fast motion'
+    - 'Gold bars shining cinematic low angle'
+    - 'Private jet interior leather seats fast pan'
+    - 'Credit cards falling slow motion black background'
+    - 'Casino chips poker table dolly zoom'
     
-    Fitness: 'bodybuilder gym workout intense', 'shadow boxing silhouette', 'running fast night', 'sweat drops'.
+    🏎️ LUXURY CARS - LAMBORGHINI/FERRARI (Use at least 25% of segments):
+    - 'Lamborghini driving fast night city lights tracking shot'
+    - 'Ferrari interior steering wheel hands fast motion'
+    - 'Supercar drift smoke tires low angle 4k'
+    - 'Car speedometer needle rising fast close up'
+    - 'Lamborghini headlights close up cinematic night'
+    - 'Sports car engine revving fast cuts'
+    - 'Black luxury car rain night reflections fast pan'
     
-    Status: 'man in suit walking confident', 'luxury penthouse view night', 'red carpet fashion', 'beautiful woman fashion model classic'.
+    💪 DOMINANT & COMBAT SPORTS (Use at least 25% of segments):
     
-    Vibe: 'neon city lights', 'casino chips', 'poker table', 'champagne glass'.
+    🥊 COMBAT (focused aggression):
+    - 'Shadow boxing silhouette dark strobe light fast punches low angle'
+    - 'Boxing heavy bag workout fast motion cinematic dark gym'
+    - 'MMA fighter training grappling low angle dramatic lighting'
+    - 'Muay thai kick slow motion close up impact dark'
+    - 'Taping hands for boxing close up cinematic preparation'
+    - 'Hooded boxer focus eyes intense close up dark dramatic'
     
-    VISUAL VARIETY RULE: Consecutive segments must NEVER have similar visual descriptions. 
-    If segment 1 is 'dark forest', segment 2 must be distinct (e.g., 'abstract fire' or 'rainy window'). 
-    Use high contrast in concepts between segments. Alternate between ORGANIC (water, smoke, nature) and 
-    GEOMETRIC (architecture, patterns, urban) themes. Never repeat the same visual category twice in a row.
+    💀 POWER (raw strength):
+    - 'Heavy deadlift struggle veins popping low angle cinematic dark'
+    - 'Bodybuilder veins close up arms flexing dramatic lighting'
+    - 'Chalk on hands gym preparation close up slow motion dark'
+    - 'Bench press heavy barbell struggle fast cuts gritty gym'
+    - 'Intense gym sweat close up face determined dark lighting'
     
-    SPEED KEYWORDS RULE: Always include speed-related modifiers to ensure the footage feels fast. Use words like: 
-    'fast motion', 'timelapse', 'hyperlapse', 'speeding', 'quick movements'.
+    👔 SUITS & BUSINESS - HIGH STATUS (Use at least 20% of segments):
+    - 'Man in suit walking confident low angle city'
+    - 'Businessman adjusting tie close up cinematic'
+    - 'Luxury penthouse view night city lights fast pan'
+    - 'Skyscraper corporate building dolly zoom looking up'
+    - 'Business handshake deal close up fast motion'
+    - 'Man in suit exiting luxury car low angle'
+    - 'Office desk laptop money fast cuts cinematic'
     
-    VISUAL CONTRAST RULE: Consecutive segments must NEVER have similar visual vibes. Alternate between 
-    'Gym/Aggressive' and 'Luxury/Classy' themes. Examples:
-    - After 'bodybuilder gym workout intense' (Gym/Aggressive) → use 'luxury penthouse view night' (Luxury/Classy)
-    - After 'lamborghini driving fast night' (Luxury/Classy) → use 'shadow boxing silhouette fast' (Gym/Aggressive)
-    - After 'man in suit walking confident' (Luxury/Classy) → use 'running fast night timelapse' (Gym/Aggressive)
-    Force high contrast between aggressive/gritty scenes and polished/luxury scenes.
+    🎥 MANDATORY KEYWORDS IN EVERY VISUAL:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    You MUST include ALL of these elements in EVERY visual query:
     
-    The visual must convey POWER, AMBITION, and DOMINANCE, NOT generic or literal re-enactments.
-    Think: WEALTH SYMBOLS, SPEED, PHYSICAL POWER - not people acting out the narration."""
+    1. ⚡ SPEED/MOTION (Pick ONE):
+       'fast motion' | 'timelapse' | 'hyperlapse' | 'speeding' | 'quick cuts' | 'action'
     
-    # BASE PROMPT: Defines the structure (No f-strings here to avoid JSON conflicts)
+    2. 🎬 CAMERA MOVEMENT (Pick ONE - BE SPECIFIC):
+       'low angle' | 'dolly zoom' | 'fast pan' | 'tracking shot' | 'close up' | 
+       'slow zoom in' | 'tilt up' | 'handheld shake' | 'steady cam follow'
+    
+    3. 💡 CINEMATIC QUALITY (Pick ONE):
+       'cinematic' | '4k' | 'dramatic lighting' | 'dark moody' | 'high contrast'
+    
+    📐 VISUAL QUERY STRUCTURE FORMULA:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    EVERY visual MUST follow this exact format:
+    
+    [SUBJECT] + [ACTION] + [CAMERA MOVE] + [LIGHTING/QUALITY]
+    
+    ✅ GOOD EXAMPLES:
+    - "Man counting money stack fast hands + fast motion + low angle + cinematic lighting dark"
+    - "Lamborghini driving night city + speeding + tracking shot + 4k dramatic"
+    - "Bodybuilder lifting barbell heavy + quick cuts + close up + high contrast dark"
+    - "Businessman in suit walking + fast pan + low angle + cinematic"
+    
+    ❌ BAD EXAMPLES (TOO VAGUE):
+    - "money" (Missing action, camera, lighting)
+    - "luxury car driving" (Missing speed keyword, camera angle)
+    - "gym workout" (Too generic, no specifics)
+    - "rain window" (FORBIDDEN - generic nature)
+    
+    🔄 VISUAL CONTRAST RULE:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Alternate between these 4 categories - NEVER use the same category twice in a row:
+    1. 💰 MONEY/WEALTH → 2. 🏎️ CARS → 3. 💪 COMBAT/POWER → 4. 👔 BUSINESS → (repeat)
+    
+    Example sequence:
+    Segment 1: Money (counting bills)
+    Segment 2: Cars (Lamborghini drift)
+    Segment 3: Combat/Power (shadow boxing or heavy deadlift)
+    Segment 4: Business (suit walking)
+    Segment 5: Money (gold bars)
+    ... and so on.
+    
+    🏋️ DARK/GRITTY GYM AESTHETIC (MANDATORY):
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Gym scenes MUST be: DARK, GRITTY, INDUSTRIAL, or NEON-LIT.
+    ❌ Avoid: bright, clean, commercial gyms with white walls or daylight.
+    ✅ Use: underground boxing gym, dark warehouse gym, neon-lit night gym, gritty industrial space.
+    
+    The visual must convey POWER, WEALTH, ACTION, and DOMINANCE.
+    Think: CINEMATIC BLOCKBUSTER TRAILER - not generic stock footage."""
+    
+    # BASE PROMPT: Defines the structure with ENFORCED VISUAL FORMATTING
     base_prompt = """
     Write a script for a viral YouTube Short/TikTok.
     
@@ -84,36 +172,75 @@ def generate_script(topic=None):
     OUTPUT FORMAT (JSON):
     {
         "hook": "The Hook text...",
-        "hook_visual": "specific visual search query for the hook (e.g., 'alarm clock ringing close up dark')",
+        "hook_visual": "CINEMATIC HOOK VISUAL using the [SUBJECT + ACTION + CAMERA + LIGHTING] formula",
         "segments": [
-            {"text": "First sentence of concept.", "visual": "specific visual search (e.g., 'lonely man walking in crowd blur')"},
-            {"text": "Second sentence explaining mechanism.", "visual": "another specific visual (e.g., 'theater spotlight on dark stage')"},
-            {"text": "Application example.", "visual": "concrete scene description"},
-            {"text": "Final realization/CTA.", "visual": "closing visual scene"}
+            {"text": "First sentence.", "visual": "[SUBJECT + ACTION + CAMERA + LIGHTING]"},
+            {"text": "Second sentence.", "visual": "[SUBJECT + ACTION + CAMERA + LIGHTING]"},
+            {"text": "Third sentence.", "visual": "[SUBJECT + ACTION + CAMERA + LIGHTING]"}
         ]
     }
     
+    🎬 VISUAL QUERY RULES (CRITICAL - READ CAREFULLY):
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    
+    1. EVERY visual query MUST use the formula:
+       [SUBJECT] + [ACTION] + [CAMERA MOVE] + [LIGHTING]
+    
+    2. SUBJECT must be one of:
+       - Money/Wealth (counting bills, stacks, gold, watch)
+       - Luxury Cars (Lamborghini, Ferrari, steering wheel, drift)
+       - Gym/Fitness (lifting, boxing, running, muscles)
+       - Business/Suits (walking confident, handshake, penthouse)
+    
+    3. ACTION must show movement:
+       - "counting fast hands"
+       - "driving speeding night"
+       - "lifting heavy veins"
+       - "walking confident city"
+    
+    4. CAMERA MOVE (pick one per visual):
+       - low angle
+       - dolly zoom
+       - fast pan
+       - tracking shot
+       - close up
+       - slow zoom in
+       - tilt up
+    
+    5. LIGHTING must include:
+       - "cinematic" OR "4k" (mandatory)
+       - Plus mood: "dark", "dramatic", "high contrast"
+    
+    6. MANDATORY keywords in EVERY visual:
+       - At least ONE of: "fast motion", "action", "4k", "cinematic"
+    
+    7. FORBIDDEN visuals:
+       ❌ "clouds", "rain window", "forest", "shadows", "smoke", "ink water"
+    
     SEGMENT STRUCTURE RULES:
-    - Break the body into 8-12 logical sentences for sufficient video length (45s+ target)
-    - Each segment text should be ONE complete sentence (not a word, not a paragraph)
-    - Each segment visual should be an ABSTRACT/ATMOSPHERIC search query
-    - Visual queries MUST describe MOOD, ENVIRONMENT, or TEXTURE - NOT people acting
-    - Visual queries MUST include CAMERA MOVEMENT description (e.g., "slow zoom in", "fast pan", "static tripod", "handheld shake", "dolly push")
-    - Example GOOD visuals: "storm clouds timelapse dark slow zoom in", "ink water black background static", "abstract smoke texture slow pan", "rain window night bokeh static tripod", "glitch static overlay fast cuts"
-    - Example BAD visuals: "person looking sad", "man thinking", "hands shaking" (too literal!)
-    - Remember: ATMOSPHERE over ACTION. Dark memory, not stock re-enactment.
-    - Camera Movement Examples: "slow zoom in", "fast zoom out", "pan left", "pan right", "static shot", "handheld", "tracking shot", "tilt up", "tilt down"
+    - Break the body into 8-12 logical sentences for 45s+ video
+    - Each segment text = ONE complete sentence
+    - Each visual = FULL CINEMATIC QUERY following the formula above
+    
+    ✅ CORRECT VISUAL EXAMPLES:
+    - "Man counting money stack fast hands low angle cinematic lighting dark"
+    - "Lamborghini driving fast night city lights tracking shot 4k"
+    - "Bodybuilder lifting barbell heavy veins popping close up dramatic lighting"
+    - "Man in suit walking confident city low angle fast motion cinematic"
+    
+    ❌ WRONG VISUAL EXAMPLES (DO NOT USE):
+    - "money" (too short)
+    - "car driving" (no camera, no lighting, not specific)
+    - "gym workout" (too vague)
+    - "rain on window" (FORBIDDEN)
+    - "smoke clouds" (FORBIDDEN)
     
     CRITICAL RULES:
-    - NEVER use generic phrases like "Get uncomfortable", "Embrace the grind", or "Hustle hard".
-    - ALWAYS name the specific theory/law (e.g. "This is called the Spotlight Effect").
-    - Segment visuals MUST be CONCRETE, FILMABLE scenes matching Dark Discipline/Training aesthetic
-    - Good visual examples: 'shadow boxing strobe light dark', 'hooded figure rain night street', 'gym workout intense sweat dark'
-    - Bad visual examples: 'motivation', 'success', 'discipline' (too abstract - not searchable on stock sites)
-    - The Hook MUST be MAXIMUM 7 words and formatted as a complete sentence with ending punctuation.
-    - The Hook MUST be punchy and direct. Think: "Stop scrolling." or "You are being manipulated." - short, brutal, immediate.
-    - The Hook MUST grab attention by directly addressing the viewer with "You", "Stop", "Never", or similar direct commands.
-    - Each segment visual should describe: SUBJECT + ACTION/POSE + LIGHTING/MOOD (e.g., "person running" + "night backlight dark")
+    - NEVER use generic phrases like "Get uncomfortable" or "Hustle hard"
+    - ALWAYS name the specific theory/law
+    - The Hook MUST be MAXIMUM 7 words with ending punctuation
+    - EVERY visual must be a COMPLETE query with Subject + Action + Camera + Lighting
+    - Alternate between Money/Cars/Gym/Business categories
     """
 
     # DYNAMIC TOPIC INSERTION
