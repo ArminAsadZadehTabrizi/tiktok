@@ -10,12 +10,12 @@ import json
 import random
 import config
 
-def apply_high_contrast_filter(clip, contrast=1.2, saturation=0.4):
+def apply_high_contrast_filter(clip, contrast=1.2, saturation=0.6):
     """
-    🎬 DARK CINEMATIC AESTHETIC: Desaturated & Gritty Filter
-    Maintains contrast (1.2x) but drastically reduces saturation (0.4x) and lowers brightness.
-    Creates a dark, desaturated, cinematic look that hides the "stock footage" appearance.
-    Perfect for Dark Psychology / Sigma theme.
+    🎬 DARK CINEMATIC AESTHETIC: Desaturated & Gritty Filter (Tate Aesthetic)
+    Maintains contrast (1.2x) with moderate desaturation (0.6x = -40%) for muted but visible colors.
+    Creates a dark, cinematic look with crushed blacks while keeping subtle color information.
+    Perfect for Dark Psychology / Tate / Mafia theme.
     """
     def enhance(image):
         # Convert to float for processing
@@ -762,20 +762,24 @@ def assign_clips_to_scenes(scenes, video_paths):
                 print(f"  🎯 HOOK SCENE: Applying aggressive flash zoom")
                 subclip = apply_flash_zoom(subclip, flash_duration=0.3, zoom_factor=1.15)
                 subclip = subclip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
-                subclip = apply_high_contrast_filter(subclip, contrast=1.2, saturation=0.0)
+                subclip = apply_high_contrast_filter(subclip)  # Use defaults: contrast=1.2, saturation=0.6
             elif is_subcut:
-                # 🎬 SUB-CUT EFFECT: Apply "Zoom Jump" for dynamic pacing
-                # Lighter zoom for sub-cuts to differentiate from main scenes
-                print(f"  ✂️ SUB-CUT: Applying light zoom jump")
-                subclip = apply_ken_burns_zoom(subclip, zoom_factor=1.15)  # Lighter zoom
+                # 🎬 SUB-CUT FIX: Static 115% resize (NO zoom) to prevent reset artifacts
+                # Creates "Jump Cut" effect: Wide → Static Close-up (no jarring motion reset)
+                print(f"  ✂️ SUB-CUT: Applying static 115% resize (no zoom)")
+                # Calculate static 115% crop
+                w, h = subclip.size
+                new_w = int(w * 1.15)
+                new_h = int(h * 1.15)
+                subclip = subclip.resize(newsize=(new_w, new_h))
                 subclip = subclip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
-                subclip = apply_high_contrast_filter(subclip, contrast=1.2, saturation=0.0)
+                subclip = apply_high_contrast_filter(subclip)  # Use defaults: contrast=1.2, saturation=0.6
             else:
                 # Standard scenes: Ken Burns zoom for cinematic motion
                 print(f"  🎬 STANDARD SCENE: Applying Ken Burns zoom")
                 subclip = apply_ken_burns_zoom(subclip, zoom_factor=1.25)
                 subclip = subclip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
-                subclip = apply_high_contrast_filter(subclip, contrast=1.2, saturation=0.0)
+                subclip = apply_high_contrast_filter(subclip)  # Use defaults: contrast=1.2, saturation=0.6
             
             subclip = subclip.without_audio()
             subclip = subclip.set_duration(duration)

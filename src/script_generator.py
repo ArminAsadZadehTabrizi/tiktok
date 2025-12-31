@@ -44,118 +44,105 @@ def generate_script(topic=None):
     ❌ NO slow atmospheric/moody footage
     ❌ NO literal re-enactments of the narration
     
-    🎯 YOU MUST ONLY USE THESE 4 HIGH-STATUS CATEGORIES:
-    1. 💰 WEALTH: Money counting, gold, watches, luxury items
-    2. 🏎️ LUXURY CARS: Lamborghini, Ferrari, supercars, night drives
-    3. 💪 COMBAT/PHYSIQUE: Boxing, gym lifting, combat training, veins
-    4. 👔 HIGH-STATUS BUSINESS: Suits, skylines, corporate power, handshakes
     
-    🚫 NO SOFT SPORTS:
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    DO NOT USE: jogging, yoga, pilates, stretching, treadmills, or team sports 
-    like soccer/basketball/football. Visuals must convey AGGRESSION, POWER, and 
-    SOLITUDE (individual combat/strength training only).
-    
-    ✅ MANDATORY VISUAL SUBJECTS - HIGH-STATUS & ACTION ONLY:
+    🎯 YOU MUST ONLY USE THESE 3 TATE/MAFIA AESTHETIC CATEGORIES:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     
-    💰 WEALTH & MONEY (Use at least 30% of segments):
-    - 'Man counting money stack fast hands cinematic lighting dark'
-    - 'Stacks of hundred dollar bills close up 4k'
-    - 'Luxury watch Rolex gold close up fast motion'
-    - 'Gold bars shining cinematic low angle'
-    - 'Private jet interior leather seats fast pan'
-    - 'Credit cards falling slow motion black background'
-    - 'Casino chips poker table dolly zoom'
+    A. 💰🔫 WEALTH/MAFIA (Use 40% of segments - Luxury, Power, Dominance):
+    - 'Supercar night drive fast tracking shot dark cinematic moody'
+    - 'Lamborghini headlights close up night moody 4k'
+    - 'Man in suit smoking cigar low angle dark dramatic cinematic'
+    - 'Private jet interior luxury leather seats fast pan cinematic'
+    - 'Counting money dark hands close up fast motion dramatic lighting'
+    - 'Poker chips stack close up casino dark cinematic moody'
+    - 'Gold watch close up wrist luxury dark moody 4k'
+    - 'Luxury car interior leather steering wheel night cinematic'
+    - 'Man suit walking confident night city low angle dark'
     
-    🏎️ LUXURY CARS - LAMBORGHINI/FERRARI (Use at least 25% of segments):
-    - 'Lamborghini driving fast night city lights tracking shot'
-    - 'Ferrari interior steering wheel hands fast motion'
-    - 'Supercar drift smoke tires low angle 4k'
-    - 'Car speedometer needle rising fast close up'
-    - 'Lamborghini headlights close up cinematic night'
-    - 'Sports car engine revving fast cuts'
-    - 'Black luxury car rain night reflections fast pan'
+    B. 🥊💪 COMBAT/GRIND (Use 35% of segments - Aggression, Strength, Hustle):
+    - 'Shadow boxing dark gym silhouette fast punches low angle moody'
+    - 'Boxing training intense heavy bag fast motion dark cinematic'
+    - 'Man sprinting night city rain fast tracking shot dramatic'
+    - 'Hoodie workout gym dark close up intense moody lighting'
+    - 'Sweat face gym close up struggle dark dramatic 4k'
+    - 'Heavy deadlift veins dark gym low angle cinematic'
+    - 'Hooded fighter shadow dark intense eyes close up moody'
+    - 'Running stairs night fast motion dark city cinematic'
     
-    💪 DOMINANT & COMBAT SPORTS (Use at least 25% of segments):
+    C. 🗿🐺 STOIC/PHILOSOPHY (Use 25% of segments - Wisdom, Nature, Timeless):
+    - 'Greek statue dark museum close up marble cinematic moody'
+    - 'Marble sculpture face close up dark dramatic lighting'
+    - 'Lion walking savanna dusk slow motion cinematic 4k'
+    - 'Wolf pack forest night dark moody cinematic'
+    - 'Stormy ocean waves dark dramatic sky 4k slow motion'
+    - 'Chess board dark pieces moving close up cinematic'
+    - 'Ancient Roman bust marble museum dark moody 4k'
+    - 'Eagle flying mountain sunset cinematic slow motion dark'
     
-    🥊 COMBAT (focused aggression):
-    - 'Shadow boxing silhouette dark strobe light fast punches low angle'
-    - 'Boxing heavy bag workout fast motion cinematic dark gym'
-    - 'MMA fighter training grappling low angle dramatic lighting'
-    - 'Muay thai kick slow motion close up impact dark'
-    - 'Taping hands for boxing close up cinematic preparation'
-    - 'Hooded boxer focus eyes intense close up dark dramatic'
+    🔄 3-CATEGORY ROTATION RULE (MANDATORY):
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Rotate through categories - NEVER use the same category twice in a row:
+    1. WEALTH/MAFIA → 2. COMBAT/GRIND → 3. STOIC/PHILOSOPHY → (repeat)
     
-    💀 POWER (raw strength):
-    - 'Heavy deadlift struggle veins popping low angle cinematic dark'
-    - 'Bodybuilder veins close up arms flexing dramatic lighting'
-    - 'Chalk on hands gym preparation close up slow motion dark'
-    - 'Bench press heavy barbell struggle fast cuts gritty gym'
-    - 'Intense gym sweat close up face determined dark lighting'
+    Example sequence (10 segments):
+    Segment 1: WEALTH/MAFIA (Lamborghini night)
+    Segment 2: COMBAT/GRIND (Shadow boxing)
+    Segment 3: STOIC/PHILOSOPHY (Greek statue)
+    Segment 4: WEALTH/MAFIA (Man in suit smoking)
+    Segment 5: COMBAT/GRIND (Heavy deadlift)
+    Segment 6: STOIC/PHILOSOPHY (Wolf pack)
+    Segment 7: WEALTH/MAFIA (Poker chips)
+    Segment 8: COMBAT/GRIND (Hooded fighter)
+    Segment 9: STOIC/PHILOSOPHY (Stormy ocean)
+    Segment 10: WEALTH/MAFIA (Private jet)
     
-    👔 SUITS & BUSINESS - HIGH STATUS (Use at least 20% of segments):
-    - 'Man in suit walking confident low angle city'
-    - 'Businessman adjusting tie close up cinematic'
-    - 'Luxury penthouse view night city lights fast pan'
-    - 'Skyscraper corporate building dolly zoom looking up'
-    - 'Business handshake deal close up fast motion'
-    - 'Man in suit exiting luxury car low angle'
-    - 'Office desk laptop money fast cuts cinematic'
+    ⚡ MANDATORY: COMBINE WITH "DARK CINEMATIC" OR "MOODY":
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    EVERY visual query MUST include at least ONE of these mood keywords:
+    - "dark cinematic"
+    - "dark moody"
+    - "moody 4k"
+    - "dark dramatic"
+    - "cinematic moody"
     
     🎥 MANDATORY KEYWORDS IN EVERY VISUAL:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     You MUST include ALL of these elements in EVERY visual query:
     
     1. ⚡ SPEED/MOTION (Pick ONE):
-       'fast motion' | 'timelapse' | 'hyperlapse' | 'speeding' | 'quick cuts' | 'action'
+       'fast motion' | 'slow motion' | 'tracking shot' | 'fast' | 'quick' | 'action'
     
     2. 🎬 CAMERA MOVEMENT (Pick ONE - BE SPECIFIC):
-       'low angle' | 'dolly zoom' | 'fast pan' | 'tracking shot' | 'close up' | 
-       'slow zoom in' | 'tilt up' | 'handheld shake' | 'steady cam follow'
+       'low angle' | 'close up' | 'tracking shot' | 'fast pan' | 
+       'slow zoom in' | 'tilt up' | 'dolly zoom'
     
-    3. 💡 CINEMATIC QUALITY (Pick ONE):
-       'cinematic' | '4k' | 'dramatic lighting' | 'dark moody' | 'high contrast'
+    3. 💡 CINEMATIC QUALITY (MANDATORY):
+       'dark cinematic' | 'dark moody' | 'moody 4k' | 'dark dramatic' | 'cinematic moody'
     
     📐 VISUAL QUERY STRUCTURE FORMULA:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     EVERY visual MUST follow this exact format:
     
-    [SUBJECT] + [ACTION] + [CAMERA MOVE] + [LIGHTING/QUALITY]
+    [SUBJECT] + [ACTION] + [CAMERA MOVE] + [DARK CINEMATIC/MOODY]
     
-    ✅ GOOD EXAMPLES:
-    - "Man counting money stack fast hands + fast motion + low angle + cinematic lighting dark"
-    - "Lamborghini driving night city + speeding + tracking shot + 4k dramatic"
-    - "Bodybuilder lifting barbell heavy + quick cuts + close up + high contrast dark"
-    - "Businessman in suit walking + fast pan + low angle + cinematic"
+    ✅ GOOD EXAMPLES (TATE AESTHETIC):
+    - "Man in suit smoking cigar slow motion low angle dark dramatic cinematic"
+    - "Shadow boxing dark gym fast punches tracking shot moody 4k"
+    - "Greek statue marble close up face tilt up dark cinematic moody"
+    - "Lamborghini driving night speeding city lights tracking shot 4k dark"
+    - "Heavy deadlift veins popping struggle close up dark dramatic"
+    - "Wolf eyes close up night forest dark cinematic moody"
     
-    ❌ BAD EXAMPLES (TOO VAGUE):
+    ❌ BAD EXAMPLES (TOO VAGUE OR FORBIDDEN):
     - "money" (Missing action, camera, lighting)
-    - "luxury car driving" (Missing speed keyword, camera angle)
+    - "car driving" (Missing dark/moody keywords)
     - "gym workout" (Too generic, no specifics)
-    - "rain window" (FORBIDDEN - generic nature)
+    - "rain window" (FORBIDDEN)
+    - "smoke clouds" (FORBIDDEN)
+    - "tree forest" (FORBIDDEN - use wolves/animals in forest instead)
     
-    🔄 VISUAL CONTRAST RULE:
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    Alternate between these 4 categories - NEVER use the same category twice in a row:
-    1. 💰 MONEY/WEALTH → 2. 🏎️ CARS → 3. 💪 COMBAT/POWER → 4. 👔 BUSINESS → (repeat)
-    
-    Example sequence:
-    Segment 1: Money (counting bills)
-    Segment 2: Cars (Lamborghini drift)
-    Segment 3: Combat/Power (shadow boxing or heavy deadlift)
-    Segment 4: Business (suit walking)
-    Segment 5: Money (gold bars)
-    ... and so on.
-    
-    🏋️ DARK/GRITTY GYM AESTHETIC (MANDATORY):
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    Gym scenes MUST be: DARK, GRITTY, INDUSTRIAL, or NEON-LIT.
-    ❌ Avoid: bright, clean, commercial gyms with white walls or daylight.
-    ✅ Use: underground boxing gym, dark warehouse gym, neon-lit night gym, gritty industrial space.
-    
-    The visual must convey POWER, WEALTH, ACTION, and DOMINANCE.
-    Think: CINEMATIC BLOCKBUSTER TRAILER - not generic stock footage."""
+    The visual must convey POWER, WEALTH, WISDOM, and DOMINANCE.
+    Think: TATE LIFESTYLE meets DARK PHILOSOPHER - not generic stock footage."""
     
     # BASE PROMPT: Defines the structure with ENFORCED VISUAL FORMATTING
     base_prompt = """
@@ -228,11 +215,13 @@ def generate_script(topic=None):
     - Each segment text = ONE complete sentence
     - Each visual = FULL CINEMATIC QUERY following the formula above
     
-    ✅ CORRECT VISUAL EXAMPLES:
-    - "Man counting money stack fast hands low angle cinematic lighting dark"
-    - "Lamborghini driving fast night city lights tracking shot 4k"
-    - "Bodybuilder lifting barbell heavy veins popping close up dramatic lighting"
-    - "Man in suit walking confident city low angle fast motion cinematic"
+    ✅ CORRECT VISUAL EXAMPLES (3-CATEGORY TATE AESTHETIC):
+    - "Man in suit smoking cigar slow motion low angle dark dramatic cinematic"
+    - "Shadow boxing dark gym fast punches tracking shot moody 4k"
+    - "Greek statue marble close up face tilt up dark cinematic moody"
+    - "Lamborghini driving night speeding city lights tracking shot 4k dark"
+    - "Heavy deadlift veins popping struggle close up dark dramatic"
+    - "Wolf eyes close up night forest dark cinematic moody"
     
     ❌ WRONG VISUAL EXAMPLES (DO NOT USE):
     - "money" (too short)
@@ -240,13 +229,14 @@ def generate_script(topic=None):
     - "gym workout" (too vague)
     - "rain on window" (FORBIDDEN)
     - "smoke clouds" (FORBIDDEN)
+    - "tree forest" (FORBIDDEN - use wolves/animals in forest instead)
     
     CRITICAL RULES:
     - NEVER use generic phrases like "Get uncomfortable" or "Hustle hard"
     - ALWAYS name the specific theory/law
     - The Hook MUST be MAXIMUM 7 words with ending punctuation
     - EVERY visual must be a COMPLETE query with Subject + Action + Camera + Lighting
-    - Alternate between Money/Cars/Gym/Business categories
+    - Rotate through the 3 categories: WEALTH/MAFIA → COMBAT/GRIND → STOIC/PHILOSOPHY
     """
 
     # DYNAMIC TOPIC INSERTION
