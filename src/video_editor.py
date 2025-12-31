@@ -343,13 +343,14 @@ def add_hook_sfx(audio_clip):
 
 def create_rhythmic_scenes(word_timings, total_duration, max_scene_duration=2.0):
     """
-    🎬 HYPER-EDITING: Create scenes with aggressive time caps for high retention.
-    Forces cuts every 2.0 seconds maximum, regardless of sentence boundaries.
+    🎬 HYBRID PACING: Dynamic scene cuts based on timestamp (Gym/Hustle Style).
+    - HOOK (0-5s): Aggressive 1.0s cuts to grab attention
+    - BODY (>5s): Standard 2.0s cuts for digestible pacing
     
     Args:
         word_timings: List of {'word': str, 'start': float, 'end': float}
         total_duration: Total audio duration for validation
-        max_scene_duration: Maximum duration per scene (default 2.0s for dopamine pacing)
+        max_scene_duration: Base maximum duration (dynamically adjusted by timestamp)
     
     Returns:
         List of scenes: [{'start_time': float, 'end_time': float, 'duration': float, 'text': str}]
@@ -365,13 +366,19 @@ def create_rhythmic_scenes(word_timings, total_duration, max_scene_duration=2.0)
     for i, word_data in enumerate(word_timings):
         word = word_data['word']
         current_scene_words.append(word)
+        current_time = word_data['end']
+        
+        # 🎬 HYBRID PACING: Dynamic threshold based on timestamp
+        # Phase 1 (Hook, 0-5s): Fast/Aggressive 1.0s cuts
+        # Phase 2 (Body, >5s): Standard 2.0s cuts
+        dynamic_max_duration = 1.0 if current_time < 5.0 else 2.0
         
         # Calculate current scene duration
         current_duration = word_data['end'] - scene_start_time
         
         # Force cut conditions:
-        # 1. Duration exceeds max threshold (HARD PACING)
-        should_cut_duration = current_duration >= max_scene_duration
+        # 1. Duration exceeds DYNAMIC threshold (HYBRID PACING)
+        should_cut_duration = current_duration >= dynamic_max_duration
         
         # 2. Natural sentence ending (if under threshold)
         is_sentence_end = word.rstrip().endswith(('.', '?', '!'))
@@ -392,18 +399,22 @@ def create_rhythmic_scenes(word_timings, total_duration, max_scene_duration=2.0)
                 'text': scene_text
             })
             
-            # Log cut type for debugging
+            # Log cut type for debugging with phase info
+            phase = "HOOK" if scene_start_time < 5.0 else "BODY"
             if should_cut_duration:
-                print(f"  ⚡ HARD CUT (2.0s max): \"{scene_text[:30]}...\" ({scene_duration:.2f}s)")
+                print(f"  ⚡ {phase} CUT ({dynamic_max_duration:.1f}s max): \"{scene_text[:30]}...\" ({scene_duration:.2f}s)")
             elif scene_duration < 1.0:
-                print(f"  ⚡ Fast cut: \"{scene_text[:30]}...\" ({scene_duration:.2f}s)")
+                print(f"  ⚡ Fast {phase} cut: \"{scene_text[:30]}...\" ({scene_duration:.2f}s)")
             
             # Reset for next scene
             current_scene_words = []
             if i < len(word_timings) - 1:
                 scene_start_time = word_timings[i + 1]['start']
     
-    print(f"  📊 Hyper-Edit: {len(scenes)} scenes from {len(word_timings)} words (max {max_scene_duration}s each)")
+    # Count hook vs body scenes for logging
+    hook_scenes = sum(1 for s in scenes if s['start_time'] < 5.0)
+    body_scenes = len(scenes) - hook_scenes
+    print(f"  📊 Hybrid-Edit: {len(scenes)} scenes total (HOOK: {hook_scenes}x 1.0s | BODY: {body_scenes}x 2.0s)")
     return scenes
 
 
@@ -662,9 +673,9 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
                 sfx_path = random.choice(sfx_files)
                 sfx = AudioFileClip(str(sfx_path))
                 
-                # 🎬 TIGHTER OFFSET: Start SFX 0.1s BEFORE the visual cut
-                # Tighter timing for fast-paced edits - peak aligns with the cut
-                start_time = max(0, scene_end_time - 0.1)
+                # 🎬 MICRO-SYNC: Start SFX 0.05s BEFORE the visual cut
+                # Ultra-tight timing creates seamless "glue" effect without perceptible gap
+                start_time = max(0, scene_end_time - 0.05)
                 
                 # Trim SFX if longer than 1.0s for quick punchy effect
                 sfx_duration = min(sfx.duration, 1.0)
@@ -673,13 +684,13 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
                 # 🎚️ SOFT FADES: Apply tight fades to prevent clicking
                 sfx = sfx.audio_fadein(0.1).audio_fadeout(0.1)
                 
-                # Very low volume (0.2x) - subtle texture, felt not heard
-                sfx = sfx.volumex(0.2)
+                # Barely audible volume (0.15x) - felt, not heard
+                sfx = sfx.volumex(0.15)
                 
                 sfx = sfx.set_start(start_time)
                 
                 transition_audio_clips.append(sfx)
-                print(f"    🎚️ Transition {i+1}: {sfx_path.name} at {start_time:.2f}s (pre-roll: -0.1s)")
+                print(f"    🎚️ Transition {i+1}: {sfx_path.name} at {start_time:.2f}s (micro-sync: -0.05s)")
             except Exception as e:
                 print(f"  ⚠️ Failed to add transition SFX at {scene_end_time:.2f}s: {e}")
     
