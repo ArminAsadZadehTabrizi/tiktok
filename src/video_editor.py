@@ -371,14 +371,14 @@ def create_rhythmic_scenes(word_timings, total_duration, max_scene_duration=2.0)
         # 🎬 HYBRID PACING: Dynamic threshold based on timestamp
         # Phase 1 (Hook, 0-5s): Fast/Aggressive 1.0s cuts
         # Phase 2 (Body, >5s): Standard 2.0s cuts
-        dynamic_max_duration = 1.0 if current_time < 5.0 else 2.0
+        current_max_duration = 1.0 if word_data['start'] < 5.0 else 2.0
         
         # Calculate current scene duration
         current_duration = word_data['end'] - scene_start_time
         
         # Force cut conditions:
         # 1. Duration exceeds DYNAMIC threshold (HYBRID PACING)
-        should_cut_duration = current_duration >= dynamic_max_duration
+        should_cut_duration = current_duration >= current_max_duration
         
         # 2. Natural sentence ending (if under threshold)
         is_sentence_end = word.rstrip().endswith(('.', '?', '!'))
@@ -402,7 +402,7 @@ def create_rhythmic_scenes(word_timings, total_duration, max_scene_duration=2.0)
             # Log cut type for debugging with phase info
             phase = "HOOK" if scene_start_time < 5.0 else "BODY"
             if should_cut_duration:
-                print(f"  ⚡ {phase} CUT ({dynamic_max_duration:.1f}s max): \"{scene_text[:30]}...\" ({scene_duration:.2f}s)")
+                print(f"  ⚡ {phase} CUT ({current_max_duration:.1f}s max): \"{scene_text[:30]}...\" ({scene_duration:.2f}s)")
             elif scene_duration < 1.0:
                 print(f"  ⚡ Fast {phase} cut: \"{scene_text[:30]}...\" ({scene_duration:.2f}s)")
             
@@ -684,7 +684,7 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
                 # 🎚️ SOFT FADES: Apply tight fades to prevent clicking
                 sfx = sfx.audio_fadein(0.1).audio_fadeout(0.1)
                 
-                # Barely audible volume (0.15x) - felt, not heard
+                # 🎚️ MICRO-SYNC VOLUME: Barely audible (0.15x) - felt, not heard
                 sfx = sfx.volumex(0.15)
                 
                 sfx = sfx.set_start(start_time)
