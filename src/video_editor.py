@@ -341,11 +341,121 @@ def add_hook_sfx(audio_clip):
         return audio_clip
 
 
+def create_semantic_scenes(script_data, word_timings):
+    """
+    🎬 SEMANTIC VISUAL STORYTELLING: Create scenes based on script segment boundaries.
+    Maps each segment from script_data to its corresponding word timings to find exact cut points.
+    
+    This ensures that:
+    - segment_0.mp4 plays for the entire duration of segments[0].text
+    - segment_1.mp4 plays for the entire duration of segments[1].text
+    - Visual cuts happen EXACTLY when the topic/sentence changes
+    
+    Args:
+        script_data: Dict containing 'hook' and 'segments' (list of {'text': str, 'visual': str})
+        word_timings: List of {'word': str, 'start': float, 'end': float} from audio generator
+    
+    Returns:
+        List of scenes: [{'start_time': float, 'end_time': float, 'duration': float, 
+                          'text': str, 'segment_index': int}]
+        or None if matching fails
+    """
+    if not word_timings or len(word_timings) == 0:
+        print("  ⚠️ No word timings available for semantic scene creation")
+        return None
+    
+    if 'segments' not in script_data or len(script_data['segments']) == 0:
+        print("  ⚠️ No segments found in script_data - cannot create semantic scenes")
+        return None
+    
+    print(f"  🎯 Creating semantic scenes from {len(script_data['segments'])} segments...")
+    
+    # Helper function to normalize text for matching
+    def normalize(text):
+        """Remove punctuation and lowercase for matching"""
+        import re
+        text = text.lower()
+        text = re.sub(r'[.,!?;:\'"()]', '', text)
+        return text.split()
+    
+    scenes = []
+    word_index = 0  # Current position in word_timings
+    
+    # Process each segment
+    for segment_idx, segment in enumerate(script_data['segments']):
+        segment_text = segment['text']
+        segment_words = normalize(segment_text)
+        
+        if len(segment_words) == 0:
+            print(f"  ⚠️ Segment {segment_idx} has no words, skipping")
+            continue
+        
+        # Find the start time: match the first word of this segment
+        matched_count = 0
+        scene_start_idx = word_index
+        scene_end_idx = word_index
+        
+        # Try to match all words in this segment sequentially
+        while word_index < len(word_timings) and matched_count < len(segment_words):
+            timing_word = normalize(word_timings[word_index]['word'])
+            
+            # timing_word is a list after normalize(), get first element
+            if len(timing_word) > 0:
+                timing_word = timing_word[0]
+            else:
+                word_index += 1
+                continue
+            
+            expected_word = segment_words[matched_count]
+            
+            if timing_word == expected_word:
+                if matched_count == 0:
+                    scene_start_idx = word_index
+                matched_count += 1
+                scene_end_idx = word_index
+                word_index += 1
+            else:
+                # Mismatch detected - this could be due to TTS variation
+                # Try to skip ahead in word_timings to re-sync
+                word_index += 1
+        
+        # Verify we matched all words
+        if matched_count == len(segment_words):
+            # Successfully matched this segment
+            start_time = word_timings[scene_start_idx]['start']
+            end_time = word_timings[scene_end_idx]['end']
+            duration = end_time - start_time
+            
+            scenes.append({
+                'start_time': start_time,
+                'end_time': end_time,
+                'duration': duration,
+                'text': segment_text,
+                'segment_index': segment_idx  # NEW: Track which segment this scene represents
+            })
+            
+            print(f"  🎯 Segment {segment_idx}: \"{segment_text[:40]}...\" ({duration:.2f}s, {start_time:.2f}-{end_time:.2f}s)")
+        else:
+            print(f"  ⚠️ Failed to match segment {segment_idx}: only matched {matched_count}/{len(segment_words)} words")
+            print(f"     Segment text: \"{segment_text[:50]}...\"")
+            # Continue to next segment anyway
+    
+    if len(scenes) == 0:
+        print("  ❌ Semantic scene matching failed - no scenes created")
+        return None
+    
+    print(f"  ✅ Created {len(scenes)} semantic scenes (1:1 with segments)")
+    return scenes
+
+
 def create_rhythmic_scenes(word_timings, total_duration, max_scene_duration=2.0):
     """
     🎬 HYBRID PACING: Dynamic scene cuts based on timestamp (Gym/Hustle Style).
     - HOOK (0-5s): Aggressive 1.0s cuts to grab attention
     - BODY (>5s): Standard 2.0s cuts for digestible pacing
+    
+    ⚠️ NOTE: This function is BYPASSED in favor of create_semantic_scenes() for semantic alignment.
+    It remains here as a fallback option if semantic alignment is not available.
     
     Args:
         word_timings: List of {'word': str, 'start': float, 'end': float}
@@ -510,9 +620,14 @@ def assign_clips_to_scenes(scenes, video_paths):
     for i, scene in enumerate(scenes):
         duration = scene['duration']
         
-        # 🎯 SEMANTIC ALIGNMENT: Pick video by scene index (Scene N → Video N)
-        # Use modulo to wrap if we have more scenes than videos
-        video_index = i % len(video_paths)
+        # 🎯 SEMANTIC ALIGNMENT: Use segment_index from scene for perfect 1:1 mapping
+        # If scene has 'segment_index', use it directly; otherwise fall back to scene index
+        if 'segment_index' in scene:
+            video_index = scene['segment_index'] % len(video_paths)
+        else:
+            # Fallback for non-semantic scenes (rhythmic/fixed duration)
+            video_index = i % len(video_paths)
+        
         video_path = video_paths[video_index]
         
         try:
@@ -650,13 +765,18 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
         word_timings = get_smart_timings(script_data, audio.duration)
         use_exact = False
         
-    # 2. VISUALS - HYPER-EDITING WITH RHYTHMIC SCENES
-    print(f"  🎬 Creating rhythmic scenes (max 2.0s each) for high retention...")
+    # 2. VISUALS - SEMANTIC SCENE ALIGNMENT
+    print(f"  🎯 Creating semantic scenes aligned with script segments...")
     
-    # Create scenes with aggressive 2.0s pacing
-    scenes = create_rhythmic_scenes(word_timings, main_duration, max_scene_duration=2.0)
+    # Try semantic scene creation first (matches segments to word timings)
+    scenes = create_semantic_scenes(script_data, word_timings)
     
-    # Fallback to fixed duration if no word_timings available
+    # Fallback 1: If semantic fails but we have word_timings, use rhythmic scenes
+    if scenes is None and word_timings:
+        print(f"  ⚠️ Semantic alignment failed - falling back to rhythmic scenes")
+        scenes = create_rhythmic_scenes(word_timings, main_duration, max_scene_duration=2.0)
+    
+    # Fallback 2: If no word_timings, use fixed duration
     if scenes is None:
         print(f"  ⚠️ No word timings available - using fallback fixed duration")
         scenes = create_fixed_duration_scenes(main_duration, fixed_duration=2.0)
