@@ -43,6 +43,11 @@ def generate_script(topic=None):
     - 'rain window night dark'
     - 'smoke texture black background'
     
+    VISUAL VARIETY RULE: Consecutive segments must NEVER have similar visual descriptions. 
+    If segment 1 is 'dark forest', segment 2 must be distinct (e.g., 'abstract fire' or 'rainy window'). 
+    Use high contrast in concepts between segments. Alternate between ORGANIC (water, smoke, nature) and 
+    GEOMETRIC (architecture, patterns, urban) themes. Never repeat the same visual category twice in a row.
+    
     The visual must feel like a dark memory or atmospheric texture, NOT a stock photo re-enactment.
     Think: ENVIRONMENTS, TEXTURES, ABSTRACT MOTION - not people acting out the narration."""
     
