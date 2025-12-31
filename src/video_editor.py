@@ -773,9 +773,14 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     final_video = CompositeVideoClip([video] + text_clips)
     final_video = final_video.set_duration(main_duration)
     
-    # 🎬 SUBLIMINAL INTERRUPT: Insert pattern-breaking flash at mid-video
-    print(f"  ⚡ Applying subliminal flash interrupt...")
-    final_video = insert_subliminal_flash(final_video, flash_position_percent=0.55, flash_duration=0.12)
+    # 🎬 SUBLIMINAL INTERRUPT: Insert 3 random pattern-breaking flashes for high retention
+    # Multiple flashes (20-80% range) create "dopamine spikes" to maintain viewer attention
+    print(f"  ⚡ Applying 3 subliminal flash interrupts (retention optimization)...")
+    flash_positions = [random.uniform(0.2, 0.8) for _ in range(3)]  # 3 random positions between 20-80%
+    flash_positions.sort()  # Sort to apply in chronological order
+    for position in flash_positions:
+        final_video = insert_subliminal_flash(final_video, flash_position_percent=position, flash_duration=0.12)
+        print(f"    ⚡ Flash inserted at {position*100:.1f}% ({position*main_duration:.2f}s)")
     
     # 6. RENDER
     final_video.write_videofile(

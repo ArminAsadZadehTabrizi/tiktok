@@ -28,21 +28,41 @@ def generate_script(topic=None):
     Your tone is analytical, slightly dark, and revealing. You are teaching the viewer a secret weapon.
     Your hooks are SHORT and BRUTAL. Never exceed 7 words for hooks.
     
-    CRITICAL: For every sentence, generate a specific, concrete visual search query for stock footage (Pexels/Pixabay style). 
-    Describe the scene, lighting, and subject. Think cinematically: 'lonely man walking in crowd blur' not 'loneliness'.
-    Use concrete nouns and visual descriptors, not abstract concepts."""
+    CRITICAL VISUAL GENERATION RULES:
+    
+    NEGATIVE CONSTRAINT: Do NOT describe literal actions or specific people doing things matching the text. 
+    AVOID: 'person trapped in cage', 'man looking confused', 'hand holding broken heart', etc.
+    
+    POSITIVE INSTRUCTION: Describe ATMOSPHERE and MOOD. Use search terms like:
+    - 'dark foggy forest'
+    - 'abstract shadows moving wall'
+    - 'storm clouds timelapse'
+    - 'blurred city night bokeh'
+    - 'ink in water slow motion'
+    - 'glitch art static'
+    - 'rain window night dark'
+    - 'smoke texture black background'
+    
+    The visual must feel like a dark memory or atmospheric texture, NOT a stock photo re-enactment.
+    Think: ENVIRONMENTS, TEXTURES, ABSTRACT MOTION - not people acting out the narration."""
     
     # BASE PROMPT: Defines the structure (No f-strings here to avoid JSON conflicts)
     base_prompt = """
     Write a script for a viral YouTube Short/TikTok.
     
-    STRUCTURE (Total word count MUST be 130-140 words. Video MUST be under 55 seconds):
+    STRUCTURE (Total word count MUST be 130-140 words. Video MUST be 45-55 seconds):
     1. The Hook (0-3s): MAXIMUM 7 words. MUST be a punchy one-liner. Start with direct viewer address ("You...", "Stop scrolling...", "Never..."). State a shocking fact or command. End with punctuation (. ? !). Examples: "Stop scrolling." / "You are being lied to." / "Never trust first impressions."
     2. The Concept (3-20s): Explain the SPECIFIC psychological concept or law (Name the law/theory!). Explain HOW it works mechanically.
     3. The Application (20-45s): Give ONE specific example of this in real life and ONE specific thing to do differently. 
     4. Call to Action (45-55s): A final dark truth or realization. Then "Subscribe for more psychology."
     
-    CRITICAL: The script MUST be a perfect loop. The last sentence must NOT be a goodbye or Call to Action. It must grammatically lead back into the Hook. Example End: 'And that is the terrifying reason...' (Loops to Start) '...why you are always tired.'
+    CRITICAL LOOP LOGIC: The text of the FINAL segment must end with a sentence fragment that grammatically flows into the Hook.
+    Example: Final segment ends with '...and that is the reason why' → (Video Loops) → Hook starts with 'You feel empty.'
+    The loop should be SEAMLESS - no period before the loop point. Use fragments like:
+    - '...which explains why...'
+    - '...and that is the reason...'
+    - '...because in the end...'
+    These must flow directly into your Hook's first word.
 
     OUTPUT FORMAT (JSON):
     {
@@ -57,12 +77,13 @@ def generate_script(topic=None):
     }
     
     SEGMENT STRUCTURE RULES:
-    - Break the body into 4-6 logical sentences (Concept → Mechanism → Application → CTA)
+    - Break the body into 8-12 logical sentences for sufficient video length (45s+ target)
     - Each segment text should be ONE complete sentence (not a word, not a paragraph)
-    - Each segment visual should be a CONCRETE search query for stock footage
-    - Visual queries MUST describe actual filmable scenes: lighting, subjects, actions, mood
-    - Example good visuals: "shadow boxing strobe light dark", "person running night street backlight", "gym weights close up sweat"
-    - Example bad visuals: "motivation", "success", "loneliness" (too abstract for search)
+    - Each segment visual should be an ABSTRACT/ATMOSPHERIC search query
+    - Visual queries MUST describe MOOD, ENVIRONMENT, or TEXTURE - NOT people acting
+    - Example GOOD visuals: "storm clouds timelapse dark", "ink water black background", "abstract smoke texture", "rain window night bokeh", "glitch static overlay"
+    - Example BAD visuals: "person looking sad", "man thinking", "hands shaking" (too literal!)
+    - Remember: ATMOSPHERE over ACTION. Dark memory, not stock re-enactment.
     
     CRITICAL RULES:
     - NEVER use generic phrases like "Get uncomfortable", "Embrace the grind", or "Hustle hard".
