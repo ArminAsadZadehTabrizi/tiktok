@@ -134,20 +134,21 @@ def search_pixabay(query, orientation="portrait"):
 
 def search_videos(visual_queries, fallback_topic=None):
     """
-    🎬 SEMANTIC VISUAL SEARCH: Search for videos using specific visual queries.
-    Each query should already contain full scene description (e.g., "lonely man walking in crowd blur").
+    🎬 A/B/C-ROLL SEARCH: Search for 3 distinct video variations per query.
+    Each query returns up to 3 different videos to enable variation cycling in the editor.
     
     Args:
         visual_queries (list): List of specific visual search queries (one per segment)
         fallback_topic (str): Generic topic keyword to use if specific search fails
     
     Returns:
-        list: Video data including download URLs, one per query
+        list of lists: Nested structure [[v1, v2, v3], [v1, v2, v3], ...] where each 
+                       inner list contains up to 3 video info dicts for one segment
     """
-    all_videos = []
+    all_segment_variations = []
     
     for i, visual_query in enumerate(visual_queries):
-        print(f"  🔍 Searching for segment {i}: '{visual_query}'")
+        print(f"  🔍 Searching for segment {i} (3 variations): '{visual_query}'")
         
         # HYBRID SEARCH: Randomly choose between Pexels and Pixabay
         if random.random() > 0.5:
@@ -192,33 +193,41 @@ def search_videos(visual_queries, fallback_topic=None):
             else:
                 video_urls = search_pexels(dark_keyword)
         
-        # Process found videos - take the FIRST/BEST match only
+        # 🎬 A/B/C-ROLL: Collect TOP 3 distinct variations for this segment
+        segment_variations = []
         if video_urls:
-            url = video_urls[0]  # Take best match (first result)
-            video_info = {
-                "url": url,
-                "width": 1080,
-                "height": 1920,
-                "query": visual_query,
-                "segment_index": i,
-                "source": primary_source if video_urls else secondary_source
-            }
-            all_videos.append(video_info)
-            print(f"    ✓ Found video from {video_info['source'].capitalize()}")
+            # Take up to 3 distinct videos
+            for variation_num, url in enumerate(video_urls[:3], start=1):
+                video_info = {
+                    "url": url,
+                    "width": 1080,
+                    "height": 1920,
+                    "query": visual_query,
+                    "segment_index": i,
+                    "variation_number": variation_num,
+                    "source": primary_source if video_urls else secondary_source
+                }
+                segment_variations.append(video_info)
+            
+            print(f"    ✓ Found {len(segment_variations)} variation(s) from {segment_variations[0]['source'].capitalize()}")
         else:
             print(f"    ✗ No videos found for '{visual_query}' on either source")
-            # Add placeholder to maintain segment order
-            all_videos.append(None)
+            # Add empty list as placeholder to maintain segment order
+            segment_variations = []
+        
+        all_segment_variations.append(segment_variations)
         
         # Be nice to the APIs
         time.sleep(0.5)
     
-    # Filter out None values (failed searches) but warn user
-    valid_videos = [v for v in all_videos if v is not None]
-    if len(valid_videos) < len(visual_queries):
-        print(f"  ⚠️  Warning: Only found {len(valid_videos)}/{len(visual_queries)} videos")
+    # Filter out empty lists (failed searches) but warn user
+    valid_segments = [seg for seg in all_segment_variations if len(seg) > 0]
+    total_videos = sum(len(seg) for seg in all_segment_variations)
+    if len(valid_segments) < len(visual_queries):
+        print(f"  ⚠️  Warning: Only found variations for {len(valid_segments)}/{len(visual_queries)} segments")
+    print(f"  📊 Total: {total_videos} videos for {len(visual_queries)} segments")
     
-    return valid_videos
+    return all_segment_variations
 
 
 def download_video(video_url, output_path):
@@ -251,43 +260,74 @@ def download_video(video_url, output_path):
 
 def download_videos(visual_queries, fallback_topic=None):
     """
-    🎬 SEMANTIC VISUAL DOWNLOAD: Download videos for specific visual queries.
-    Each video is saved as segment_N.mp4 to match script segment order.
+    🎬 A/B/C-ROLL DOWNLOAD: Download 3 variations per segment for dynamic editing.
+    Each segment gets up to 3 videos saved as segment_N_v1.mp4, segment_N_v2.mp4, segment_N_v3.mp4.
     
     Args:
         visual_queries (list): List of specific visual search queries (from script segments)
         fallback_topic (str): Generic topic keyword for fallback searches
     
     Returns:
-        list: Paths to downloaded video files (segment_0.mp4, segment_1.mp4, etc.)
+        list of lists: [[path_v1, path_v2, path_v3], ...] nested structure where each
+                       inner list contains paths to variations for one segment
     """
-    print(f"\n📹 Downloading {len(visual_queries)} segment-specific videos")
+    print(f"\n📹 Downloading videos with A/B/C-roll variations")
+    print(f"   Queries: {len(visual_queries)} segments")
+    print(f"   Target: 3 variations per segment")
     print(f"   Fallback topic: {fallback_topic or 'None'}")
     
-    # Search for videos using semantic queries
-    videos = search_videos(visual_queries, fallback_topic=fallback_topic)
+    # Search for videos using semantic queries (returns nested list)
+    all_segment_variations = search_videos(visual_queries, fallback_topic=fallback_topic)
     
-    if not videos:
+    if not all_segment_variations or all(len(seg) == 0 for seg in all_segment_variations):
         raise Exception("No videos found. Check your API keys and visual queries.")
     
-    # Download videos with segment-based naming
-    downloaded_paths = []
-    for video in videos:
-        segment_index = video["segment_index"]
-        output_path = config.ASSETS_DIR / f"segment_{segment_index}.mp4"
-        
-        if download_video(video["url"], output_path):
-            downloaded_paths.append(output_path)
-            print(f"  ✓ segment_{segment_index}.mp4: '{video['query']}'")
+    # Download all variations with segment-based naming
+    downloaded_segment_paths = []
+    total_downloaded = 0
     
-    if not downloaded_paths:
+    for segment_variations in all_segment_variations:
+        if not segment_variations:
+            # No variations found for this segment - add empty list as placeholder
+            print(f"  ⚠️  Segment {len(downloaded_segment_paths)}: No variations available")
+            downloaded_segment_paths.append([])
+            continue
+        
+        segment_index = segment_variations[0]["segment_index"]
+        variation_paths = []
+        
+        print(f"\n  📥 Segment {segment_index}: Downloading {len(segment_variations)} variation(s)")
+        
+        for video_info in segment_variations:
+            variation_num = video_info["variation_number"]
+            output_path = config.ASSETS_DIR / f"segment_{segment_index}_v{variation_num}.mp4"
+            
+            if download_video(video_info["url"], output_path):
+                variation_paths.append(output_path)
+                total_downloaded += 1
+                print(f"    ✓ v{variation_num}: '{video_info['query'][:50]}...'")
+            else:
+                print(f"    ✗ v{variation_num}: Download failed")
+        
+        if not variation_paths:
+            print(f"    ⚠️  Warning: All downloads failed for segment {segment_index}")
+        
+        downloaded_segment_paths.append(variation_paths)
+    
+    # Validate that we have at least some videos
+    valid_segments = [seg for seg in downloaded_segment_paths if len(seg) > 0]
+    if not valid_segments:
         raise Exception("Failed to download any videos")
     
-    # Sort by segment index to ensure correct order
-    downloaded_paths.sort(key=lambda p: int(p.stem.split('_')[1]))
+    # Ensure at least variation 1 exists for each segment (critical for fallback)
+    segments_with_v1 = sum(1 for seg in downloaded_segment_paths if len(seg) > 0)
     
-    print(f"✓ Downloaded {len(downloaded_paths)} segment video(s)\n")
-    return downloaded_paths
+    print(f"\n✓ Download Summary:")
+    print(f"  Total videos: {total_downloaded}")
+    print(f"  Segments with variations: {len(valid_segments)}/{len(visual_queries)}")
+    print(f"  Segments with v1 (required): {segments_with_v1}/{len(visual_queries)}")
+    
+    return downloaded_segment_paths
 
 
 if __name__ == "__main__":

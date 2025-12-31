@@ -334,19 +334,19 @@ def add_hook_sfx(audio_clip):
         return audio_clip
 
 
-def create_semantic_scenes(script_data, word_timings, max_scene_duration=2.0):
+def create_semantic_scenes(script_data, word_timings, max_scene_duration=1.5):
     """
     🎬 HYPER-PACING: Aggressive Sub-Cutting for fast-paced editing.
     
     NEW LOGIC:
     1. CONTINUOUS TIMELINE: end_time = start of NEXT segment's first word (covers silences)
-    2. HYPER SUB-CUTTING: If scene > 2.0s, split into multiple scenes with is_subcut=True
+    2. HYPER SUB-CUTTING: If scene > 1.5s, split into multiple scenes with is_subcut=True
     3. Both parts keep the same segment_index for proper video assignment
     
     Args:
         script_data: Dict containing 'hook' and 'segments' (list of {'text': str, 'visual': str})
         word_timings: List of {'word': str, 'start': float, 'end': float} from audio generator
-        max_scene_duration: Maximum duration before sub-cutting (default 2.0s for HYPER-PACING)
+        max_scene_duration: Maximum duration before sub-cutting (default 1.5s for HYPER-PACING)
     
     Returns:
         List of scenes: [{'start_time': float, 'end_time': float, 'duration': float, 
@@ -662,20 +662,21 @@ def insert_subliminal_flash(video_clip, flash_position_percent=0.55, flash_durat
 
 def assign_clips_to_scenes(scenes, video_paths):
     """
-    🎬 STATEFUL VIDEO PLAYBACK: Continuous Story with Jump Cuts
+    🎬 A/B/C-ROLL VARIATION CYCLING: Dynamic footage variation for sub-cuts
     
-    NEW LOGIC - Cursor Tracking:
-    1. video_cursors = {} tracks last used end timestamp for EACH video file path
-    2. First Use: Start at 0.0s (or small random offset)
-    3. Subsequent Use (Sub-Cut): Retrieve last_end_time, set start_time = last_end_time + 0.5s (Jump Cut)
-    4. Looping Safety: If start_time + duration > video.duration, loop back to 0.0s
-    5. Update Cursor: After creating subclip, update video_cursors[path] = new_end_time
+    NEW LOGIC - Multi-Variation Support:
+    1. video_paths is now nested: [[v1, v2, v3], [v1, v2, v3], ...]
+    2. segment_variation_usage = {} tracks which variation was last used for each segment
+    3. First Use of segment: Use variation 1 (video_paths[segment_index][0])
+    4. Sub-Cuts: Cycle to next variation (v1→v2→v3→v1)
+    5. Fallback: If variation doesn't exist, use variation 1
+    6. video_cursors still tracks playback position for each unique file path
     
-    This ensures Scene 1: segment_0.mp4 (0-2s), Scene 2: segment_0.mp4 (2.5s-4.5s) → Continuous Story
+    This ensures: Scene 1 (seg 0): v1, Scene 2 (sub-cut, seg 0): v2, Scene 3 (sub-cut, seg 0): v3
     
     Args:
         scenes: List of scene dictionaries (may include sub-cuts with same segment_index)
-        video_paths: List of video file paths (segment_0.mp4, segment_1.mp4, etc.)
+        video_paths: Nested list [[path_v1, path_v2, path_v3], ...] of video file paths
     
     Returns:
         List of positioned video clips ready for concatenation
@@ -686,6 +687,10 @@ def assign_clips_to_scenes(scenes, video_paths):
     # Format: {video_path_str: last_end_time_in_seconds}
     video_cursors = {}
     
+    # 🎬 A/B/C-ROLL TRACKING: Track which variation was used for each segment
+    # Format: {segment_index: current_variation_index (0, 1, or 2)}
+    segment_variation_usage = {}
+    
     for i, scene in enumerate(scenes):
         duration = scene['duration']
         
@@ -693,13 +698,44 @@ def assign_clips_to_scenes(scenes, video_paths):
         # If scene has 'segment_index', use it directly; otherwise fall back to scene index
         if 'segment_index' in scene:
             segment_index = scene['segment_index']
-            video_index = segment_index % len(video_paths)
         else:
             # Fallback for non-semantic scenes (rhythmic/fixed duration)
-            segment_index = i
-            video_index = i % len(video_paths)
+            segment_index = i % len(video_paths)
         
-        video_path = video_paths[video_index]
+        # 🎬 A/B/C-ROLL: Select variation based on usage tracking
+        if segment_index not in segment_variation_usage:
+            # First use of this segment: Start with variation 0 (v1)
+            segment_variation_usage[segment_index] = 0
+            variation_idx = 0
+            print(f"  🎬 Segment {segment_index}: First use → variation 1")
+        elif scene.get('is_subcut', False):
+            # Sub-cut detected: Increment to next variation
+            segment_variation_usage[segment_index] += 1
+            variation_idx = segment_variation_usage[segment_index] % 3  # Cycle: 0→1→2→0
+            print(f"  🔄 Segment {segment_index}: Sub-cut → variation {variation_idx + 1}")
+        else:
+            # Reuse current variation (not a sub-cut, same segment)
+            variation_idx = segment_variation_usage[segment_index] % 3
+            print(f"  🔁 Segment {segment_index}: Reusing variation {variation_idx + 1}")
+        
+        # Get the variation list for this segment
+        segment_variations = video_paths[segment_index] if segment_index < len(video_paths) else []
+        
+        # 🎯 FALLBACK: If variation doesn't exist, fall back to variation 1 (index 0)
+        if variation_idx < len(segment_variations):
+            video_path = segment_variations[variation_idx]
+        elif len(segment_variations) > 0:
+            video_path = segment_variations[0]  # Fallback to v1
+            print(f"    ⚠️ Variation {variation_idx + 1} not found, falling back to v1")
+        else:
+            print(f"    ❌ ERROR: No variations available for segment {segment_index}")
+            # Skip this scene or use a fallback clip
+            if positioned_clips:
+                fallback = positioned_clips[-1].set_duration(duration)
+                positioned_clips.append(fallback)
+                print(f"    🔄 Using previous clip as fallback")
+            continue
+        
         video_path_str = str(video_path)  # Convert to string for dictionary key
         
         try:
