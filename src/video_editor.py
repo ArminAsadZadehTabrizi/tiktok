@@ -341,23 +341,27 @@ def add_hook_sfx(audio_clip):
         return audio_clip
 
 
-def create_semantic_scenes(script_data, word_timings):
+def create_semantic_scenes(script_data, word_timings, max_scene_duration=3.0):
     """
-    🎬 SEMANTIC VISUAL STORYTELLING: Create scenes based on script segment boundaries.
+    🎬 SEMANTIC VISUAL STORYTELLING + SUB-CUTTING: Create scenes based on script segment boundaries,
+    then split long scenes into faster sub-scenes for TikTok retention.
+    
     Maps each segment from script_data to its corresponding word timings to find exact cut points.
+    If a scene is longer than max_scene_duration (3.0s), it is split into equal sub-parts.
     
     This ensures that:
     - segment_0.mp4 plays for the entire duration of segments[0].text
-    - segment_1.mp4 plays for the entire duration of segments[1].text
-    - Visual cuts happen EXACTLY when the topic/sentence changes
+    - Visual cuts happen at segment boundaries AND within long segments (sub-cuts)
+    - All sub-cuts preserve segment_index for proper video assignment
     
     Args:
         script_data: Dict containing 'hook' and 'segments' (list of {'text': str, 'visual': str})
         word_timings: List of {'word': str, 'start': float, 'end': float} from audio generator
+        max_scene_duration: Maximum duration for any scene before splitting (default 3.0s)
     
     Returns:
         List of scenes: [{'start_time': float, 'end_time': float, 'duration': float, 
-                          'text': str, 'segment_index': int}]
+                          'text': str, 'segment_index': int, 'is_subcut': bool}]
         or None if matching fails
     """
     if not word_timings or len(word_timings) == 0:
@@ -378,10 +382,10 @@ def create_semantic_scenes(script_data, word_timings):
         text = re.sub(r'[.,!?;:\'"()]', '', text)
         return text.split()
     
-    scenes = []
+    base_scenes = []  # Initial semantic scenes (1:1 with segments)
     word_index = 0  # Current position in word_timings
     
-    # Process each segment
+    # STEP 1: Create base semantic scenes (1:1 with segments)
     for segment_idx, segment in enumerate(script_data['segments']):
         segment_text = segment['text']
         segment_words = normalize(segment_text)
@@ -426,12 +430,12 @@ def create_semantic_scenes(script_data, word_timings):
             end_time = word_timings[scene_end_idx]['end']
             duration = end_time - start_time
             
-            scenes.append({
+            base_scenes.append({
                 'start_time': start_time,
                 'end_time': end_time,
                 'duration': duration,
                 'text': segment_text,
-                'segment_index': segment_idx  # NEW: Track which segment this scene represents
+                'segment_index': segment_idx
             })
             
             print(f"  🎯 Segment {segment_idx}: \"{segment_text[:40]}...\" ({duration:.2f}s, {start_time:.2f}-{end_time:.2f}s)")
@@ -440,12 +444,49 @@ def create_semantic_scenes(script_data, word_timings):
             print(f"     Segment text: \"{segment_text[:50]}...\"")
             # Continue to next segment anyway
     
-    if len(scenes) == 0:
+    if len(base_scenes) == 0:
         print("  ❌ Semantic scene matching failed - no scenes created")
         return None
     
-    print(f"  ✅ Created {len(scenes)} semantic scenes (1:1 with segments)")
-    return scenes
+    # STEP 2: Apply Sub-Cutting to long scenes
+    print(f"  ✂️ Applying sub-cutting (max {max_scene_duration}s per scene)...")
+    final_scenes = []
+    
+    for scene in base_scenes:
+        if scene['duration'] > max_scene_duration:
+            # Split this scene into equal sub-parts
+            num_subcuts = int(np.ceil(scene['duration'] / max_scene_duration))
+            subcut_duration = scene['duration'] / num_subcuts
+            
+            print(f"    ✂️ Splitting {scene['duration']:.2f}s scene into {num_subcuts} sub-scenes ({subcut_duration:.2f}s each)")
+            
+            for i in range(num_subcuts):
+                subcut_start = scene['start_time'] + (i * subcut_duration)
+                subcut_end = scene['start_time'] + ((i + 1) * subcut_duration)
+                
+                # Ensure last sub-cut ends exactly at original scene end
+                if i == num_subcuts - 1:
+                    subcut_end = scene['end_time']
+                
+                final_scenes.append({
+                    'start_time': subcut_start,
+                    'end_time': subcut_end,
+                    'duration': subcut_end - subcut_start,
+                    'text': scene['text'],  # Preserve original text
+                    'segment_index': scene['segment_index'],  # CRITICAL: Same segment_index
+                    'is_subcut': True,  # Mark as sub-cut for potential effects
+                    'subcut_index': i,  # Track which sub-part this is (0, 1, 2...)
+                    'total_subcuts': num_subcuts  # Total number of sub-parts
+                })
+        else:
+            # Scene is already short enough, keep as-is
+            scene['is_subcut'] = False
+            final_scenes.append(scene)
+    
+    print(f"  ✅ Final scene count: {len(final_scenes)} scenes (from {len(base_scenes)} segments)")
+    print(f"     Sub-cuts added: {len(final_scenes) - len(base_scenes)} additional scenes")
+    
+    return final_scenes
 
 
 def create_rhythmic_scenes(word_timings, total_duration, max_scene_duration=2.0):
@@ -605,11 +646,13 @@ def insert_subliminal_flash(video_clip, flash_position_percent=0.55, flash_durat
 
 def assign_clips_to_scenes(scenes, video_paths):
     """
-    🎬 SEMANTIC ALIGNMENT: Map Scene N to Video N for perfect visual matching.
-    Uses indexed selection (with modulo wrapping) instead of random choice.
+    🎬 SEMANTIC ALIGNMENT + SUB-CUTTING: Map scenes to videos with offset tracking.
+    
+    Handles consecutive scenes pointing to the same segment_index by taking consecutive
+    chunks from that video (or applying jump cuts for variety).
     
     Args:
-        scenes: List of scene dictionaries from create_rhythmic_scenes
+        scenes: List of scene dictionaries (may include sub-cuts with same segment_index)
         video_paths: List of video file paths (segment_0.mp4, segment_1.mp4, etc.)
     
     Returns:
@@ -617,15 +660,21 @@ def assign_clips_to_scenes(scenes, video_paths):
     """
     positioned_clips = []
     
+    # Track the current offset for each video file (for sub-cutting)
+    # Format: {segment_index: current_offset_in_seconds}
+    video_offsets = {}
+    
     for i, scene in enumerate(scenes):
         duration = scene['duration']
         
         # 🎯 SEMANTIC ALIGNMENT: Use segment_index from scene for perfect 1:1 mapping
         # If scene has 'segment_index', use it directly; otherwise fall back to scene index
         if 'segment_index' in scene:
-            video_index = scene['segment_index'] % len(video_paths)
+            segment_index = scene['segment_index']
+            video_index = segment_index % len(video_paths)
         else:
             # Fallback for non-semantic scenes (rhythmic/fixed duration)
+            segment_index = i
             video_index = i % len(video_paths)
         
         video_path = video_paths[video_index]
@@ -634,14 +683,53 @@ def assign_clips_to_scenes(scenes, video_paths):
             clip = VideoFileClip(str(video_path))
             video_duration = clip.duration
             
-            # 🎯 ALIGNED START TIME: Use clip from beginning (0.0s-0.5s) since it's semantically matched
-            if video_duration > duration:
-                # Start near beginning with small variance to avoid static feel
-                # Semantic match means the whole clip is relevant, so start early
-                max_start = min(0.5, video_duration - duration)  # Max 0.5s offset
-                start_time = random.uniform(0, max(0, max_start))
-                subclip = clip.subclip(start_time, start_time + duration)
-                print(f"  🎯 Aligned subclip: {video_path.name} (Scene {i}) [{start_time:.1f}s - {start_time+duration:.1f}s]")
+            # 🎯 SUB-CUTTING LOGIC: Track offset for consecutive scenes from same video
+            if segment_index not in video_offsets:
+                # First time using this video - start at 0.0s
+                video_offsets[segment_index] = 0.0
+            
+            current_offset = video_offsets[segment_index]
+            
+            # Determine start time based on whether this is a sub-cut
+            is_subcut = scene.get('is_subcut', False)
+            
+            if is_subcut:
+                # 🎬 SUB-CUT: Take consecutive chunk from same video
+                start_time = current_offset
+                end_time = start_time + duration
+                
+                # If we exceed video duration, apply jump cut (skip 1s and wrap)
+                if end_time > video_duration:
+                    print(f"  ✂️ Jump cut: video exhausted, skipping 1s")
+                    start_time = min(current_offset + 1.0, video_duration - duration)
+                    start_time = max(0, start_time)  # Ensure non-negative
+                    end_time = start_time + duration
+                
+                # Update offset for next sub-cut
+                video_offsets[segment_index] = end_time
+                
+                subcut_idx = scene.get('subcut_index', 0)
+                total_subcuts = scene.get('total_subcuts', 1)
+                print(f"  ✂️ Sub-cut {subcut_idx+1}/{total_subcuts}: {video_path.name} [{start_time:.1f}s - {end_time:.1f}s]")
+            else:
+                # 🎯 REGULAR SCENE: Use aligned start (near beginning)
+                if video_duration > duration:
+                    # Small random offset for variety (max 0.5s)
+                    max_start = min(0.5, video_duration - duration)
+                    start_time = random.uniform(0, max(0, max_start))
+                    end_time = start_time + duration
+                    print(f"  🎯 Aligned scene: {video_path.name} (Scene {i}) [{start_time:.1f}s - {end_time:.1f}s]")
+                else:
+                    # Video too short - will loop below
+                    start_time = 0
+                    end_time = duration
+                
+                # Reset offset for next usage of this video
+                video_offsets[segment_index] = 0.0
+            
+            # Extract subclip
+            if video_duration > duration and end_time <= video_duration:
+                subclip = clip.subclip(start_time, end_time)
             else:
                 # Video too short - loop it
                 num_loops = int(np.ceil(duration / video_duration))
@@ -658,6 +746,13 @@ def assign_clips_to_scenes(scenes, video_paths):
                 subclip = apply_flash_zoom(subclip, flash_duration=0.3, zoom_factor=1.15)
                 subclip = subclip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
                 subclip = apply_high_contrast_filter(subclip, contrast=1.4, saturation=1.5)
+            elif is_subcut:
+                # 🎬 SUB-CUT EFFECT: Apply "Zoom Jump" for dynamic pacing
+                # Lighter zoom for sub-cuts to differentiate from main scenes
+                print(f"  ✂️ SUB-CUT: Applying light zoom jump")
+                subclip = apply_ken_burns_zoom(subclip, zoom_factor=1.15)  # Lighter zoom
+                subclip = subclip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
+                subclip = apply_high_contrast_filter(subclip, contrast=1.2, saturation=1.3)
             else:
                 # Standard scenes: Ken Burns zoom for cinematic motion
                 print(f"  🎬 STANDARD SCENE: Applying Ken Burns zoom")
