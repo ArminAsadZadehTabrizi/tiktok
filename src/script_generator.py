@@ -48,6 +48,13 @@ def generate_script(topic=None):
     Use high contrast in concepts between segments. Alternate between ORGANIC (water, smoke, nature) and 
     GEOMETRIC (architecture, patterns, urban) themes. Never repeat the same visual category twice in a row.
     
+    VISUAL CONTRAST RULE: Consecutive segments must NEVER have similar visual vibes. If Segment 1 is 'static/calm', 
+    Segment 2 must be 'moving/chaotic'. If Segment 1 is 'dark', Segment 2 must have a light source. 
+    Force high contrast between every single visual query. Examples:
+    - After 'dark foggy forest' (static/dark) → use 'strobe light flashing glitch' (moving/light)
+    - After 'rain window night' (calm/dark) → use 'lightning strike storm timelapse' (chaotic/light)
+    - After 'smoke texture black' (slow/dark) → use 'neon city lights fast' (fast/bright)
+    
     The visual must feel like a dark memory or atmospheric texture, NOT a stock photo re-enactment.
     Think: ENVIRONMENTS, TEXTURES, ABSTRACT MOTION - not people acting out the narration."""
     
@@ -86,9 +93,11 @@ def generate_script(topic=None):
     - Each segment text should be ONE complete sentence (not a word, not a paragraph)
     - Each segment visual should be an ABSTRACT/ATMOSPHERIC search query
     - Visual queries MUST describe MOOD, ENVIRONMENT, or TEXTURE - NOT people acting
-    - Example GOOD visuals: "storm clouds timelapse dark", "ink water black background", "abstract smoke texture", "rain window night bokeh", "glitch static overlay"
+    - Visual queries MUST include CAMERA MOVEMENT description (e.g., "slow zoom in", "fast pan", "static tripod", "handheld shake", "dolly push")
+    - Example GOOD visuals: "storm clouds timelapse dark slow zoom in", "ink water black background static", "abstract smoke texture slow pan", "rain window night bokeh static tripod", "glitch static overlay fast cuts"
     - Example BAD visuals: "person looking sad", "man thinking", "hands shaking" (too literal!)
     - Remember: ATMOSPHERE over ACTION. Dark memory, not stock re-enactment.
+    - Camera Movement Examples: "slow zoom in", "fast zoom out", "pan left", "pan right", "static shot", "handheld", "tracking shot", "tilt up", "tilt down"
     
     CRITICAL RULES:
     - NEVER use generic phrases like "Get uncomfortable", "Embrace the grind", or "Hustle hard".
