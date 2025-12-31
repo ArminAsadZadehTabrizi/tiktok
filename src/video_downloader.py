@@ -8,6 +8,18 @@ import config
 
 # Constants
 CLIP_DURATION = 2.5  # Each video clip duration in seconds (matches video_editor.py)
+MIN_VIDEO_DURATION = 10  # Minimum video duration in seconds to avoid looping issues
+
+# Dark aesthetic fallback keywords for when specific searches fail
+DARK_AESTHETIC_FALLBACKS = [
+    "dark moody atmosphere",
+    "cinematic noir",
+    "abstract shadows",
+    "dark silhouette",
+    "moody lighting",
+    "gritty urban night",
+    "dark smoke abstract"
+]
 
 
 def search_pexels(query, orientation="portrait"):
@@ -37,6 +49,12 @@ def search_pexels(query, orientation="portrait"):
         
         video_urls = []
         for video in videos[:3]:  # Get up to 3 videos
+            # Check video duration first (fix for short video looping)
+            duration = video.get("duration", 0)
+            if duration < MIN_VIDEO_DURATION:
+                print(f"    ✗ Video duration: {duration}s (too short, skipped)")
+                continue
+            
             video_files = video.get("video_files", [])
             vertical_files = [
                 vf for vf in video_files 
@@ -47,6 +65,7 @@ def search_pexels(query, orientation="portrait"):
                 target_height = 1920
                 vertical_files.sort(key=lambda x: abs(x.get("height", 0) - target_height))
                 video_urls.append(vertical_files[0]["link"])
+                print(f"    ✓ Video duration: {duration}s (passed filter)")
         
         return video_urls
     
@@ -85,14 +104,23 @@ def search_pixabay(query, orientation="portrait"):
         
         video_urls = []
         for hit in hits:
+            # Check video duration first (fix for short video looping)
+            duration = hit.get("duration", 0)
+            if duration < MIN_VIDEO_DURATION:
+                print(f"    ✗ Video duration: {duration}s (too short, skipped)")
+                continue
+            
             videos = hit.get("videos", {})
             # Prefer large or medium quality
             if "large" in videos:
                 video_urls.append(videos["large"]["url"])
+                print(f"    ✓ Video duration: {duration}s (passed filter)")
             elif "medium" in videos:
                 video_urls.append(videos["medium"]["url"])
+                print(f"    ✓ Video duration: {duration}s (passed filter)")
             elif "small" in videos:
                 video_urls.append(videos["small"]["url"])
+                print(f"    ✓ Video duration: {duration}s (passed filter)")
         
         return video_urls
     
@@ -144,13 +172,22 @@ def search_videos(visual_queries, fallback_topic=None):
             else:
                 video_urls = search_pexels(visual_query)
         
-        # FALLBACK: If specific query fails, try generic topic keyword
+        # FALLBACK TIER 3: If specific query fails, try generic topic keyword
         if not video_urls and fallback_topic:
             print(f"    ⚠️  Specific search failed, using fallback: '{fallback_topic}'")
             if primary_source == "pixabay":
                 video_urls = search_pixabay(fallback_topic)
             else:
                 video_urls = search_pexels(fallback_topic)
+        
+        # FALLBACK TIER 4: Dark aesthetic keywords (final fallback for consistent vibe)
+        if not video_urls:
+            dark_keyword = random.choice(DARK_AESTHETIC_FALLBACKS)
+            print(f"    🎬 All searches failed, using dark aesthetic fallback: '{dark_keyword}'")
+            if primary_source == "pixabay":
+                video_urls = search_pixabay(dark_keyword)
+            else:
+                video_urls = search_pexels(dark_keyword)
         
         # Process found videos - take the FIRST/BEST match only
         if video_urls:

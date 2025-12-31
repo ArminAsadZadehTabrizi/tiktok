@@ -10,11 +10,12 @@ import json
 import random
 import config
 
-def apply_high_contrast_filter(clip, contrast=1.2, saturation=1.3):
+def apply_high_contrast_filter(clip, contrast=1.2, saturation=0.4):
     """
-    🎬 SUCCESS AESTHETIC: High Contrast Filter (MOBILE OPTIMIZED)
-    Increases contrast (1.2x) and saturation (1.3x) to make colors POP on small screens.
-    Creates eye-catching visuals for YouTube Shorts and TikTok.
+    🎬 DARK CINEMATIC AESTHETIC: Desaturated & Gritty Filter
+    Maintains contrast (1.2x) but drastically reduces saturation (0.4x) and lowers brightness.
+    Creates a dark, desaturated, cinematic look that hides the "stock footage" appearance.
+    Perfect for Dark Psychology / Sigma theme.
     """
     def enhance(image):
         # Convert to float for processing
@@ -23,10 +24,13 @@ def apply_high_contrast_filter(clip, contrast=1.2, saturation=1.3):
         # Apply contrast: scale pixel values around middle gray (128)
         img = ((img - 128) * contrast) + 128
         
-        # Apply saturation boost (convert to HSV-like processing)
-        # Simple saturation: boost the distance from gray
+        # Apply saturation reduction (convert to HSV-like processing)
+        # Desaturate heavily to hide stock footage look
         gray = np.mean(img, axis=2, keepdims=True)
         img = gray + (img - gray) * saturation
+        
+        # Lower brightness for darker, grittier aesthetic
+        img = img - 20
         
         # Clip to valid range and convert back
         return np.clip(img, 0, 255).astype('uint8')
