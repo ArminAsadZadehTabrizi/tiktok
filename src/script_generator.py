@@ -34,15 +34,21 @@ def generate_script(topic=None):
     
     🚫 ABSOLUTE NEGATIVE CONSTRAINTS - FORBIDDEN VISUALS:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    NEVER GENERATE THESE GENERIC STOCK FOOTAGE CONCEPTS:
-    ❌ NO clouds (slow or fast)
-    ❌ NO rain on windows (unless it's a luxury car window)
-    ❌ NO static forests or trees
-    ❌ NO abstract shadows or silhouettes
-    ❌ NO ink in water or smoke (overused)
-    ❌ NO generic nature shots
-    ❌ NO slow atmospheric footage
+    NEVER GENERATE THESE GENERIC "DARK" OR ATMOSPHERIC CONCEPTS:
+    ❌ NO clouds (slow, fast, or storm clouds)
+    ❌ NO rain on windows (including car windows)
+    ❌ NO forests, trees, or nature (ANY kind)
+    ❌ NO abstract shadows, silhouettes, or dark figures
+    ❌ NO ink in water, smoke, or abstract particles
+    ❌ NO ocean, water, waves (generic atmosphere)
+    ❌ NO slow atmospheric/moody footage
     ❌ NO literal re-enactments of the narration
+    
+    🎯 YOU MUST ONLY USE THESE 4 HIGH-STATUS CATEGORIES:
+    1. 💰 WEALTH: Money counting, gold, watches, luxury items
+    2. 🏎️ LUXURY CARS: Lamborghini, Ferrari, supercars, night drives
+    3. 💪 COMBAT/PHYSIQUE: Boxing, gym lifting, combat training, veins
+    4. 👔 HIGH-STATUS BUSINESS: Suits, skylines, corporate power, handshakes
     
     🚫 NO SOFT SPORTS:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
