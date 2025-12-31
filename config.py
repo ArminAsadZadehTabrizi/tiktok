@@ -41,7 +41,6 @@ PEXELS_ORIENTATION = "portrait"
 PEXELS_SIZE = "medium"  # or 'large' for higher quality
 
 # Pixabay API Settings
-PIXABAY_API_KEY = "PLACEHOLDER_FOR_USER_KEY"
 PIXABAY_BASE_URL = "https://pixabay.com/api/videos/"
 
 # Audio Settings
