@@ -52,7 +52,7 @@ TTS_VOLUME = "+0%"  # Volume (can adjust)
 BG_MUSIC_VOLUME = 0.30  # Background music volume (0.0 to 1.0)
 
 # Video Variation Settings
-SCENE_VIDEO_VARIATIONS = 4  # Number of video variations to download per scene (A/B/C/D-roll)
+SCENE_VIDEO_VARIATIONS = 2  # Number of video variations to download per scene (A/B-roll)
 
 # Text/Caption Settings
 CAPTION_FONT = "Arial-Bold"

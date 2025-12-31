@@ -217,16 +217,7 @@ def search_videos(visual_queries, fallback_topic=None):
                 additional = search_pexels(visual_query, seen_video_urls=seen_video_urls)
             video_urls.extend(additional)
         
-        # FALLBACK TIER 3: If specific query fails, try generic topic keyword
-        if len(video_urls) < config.SCENE_VIDEO_VARIATIONS and fallback_topic:
-            print(f"    ⚠️  Need more variations, using fallback: '{fallback_topic}'")
-            if primary_source == "pixabay":
-                additional = search_pixabay(fallback_topic, seen_video_urls=seen_video_urls)
-            else:
-                additional = search_pexels(fallback_topic, seen_video_urls=seen_video_urls)
-            video_urls.extend(additional)
-        
-        # FALLBACK TIER 4: Aggressively try multiple dark aesthetic keywords until quota is filled
+        # FALLBACK TIER 3 (Now prioritized): Aggressively try multiple dark aesthetic keywords until quota is filled
         fallback_attempts = 0
         while len(video_urls) < config.SCENE_VIDEO_VARIATIONS and fallback_attempts < len(DARK_AESTHETIC_FALLBACKS):
             dark_keyword = DARK_AESTHETIC_FALLBACKS[fallback_attempts]
@@ -243,6 +234,15 @@ def search_videos(visual_queries, fallback_topic=None):
             if len(video_urls) >= config.SCENE_VIDEO_VARIATIONS:
                 print(f"    ✓ Quota filled with unique aesthetic footage")
                 break
+        
+        # FALLBACK TIER 4 (Last resort): If aesthetic fallbacks fail, try generic topic keyword
+        if len(video_urls) < config.SCENE_VIDEO_VARIATIONS and fallback_topic:
+            print(f"    ⚠️  Need more variations, using generic topic fallback: '{fallback_topic}'")
+            if primary_source == "pixabay":
+                additional = search_pixabay(fallback_topic, seen_video_urls=seen_video_urls)
+            else:
+                additional = search_pexels(fallback_topic, seen_video_urls=seen_video_urls)
+            video_urls.extend(additional)
         
         # 🎬 A/B/C/D-ROLL: Collect TOP variations for this segment (up to config limit)
         segment_variations = []
