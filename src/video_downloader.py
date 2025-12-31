@@ -25,23 +25,27 @@ DARK_AESTHETIC_FALLBACKS = [
 ]
 
 
-def search_pexels(query, orientation="portrait"):
+def search_pexels(query, orientation="portrait", seen_video_urls=None):
     """
-    Search for videos on Pexels.
+    Search for videos on Pexels with global deduplication.
     
     Args:
         query (str): Search query
         orientation (str): Video orientation (portrait/landscape)
+        seen_video_urls (set): Set of already-used video URLs to avoid duplicates
     
     Returns:
-        list: Video URLs found
+        list: Video URLs found (unique only)
     """
+    if seen_video_urls is None:
+        seen_video_urls = set()
+    
     headers = {"Authorization": config.PEXELS_API_KEY}
     params = {
         "query": query,
         "orientation": orientation,
         "size": config.PEXELS_SIZE,
-        "per_page": 5
+        "per_page": 10  # Increased to account for duplicate filtering
     }
     
     try:
@@ -51,7 +55,7 @@ def search_pexels(query, orientation="portrait"):
         videos = data.get("videos", [])
         
         video_urls = []
-        for video in videos[:3]:  # Get up to 3 videos
+        for video in videos:
             # Check video duration first (fix for short video looping)
             duration = video.get("duration", 0)
             if duration < MIN_VIDEO_DURATION:
@@ -67,8 +71,20 @@ def search_pexels(query, orientation="portrait"):
             if vertical_files:
                 target_height = 1920
                 vertical_files.sort(key=lambda x: abs(x.get("height", 0) - target_height))
-                video_urls.append(vertical_files[0]["link"])
+                video_url = vertical_files[0]["link"]
+                
+                # 🔒 GLOBAL DEDUPLICATION: Skip if already used
+                if video_url in seen_video_urls:
+                    print(f"    ⊗ Duplicate detected, skipping")
+                    continue
+                
+                video_urls.append(video_url)
+                seen_video_urls.add(video_url)
                 print(f"    ✓ Video duration: {duration}s (passed filter)")
+                
+                # Stop when we have enough unique videos
+                if len(video_urls) >= config.SCENE_VIDEO_VARIATIONS:
+                    break
         
         return video_urls
     
@@ -77,17 +93,21 @@ def search_pexels(query, orientation="portrait"):
         return []
 
 
-def search_pixabay(query, orientation="portrait"):
+def search_pixabay(query, orientation="portrait", seen_video_urls=None):
     """
-    Search for videos on Pixabay.
+    Search for videos on Pixabay with global deduplication.
     
     Args:
         query (str): Search query
         orientation (str): Video orientation (vertical/horizontal)
+        seen_video_urls (set): Set of already-used video URLs to avoid duplicates
     
     Returns:
-        list: Video URLs found
+        list: Video URLs found (unique only)
     """
+    if seen_video_urls is None:
+        seen_video_urls = set()
+    
     # Map orientation to Pixabay format
     pixabay_orientation = "vertical" if orientation == "portrait" else "horizontal"
     
@@ -96,7 +116,7 @@ def search_pixabay(query, orientation="portrait"):
         "q": query,
         "video_type": "film",
         "orientation": pixabay_orientation,
-        "per_page": 3
+        "per_page": 10  # Increased to account for duplicate filtering
     }
     
     try:
@@ -114,16 +134,29 @@ def search_pixabay(query, orientation="portrait"):
                 continue
             
             videos = hit.get("videos", {})
+            video_url = None
+            
             # Prefer large or medium quality
             if "large" in videos:
-                video_urls.append(videos["large"]["url"])
-                print(f"    ✓ Video duration: {duration}s (passed filter)")
+                video_url = videos["large"]["url"]
             elif "medium" in videos:
-                video_urls.append(videos["medium"]["url"])
-                print(f"    ✓ Video duration: {duration}s (passed filter)")
+                video_url = videos["medium"]["url"]
             elif "small" in videos:
-                video_urls.append(videos["small"]["url"])
+                video_url = videos["small"]["url"]
+            
+            if video_url:
+                # 🔒 GLOBAL DEDUPLICATION: Skip if already used
+                if video_url in seen_video_urls:
+                    print(f"    ⊗ Duplicate detected, skipping")
+                    continue
+                
+                video_urls.append(video_url)
+                seen_video_urls.add(video_url)
                 print(f"    ✓ Video duration: {duration}s (passed filter)")
+                
+                # Stop when we have enough unique videos
+                if len(video_urls) >= config.SCENE_VIDEO_VARIATIONS:
+                    break
         
         return video_urls
     
@@ -134,21 +167,28 @@ def search_pixabay(query, orientation="portrait"):
 
 def search_videos(visual_queries, fallback_topic=None):
     """
-    🎬 A/B/C-ROLL SEARCH: Search for 3 distinct video variations per query.
-    Each query returns up to 3 different videos to enable variation cycling in the editor.
+    🎬 A/B/C/D-ROLL SEARCH with GLOBAL DEDUPLICATION: Search for configurable video 
+    variations per query. Each query returns up to config.SCENE_VIDEO_VARIATIONS different 
+    videos to enable variation cycling in the editor.
+    
+    CRITICAL: Uses a global seen_video_urls set to ensure NO VIDEO IS EVER REUSED across 
+    all segments, even if different queries return the same top results.
     
     Args:
         visual_queries (list): List of specific visual search queries (one per segment)
         fallback_topic (str): Generic topic keyword to use if specific search fails
     
     Returns:
-        list of lists: Nested structure [[v1, v2, v3], [v1, v2, v3], ...] where each 
-                       inner list contains up to 3 video info dicts for one segment
+        list of lists: Nested structure [[v1, v2, v3, v4], [v1, v2, v3, v4], ...] where each 
+                       inner list contains up to config.SCENE_VIDEO_VARIATIONS video info dicts
     """
     all_segment_variations = []
     
+    # 🔒 GLOBAL DEDUPLICATION: Track used URLs across ALL segments
+    seen_video_urls = set()
+    
     for i, visual_query in enumerate(visual_queries):
-        print(f"  🔍 Searching for segment {i} (3 variations): '{visual_query}'")
+        print(f"  🔍 Searching for segment {i} ({config.SCENE_VIDEO_VARIATIONS} variations): '{visual_query}'")
         
         # HYBRID SEARCH: Randomly choose between Pexels and Pixabay
         if random.random() > 0.5:
@@ -163,41 +203,52 @@ def search_videos(visual_queries, fallback_topic=None):
         # Try primary source first with the specific visual query
         if primary_source == "pixabay":
             print(f"    → Pixabay: '{visual_query}'")
-            video_urls = search_pixabay(visual_query)
+            video_urls = search_pixabay(visual_query, seen_video_urls=seen_video_urls)
         else:
             print(f"    → Pexels: '{visual_query}'")
-            video_urls = search_pexels(visual_query)
+            video_urls = search_pexels(visual_query, seen_video_urls=seen_video_urls)
         
-        # Fallback to secondary source if primary returns nothing
-        if not video_urls:
-            print(f"    ↪️  Trying {secondary_source.capitalize()}...")
+        # Fallback to secondary source if primary returns nothing or not enough
+        if len(video_urls) < config.SCENE_VIDEO_VARIATIONS:
+            print(f"    ↪️  Trying {secondary_source.capitalize()} for more variations...")
             if secondary_source == "pixabay":
-                video_urls = search_pixabay(visual_query)
+                additional = search_pixabay(visual_query, seen_video_urls=seen_video_urls)
             else:
-                video_urls = search_pexels(visual_query)
+                additional = search_pexels(visual_query, seen_video_urls=seen_video_urls)
+            video_urls.extend(additional)
         
         # FALLBACK TIER 3: If specific query fails, try generic topic keyword
-        if not video_urls and fallback_topic:
-            print(f"    ⚠️  Specific search failed, using fallback: '{fallback_topic}'")
+        if len(video_urls) < config.SCENE_VIDEO_VARIATIONS and fallback_topic:
+            print(f"    ⚠️  Need more variations, using fallback: '{fallback_topic}'")
             if primary_source == "pixabay":
-                video_urls = search_pixabay(fallback_topic)
+                additional = search_pixabay(fallback_topic, seen_video_urls=seen_video_urls)
             else:
-                video_urls = search_pexels(fallback_topic)
+                additional = search_pexels(fallback_topic, seen_video_urls=seen_video_urls)
+            video_urls.extend(additional)
         
-        # FALLBACK TIER 4: Dark aesthetic keywords (final fallback for consistent vibe)
-        if not video_urls:
-            dark_keyword = random.choice(DARK_AESTHETIC_FALLBACKS)
-            print(f"    🎬 All searches failed, using dark aesthetic fallback: '{dark_keyword}'")
+        # FALLBACK TIER 4: Aggressively try multiple dark aesthetic keywords until quota is filled
+        fallback_attempts = 0
+        while len(video_urls) < config.SCENE_VIDEO_VARIATIONS and fallback_attempts < len(DARK_AESTHETIC_FALLBACKS):
+            dark_keyword = DARK_AESTHETIC_FALLBACKS[fallback_attempts]
+            print(f"    🎬 Using aesthetic fallback #{fallback_attempts + 1}: '{dark_keyword}'")
+            
             if primary_source == "pixabay":
-                video_urls = search_pixabay(dark_keyword)
+                additional = search_pixabay(dark_keyword, seen_video_urls=seen_video_urls)
             else:
-                video_urls = search_pexels(dark_keyword)
+                additional = search_pexels(dark_keyword, seen_video_urls=seen_video_urls)
+            
+            video_urls.extend(additional)
+            fallback_attempts += 1
+            
+            if len(video_urls) >= config.SCENE_VIDEO_VARIATIONS:
+                print(f"    ✓ Quota filled with unique aesthetic footage")
+                break
         
-        # 🎬 A/B/C-ROLL: Collect TOP 3 distinct variations for this segment
+        # 🎬 A/B/C/D-ROLL: Collect TOP variations for this segment (up to config limit)
         segment_variations = []
         if video_urls:
-            # Take up to 3 distinct videos
-            for variation_num, url in enumerate(video_urls[:3], start=1):
+            # Take up to SCENE_VIDEO_VARIATIONS distinct videos
+            for variation_num, url in enumerate(video_urls[:config.SCENE_VIDEO_VARIATIONS], start=1):
                 video_info = {
                     "url": url,
                     "width": 1080,
@@ -209,9 +260,9 @@ def search_videos(visual_queries, fallback_topic=None):
                 }
                 segment_variations.append(video_info)
             
-            print(f"    ✓ Found {len(segment_variations)} variation(s) from {segment_variations[0]['source'].capitalize()}")
+            print(f"    ✓ Found {len(segment_variations)} unique variation(s) (Global unique: {len(seen_video_urls)})")
         else:
-            print(f"    ✗ No videos found for '{visual_query}' on either source")
+            print(f"    ✗ No unique videos found for '{visual_query}' - all sources exhausted")
             # Add empty list as placeholder to maintain segment order
             segment_variations = []
         
@@ -225,7 +276,8 @@ def search_videos(visual_queries, fallback_topic=None):
     total_videos = sum(len(seg) for seg in all_segment_variations)
     if len(valid_segments) < len(visual_queries):
         print(f"  ⚠️  Warning: Only found variations for {len(valid_segments)}/{len(visual_queries)} segments")
-    print(f"  📊 Total: {total_videos} videos for {len(visual_queries)} segments")
+    print(f"  📊 Total: {total_videos} unique videos for {len(visual_queries)} segments")
+    print(f"  🔒 Global deduplication: {len(seen_video_urls)} unique URLs tracked")
     
     return all_segment_variations
 
@@ -260,20 +312,24 @@ def download_video(video_url, output_path):
 
 def download_videos(visual_queries, fallback_topic=None):
     """
-    🎬 A/B/C-ROLL DOWNLOAD: Download 3 variations per segment for dynamic editing.
-    Each segment gets up to 3 videos saved as segment_N_v1.mp4, segment_N_v2.mp4, segment_N_v3.mp4.
+    🎬 A/B/C/D-ROLL DOWNLOAD with GLOBAL DEDUPLICATION: Download configurable variations 
+    per segment for dynamic editing. Each segment gets up to config.SCENE_VIDEO_VARIATIONS 
+    videos saved as segment_N_v1.mp4, segment_N_v2.mp4, ..., segment_N_vN.mp4.
+    
+    CRITICAL: Global deduplication ensures the same video URL is NEVER downloaded twice,
+    even if different search queries return the same top results.
     
     Args:
         visual_queries (list): List of specific visual search queries (from script segments)
         fallback_topic (str): Generic topic keyword for fallback searches
     
     Returns:
-        list of lists: [[path_v1, path_v2, path_v3], ...] nested structure where each
+        list of lists: [[path_v1, path_v2, ...], ...] nested structure where each
                        inner list contains paths to variations for one segment
     """
-    print(f"\n📹 Downloading videos with A/B/C-roll variations")
+    print(f"\n📹 Downloading videos with A/B/C/D-roll variations + Global Deduplication")
     print(f"   Queries: {len(visual_queries)} segments")
-    print(f"   Target: 3 variations per segment")
+    print(f"   Target: {config.SCENE_VIDEO_VARIATIONS} variations per segment")
     print(f"   Fallback topic: {fallback_topic or 'None'}")
     
     # Search for videos using semantic queries (returns nested list)
