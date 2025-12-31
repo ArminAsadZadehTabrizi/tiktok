@@ -26,7 +26,11 @@ def generate_script(topic=None):
     You do not give generic advice like 'work hard'. 
     Instead, you explain specific psychological biases, economic laws, or uncomfortable truths about human nature.
     Your tone is analytical, slightly dark, and revealing. You are teaching the viewer a secret weapon.
-    Your hooks are SHORT and BRUTAL. Never exceed 7 words for hooks."""
+    Your hooks are SHORT and BRUTAL. Never exceed 7 words for hooks.
+    
+    CRITICAL: For every sentence, generate a specific, concrete visual search query for stock footage (Pexels/Pixabay style). 
+    Describe the scene, lighting, and subject. Think cinematically: 'lonely man walking in crowd blur' not 'loneliness'.
+    Use concrete nouns and visual descriptors, not abstract concepts."""
     
     # BASE PROMPT: Defines the structure (No f-strings here to avoid JSON conflicts)
     base_prompt = """
@@ -43,17 +47,33 @@ def generate_script(topic=None):
     OUTPUT FORMAT (JSON):
     {
         "hook": "The Hook text...",
-        "body": "The Concept text. The Application text. The CTA.",
-        "keywords": ["visual1", "visual2", "visual3", "visual4", "visual5", "visual6", "visual7", "visual8"]
+        "hook_visual": "specific visual search query for the hook (e.g., 'alarm clock ringing close up dark')",
+        "segments": [
+            {"text": "First sentence of concept.", "visual": "specific visual search (e.g., 'lonely man walking in crowd blur')"},
+            {"text": "Second sentence explaining mechanism.", "visual": "another specific visual (e.g., 'theater spotlight on dark stage')"},
+            {"text": "Application example.", "visual": "concrete scene description"},
+            {"text": "Final realization/CTA.", "visual": "closing visual scene"}
+        ]
     }
+    
+    SEGMENT STRUCTURE RULES:
+    - Break the body into 4-6 logical sentences (Concept → Mechanism → Application → CTA)
+    - Each segment text should be ONE complete sentence (not a word, not a paragraph)
+    - Each segment visual should be a CONCRETE search query for stock footage
+    - Visual queries MUST describe actual filmable scenes: lighting, subjects, actions, mood
+    - Example good visuals: "shadow boxing strobe light dark", "person running night street backlight", "gym weights close up sweat"
+    - Example bad visuals: "motivation", "success", "loneliness" (too abstract for search)
     
     CRITICAL RULES:
     - NEVER use generic phrases like "Get uncomfortable", "Embrace the grind", or "Hustle hard".
     - ALWAYS name the specific theory/law (e.g. "This is called the Spotlight Effect").
-    - Keywords MUST be CONCRETE NOUNS matching Dark Discipline/Training visuals (e.g., 'boxing gloves', 'rain puddle', 'hoodie', 'gym equipment', 'running shoes', 'punching bag', 'weights', 'treadmill'). NO abstract concepts or nature scenes.
+    - Segment visuals MUST be CONCRETE, FILMABLE scenes matching Dark Discipline/Training aesthetic
+    - Good visual examples: 'shadow boxing strobe light dark', 'hooded figure rain night street', 'gym workout intense sweat dark'
+    - Bad visual examples: 'motivation', 'success', 'discipline' (too abstract - not searchable on stock sites)
     - The Hook MUST be MAXIMUM 7 words and formatted as a complete sentence with ending punctuation.
     - The Hook MUST be punchy and direct. Think: "Stop scrolling." or "You are being manipulated." - short, brutal, immediate.
     - The Hook MUST grab attention by directly addressing the viewer with "You", "Stop", "Never", or similar direct commands.
+    - Each segment visual should describe: SUBJECT + ACTION/POSE + LIGHTING/MOOD (e.g., "person running" + "night backlight dark")
     """
 
     # DYNAMIC TOPIC INSERTION
@@ -83,7 +103,8 @@ def generate_script(topic=None):
         
         print("  ✓ Script generated successfully")
         print(f"  Hook: {script_data['hook']}")
-        print(f"  Keywords: {', '.join(script_data['keywords'])}")
+        print(f"  Hook Visual: {script_data.get('hook_visual', 'N/A')}")
+        print(f"  Segments: {len(script_data.get('segments', []))} sentence(s)")
         
         return script_data
         

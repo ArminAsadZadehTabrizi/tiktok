@@ -27,7 +27,8 @@ def cleanup_temp_files():
     """Remove temporary files from assets folder."""
     print("🧹 Cleaning up temporary files")
     
-    temp_files = list(config.ASSETS_DIR.glob("temp_*"))
+    # Clean up both temp_* and segment_* files
+    temp_files = list(config.ASSETS_DIR.glob("temp_*")) + list(config.ASSETS_DIR.glob("segment_*"))
     for temp_file in temp_files:
         try:
             temp_file.unlink()
@@ -86,14 +87,24 @@ def main():
         print("🎤 Step 2: Generating voiceover")
         audio_path = generate_audio(script_data)
         
-        # Step 3: Download videos from Pexels (now with exact clip calculation)
-        print("📹 Step 3: Downloading videos from Pexels")
-        from moviepy.editor import AudioFileClip
-        audio_clip = AudioFileClip(str(audio_path))
-        audio_duration = audio_clip.duration
-        audio_clip.close()
+        # Step 3: Download videos from Pexels using semantic visual queries
+        print("📹 Step 3: Downloading segment-specific videos")
         
-        video_paths = download_videos(script_data['keywords'], audio_duration=audio_duration)
+        # Extract visual queries from script segments
+        visual_queries = []
+        # Add hook visual
+        if 'hook_visual' in script_data:
+            visual_queries.append(script_data['hook_visual'])
+        # Add segment visuals
+        if 'segments' in script_data:
+            for segment in script_data['segments']:
+                visual_queries.append(segment['visual'])
+        
+        # Fallback to topic if needed
+        fallback_topic = topic if topic else "dark psychology motivation"
+        
+        print(f"  🎯 {len(visual_queries)} visual queries extracted")
+        video_paths = download_videos(visual_queries, fallback_topic=fallback_topic)
         
         # Step 4: Edit and compose final video
         print("🎬 Step 4: Editing and composing video")
@@ -116,7 +127,10 @@ def main():
         print()
         print("Script used:")
         print(f"  Hook: {script_data['hook']}")
-        print(f"  Body: {script_data['body']}")
+        # Reconstruct body from segments for display  
+        if 'segments' in script_data:
+            body_text = ' '.join([seg['text'] for seg in script_data['segments']])
+            print(f"  Body: {body_text}")
         print()
         
         # Twitter Automation (Optional)

@@ -82,7 +82,17 @@ async def generate_audio_with_timing(text, output_file):
 
 def generate_audio(script_data):
     print(f"\n🎤 Generating voiceover...")
-    full_text = f"{script_data['hook']} {script_data['body']}"
+    
+    # Reconstruct full text from new segment-based structure
+    full_text = script_data['hook']
+    if 'segments' in script_data:
+        # Concatenate all segment texts
+        body_text = ' '.join([seg['text'] for seg in script_data['segments']])
+        full_text = f"{full_text} {body_text}"
+    elif 'body' in script_data:
+        # Fallback for old structure
+        full_text = f"{full_text} {script_data['body']}"
+    
     output_path = config.ASSETS_DIR / "temp_voiceover.mp3"
     
     try:

@@ -101,43 +101,22 @@ def search_pixabay(query, orientation="portrait"):
         return []
 
 
-def search_videos(keywords, num_videos=3):
+def search_videos(visual_queries, fallback_topic=None):
     """
-    Search for videos using HYBRID approach (Pexels + Pixabay).
+    🎬 SEMANTIC VISUAL SEARCH: Search for videos using specific visual queries.
+    Each query should already contain full scene description (e.g., "lonely man walking in crowd blur").
     
     Args:
-        keywords (list): List of search terms
-        num_videos (int): Number of videos to find
+        visual_queries (list): List of specific visual search queries (one per segment)
+        fallback_topic (str): Generic topic keyword to use if specific search fails
     
     Returns:
-        list: Video data including download URLs
+        list: Video data including download URLs, one per query
     """
     all_videos = []
     
-    # DARK DISCIPLINE FILTER: Strict aesthetic - NO COMEDY, high-impact visuals only
-    # Goal: Intense, disciplined training aesthetic for "Dark Psychology" content
-    success_suffixes = [
-        "boxing training strobe light dark",
-        "shadow boxing silhouette flickering",
-        "hooded figure rain night street",
-        "gym workout intense sweat dark",
-        "person running night backlight"
-    ]
-    
-    # HIGH-IMPACT HOOK SUFFIX: Used specifically for the first video (Hook)
-    hook_suffix = "shadow boxing strobe light dark"
-    
-    for i, keyword in enumerate(keywords):
-        # FORCE HIGH-IMPACT VISUAL FOR HOOK (first video, index 0)
-        if i == 0:
-            # First video MUST be visually aggressive/striking for the Hook
-            style = hook_suffix
-            print(f"  🎯 HOOK VIDEO (High-Impact): Using '{hook_suffix}'")
-        else:
-            # All other videos: pick random from strict aesthetic filters
-            style = random.choice(success_suffixes)
-        
-        search_query = f"{keyword} {style}"
+    for i, visual_query in enumerate(visual_queries):
+        print(f"  🔍 Searching for segment {i}: '{visual_query}'")
         
         # HYBRID SEARCH: Randomly choose between Pexels and Pixabay
         if random.random() > 0.5:
@@ -149,46 +128,57 @@ def search_videos(keywords, num_videos=3):
         
         video_urls = []
         
-        # Try primary source first
+        # Try primary source first with the specific visual query
         if primary_source == "pixabay":
-            print(f"  🔍 Searching Pixabay for: '{search_query}'")
-            video_urls = search_pixabay(search_query)
+            print(f"    → Pixabay: '{visual_query}'")
+            video_urls = search_pixabay(visual_query)
         else:
-            print(f"  🔍 Searching Pexels for: '{search_query}'")
-            video_urls = search_pexels(search_query)
+            print(f"    → Pexels: '{visual_query}'")
+            video_urls = search_pexels(visual_query)
         
         # Fallback to secondary source if primary returns nothing
         if not video_urls:
-            print(f"    ↪️  Falling back to {secondary_source.capitalize()}...")
+            print(f"    ↪️  Trying {secondary_source.capitalize()}...")
             if secondary_source == "pixabay":
-                video_urls = search_pixabay(search_query)
+                video_urls = search_pixabay(visual_query)
             else:
-                video_urls = search_pexels(search_query)
+                video_urls = search_pexels(visual_query)
         
-        # Process found videos
+        # FALLBACK: If specific query fails, try generic topic keyword
+        if not video_urls and fallback_topic:
+            print(f"    ⚠️  Specific search failed, using fallback: '{fallback_topic}'")
+            if primary_source == "pixabay":
+                video_urls = search_pixabay(fallback_topic)
+            else:
+                video_urls = search_pexels(fallback_topic)
+        
+        # Process found videos - take the FIRST/BEST match only
         if video_urls:
-            for idx, url in enumerate(video_urls):
-                keyword_variant = f"{keyword}_var{idx+1}"
-                video_info = {
-                    "url": url,
-                    "width": 1080,  # Default values for hybrid sources
-                    "height": 1920,
-                    "keyword": keyword_variant,
-                    "source": primary_source if video_urls else secondary_source
-                }
-                all_videos.append(video_info)
-                print(f"    ✓ Found video {idx+1} from {video_info['source'].capitalize()}")
+            url = video_urls[0]  # Take best match (first result)
+            video_info = {
+                "url": url,
+                "width": 1080,
+                "height": 1920,
+                "query": visual_query,
+                "segment_index": i,
+                "source": primary_source if video_urls else secondary_source
+            }
+            all_videos.append(video_info)
+            print(f"    ✓ Found video from {video_info['source'].capitalize()}")
         else:
-            print(f"    ✗ No videos found for '{keyword}' on either source")
+            print(f"    ✗ No videos found for '{visual_query}' on either source")
+            # Add placeholder to maintain segment order
+            all_videos.append(None)
         
         # Be nice to the APIs
         time.sleep(0.5)
     
-    # Ensure we have enough videos
-    if len(all_videos) < num_videos:
-        print(f"  Warning: Only found {len(all_videos)} videos (requested {num_videos})")
+    # Filter out None values (failed searches) but warn user
+    valid_videos = [v for v in all_videos if v is not None]
+    if len(valid_videos) < len(visual_queries):
+        print(f"  ⚠️  Warning: Only found {len(valid_videos)}/{len(visual_queries)} videos")
     
-    return all_videos[:num_videos]
+    return valid_videos
 
 
 def download_video(video_url, output_path):
@@ -219,45 +209,44 @@ def download_video(video_url, output_path):
         return False
 
 
-def download_videos(keywords, audio_duration=None, num_videos=None):
+def download_videos(visual_queries, fallback_topic=None):
     """
-    Search and download videos for the given keywords.
+    🎬 SEMANTIC VISUAL DOWNLOAD: Download videos for specific visual queries.
+    Each video is saved as segment_N.mp4 to match script segment order.
     
     Args:
-        keywords (list): Search terms from script generation
-        audio_duration (float): Duration of audio in seconds (to calculate exact clips needed)
-        num_videos (int): Number of videos to download (optional, overrides calculation)
+        visual_queries (list): List of specific visual search queries (from script segments)
+        fallback_topic (str): Generic topic keyword for fallback searches
     
     Returns:
-        list: Paths to downloaded video files
+        list: Paths to downloaded video files (segment_0.mp4, segment_1.mp4, etc.)
     """
-    print(f"\n📹 Downloading videos from Pexels")
+    print(f"\n📹 Downloading {len(visual_queries)} segment-specific videos")
+    print(f"   Fallback topic: {fallback_topic or 'None'}")
     
-    # Calculate exact number of clips needed to avoid repetition
-    if num_videos is None and audio_duration is not None:
-        num_videos = math.ceil(audio_duration / CLIP_DURATION)
-        print(f"  📊 Calculated need for {num_videos} unique clips (audio: {audio_duration:.1f}s, clip duration: {CLIP_DURATION}s)")
-    elif num_videos is None:
-        num_videos = 3  # Fallback default
-    
-    # Search for videos
-    videos = search_videos(keywords, num_videos)
+    # Search for videos using semantic queries
+    videos = search_videos(visual_queries, fallback_topic=fallback_topic)
     
     if not videos:
-        raise Exception("No videos found. Check your Pexels API key and keywords.")
+        raise Exception("No videos found. Check your API keys and visual queries.")
     
-    # Download videos
+    # Download videos with segment-based naming
     downloaded_paths = []
-    for i, video in enumerate(videos):
-        output_path = config.ASSETS_DIR / f"temp_video_{i}.mp4"
+    for video in videos:
+        segment_index = video["segment_index"]
+        output_path = config.ASSETS_DIR / f"segment_{segment_index}.mp4"
         
         if download_video(video["url"], output_path):
             downloaded_paths.append(output_path)
+            print(f"  ✓ segment_{segment_index}.mp4: '{video['query']}'")
     
     if not downloaded_paths:
         raise Exception("Failed to download any videos")
     
-    print(f"✓ Downloaded {len(downloaded_paths)} video(s)\n")
+    # Sort by segment index to ensure correct order
+    downloaded_paths.sort(key=lambda p: int(p.stem.split('_')[1]))
+    
+    print(f"✓ Downloaded {len(downloaded_paths)} segment video(s)\n")
     return downloaded_paths
 
 
