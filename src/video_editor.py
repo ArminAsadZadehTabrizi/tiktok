@@ -495,12 +495,12 @@ def insert_subliminal_flash(video_clip, flash_position_percent=0.55, flash_durat
 
 def assign_clips_to_scenes(scenes, video_paths):
     """
-    🎬 SMART SUB-CLIPPING: Treat video_paths as a material pool.
-    Randomly select clips from different positions for maximum variety.
+    🎬 SEMANTIC ALIGNMENT: Map Scene N to Video N for perfect visual matching.
+    Uses indexed selection (with modulo wrapping) instead of random choice.
     
     Args:
         scenes: List of scene dictionaries from create_rhythmic_scenes
-        video_paths: List of video file paths (treated as raw material pool)
+        video_paths: List of video file paths (segment_0.mp4, segment_1.mp4, etc.)
     
     Returns:
         List of positioned video clips ready for concatenation
@@ -510,20 +510,23 @@ def assign_clips_to_scenes(scenes, video_paths):
     for i, scene in enumerate(scenes):
         duration = scene['duration']
         
-        # 🎲 RANDOM VIDEO SELECTION: Pick from material pool
-        video_path = random.choice(video_paths)
+        # 🎯 SEMANTIC ALIGNMENT: Pick video by scene index (Scene N → Video N)
+        # Use modulo to wrap if we have more scenes than videos
+        video_index = i % len(video_paths)
+        video_path = video_paths[video_index]
         
         try:
             clip = VideoFileClip(str(video_path))
             video_duration = clip.duration
             
-            # 🎲 RANDOM START TIME: Extract subclip from random position
+            # 🎯 ALIGNED START TIME: Use clip from beginning (0.0s-0.5s) since it's semantically matched
             if video_duration > duration:
-                # Calculate safe random start point
-                max_start = video_duration - duration
-                random_start = random.uniform(0, max_start)
-                subclip = clip.subclip(random_start, random_start + duration)
-                print(f"  🎲 Random subclip: {video_path.name} [{random_start:.1f}s - {random_start+duration:.1f}s]")
+                # Start near beginning with small variance to avoid static feel
+                # Semantic match means the whole clip is relevant, so start early
+                max_start = min(0.5, video_duration - duration)  # Max 0.5s offset
+                start_time = random.uniform(0, max(0, max_start))
+                subclip = clip.subclip(start_time, start_time + duration)
+                print(f"  🎯 Aligned subclip: {video_path.name} (Scene {i}) [{start_time:.1f}s - {start_time+duration:.1f}s]")
             else:
                 # Video too short - loop it
                 num_loops = int(np.ceil(duration / video_duration))
