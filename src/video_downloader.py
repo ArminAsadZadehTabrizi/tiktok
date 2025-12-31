@@ -8,7 +8,7 @@ import config
 
 # Constants
 CLIP_DURATION = 2.5  # Each video clip duration in seconds (matches video_editor.py)
-MIN_VIDEO_DURATION = 10  # Minimum video duration in seconds to avoid looping issues
+MIN_VIDEO_DURATION = 20  # Minimum video duration in seconds to avoid looping issues
 
 # Dark aesthetic fallback keywords for when specific searches fail
 DARK_AESTHETIC_FALLBACKS = [

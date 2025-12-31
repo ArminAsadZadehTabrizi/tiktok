@@ -762,20 +762,20 @@ def assign_clips_to_scenes(scenes, video_paths):
                 print(f"  🎯 HOOK SCENE: Applying aggressive flash zoom")
                 subclip = apply_flash_zoom(subclip, flash_duration=0.3, zoom_factor=1.15)
                 subclip = subclip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
-                subclip = apply_high_contrast_filter(subclip, contrast=1.4, saturation=1.5)
+                subclip = apply_high_contrast_filter(subclip, contrast=1.1, saturation=0.2)
             elif is_subcut:
                 # 🎬 SUB-CUT EFFECT: Apply "Zoom Jump" for dynamic pacing
                 # Lighter zoom for sub-cuts to differentiate from main scenes
                 print(f"  ✂️ SUB-CUT: Applying light zoom jump")
                 subclip = apply_ken_burns_zoom(subclip, zoom_factor=1.15)  # Lighter zoom
                 subclip = subclip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
-                subclip = apply_high_contrast_filter(subclip, contrast=1.2, saturation=1.3)
+                subclip = apply_high_contrast_filter(subclip, contrast=1.1, saturation=0.2)
             else:
                 # Standard scenes: Ken Burns zoom for cinematic motion
                 print(f"  🎬 STANDARD SCENE: Applying Ken Burns zoom")
                 subclip = apply_ken_burns_zoom(subclip, zoom_factor=1.25)
                 subclip = subclip.resize(newsize=(config.VIDEO_WIDTH, config.VIDEO_HEIGHT))
-                subclip = apply_high_contrast_filter(subclip, contrast=1.2, saturation=1.3)
+                subclip = apply_high_contrast_filter(subclip, contrast=1.1, saturation=0.2)
             
             subclip = subclip.without_audio()
             subclip = subclip.set_duration(duration)
