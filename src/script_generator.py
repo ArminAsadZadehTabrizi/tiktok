@@ -33,30 +33,35 @@ def generate_script(topic=None):
     NEGATIVE CONSTRAINT: Do NOT describe literal actions or specific people doing things matching the text. 
     AVOID: 'person trapped in cage', 'man looking confused', 'hand holding broken heart', etc.
     
-    POSITIVE INSTRUCTION: Describe ATMOSPHERE and MOOD. Use search terms like:
-    - 'dark foggy forest'
-    - 'abstract shadows moving wall'
-    - 'storm clouds timelapse'
-    - 'blurred city night bokeh'
-    - 'ink in water slow motion'
-    - 'glitch art static'
-    - 'rain window night dark'
-    - 'smoke texture black background'
+    POSITIVE INSTRUCTION: Describe scenes of POWER, WEALTH, and HIGH STATUS. Use specific visual search terms like:
+    
+    Wealth: 'stack of money bills', 'luxury watch close up', 'gold bars', 'private jet interior'.
+    
+    Cars: 'lamborghini driving fast night', 'supercar steering wheel', 'car drift smoke', 'speedometer fast'.
+    
+    Fitness: 'bodybuilder gym workout intense', 'shadow boxing silhouette', 'running fast night', 'sweat drops'.
+    
+    Status: 'man in suit walking confident', 'luxury penthouse view night', 'red carpet fashion', 'beautiful woman fashion model classic'.
+    
+    Vibe: 'neon city lights', 'casino chips', 'poker table', 'champagne glass'.
     
     VISUAL VARIETY RULE: Consecutive segments must NEVER have similar visual descriptions. 
     If segment 1 is 'dark forest', segment 2 must be distinct (e.g., 'abstract fire' or 'rainy window'). 
     Use high contrast in concepts between segments. Alternate between ORGANIC (water, smoke, nature) and 
     GEOMETRIC (architecture, patterns, urban) themes. Never repeat the same visual category twice in a row.
     
-    VISUAL CONTRAST RULE: Consecutive segments must NEVER have similar visual vibes. If Segment 1 is 'static/calm', 
-    Segment 2 must be 'moving/chaotic'. If Segment 1 is 'dark', Segment 2 must have a light source. 
-    Force high contrast between every single visual query. Examples:
-    - After 'dark foggy forest' (static/dark) → use 'strobe light flashing glitch' (moving/light)
-    - After 'rain window night' (calm/dark) → use 'lightning strike storm timelapse' (chaotic/light)
-    - After 'smoke texture black' (slow/dark) → use 'neon city lights fast' (fast/bright)
+    SPEED KEYWORDS RULE: Always include speed-related modifiers to ensure the footage feels fast. Use words like: 
+    'fast motion', 'timelapse', 'hyperlapse', 'speeding', 'quick movements'.
     
-    The visual must feel like a dark memory or atmospheric texture, NOT a stock photo re-enactment.
-    Think: ENVIRONMENTS, TEXTURES, ABSTRACT MOTION - not people acting out the narration."""
+    VISUAL CONTRAST RULE: Consecutive segments must NEVER have similar visual vibes. Alternate between 
+    'Gym/Aggressive' and 'Luxury/Classy' themes. Examples:
+    - After 'bodybuilder gym workout intense' (Gym/Aggressive) → use 'luxury penthouse view night' (Luxury/Classy)
+    - After 'lamborghini driving fast night' (Luxury/Classy) → use 'shadow boxing silhouette fast' (Gym/Aggressive)
+    - After 'man in suit walking confident' (Luxury/Classy) → use 'running fast night timelapse' (Gym/Aggressive)
+    Force high contrast between aggressive/gritty scenes and polished/luxury scenes.
+    
+    The visual must convey POWER, AMBITION, and DOMINANCE, NOT generic or literal re-enactments.
+    Think: WEALTH SYMBOLS, SPEED, PHYSICAL POWER - not people acting out the narration."""
     
     # BASE PROMPT: Defines the structure (No f-strings here to avoid JSON conflicts)
     base_prompt = """

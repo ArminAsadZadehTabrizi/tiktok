@@ -330,19 +330,19 @@ def add_hook_sfx(audio_clip):
         return audio_clip
 
 
-def create_semantic_scenes(script_data, word_timings, max_scene_duration=3.5):
+def create_semantic_scenes(script_data, word_timings, max_scene_duration=2.0):
     """
-    🎬 REFACTORED: Gap Filling & Sub-Cutting for perfect sync.
+    🎬 HYPER-PACING: Aggressive Sub-Cutting for fast-paced editing.
     
     NEW LOGIC:
     1. CONTINUOUS TIMELINE: end_time = start of NEXT segment's first word (covers silences)
-    2. SUB-CUTTING: If scene > 3.5s, split into multiple scenes with is_subcut=True
+    2. HYPER SUB-CUTTING: If scene > 2.0s, split into multiple scenes with is_subcut=True
     3. Both parts keep the same segment_index for proper video assignment
     
     Args:
         script_data: Dict containing 'hook' and 'segments' (list of {'text': str, 'visual': str})
         word_timings: List of {'word': str, 'start': float, 'end': float} from audio generator
-        max_scene_duration: Maximum duration before sub-cutting (default 3.5s)
+        max_scene_duration: Maximum duration before sub-cutting (default 2.0s for HYPER-PACING)
     
     Returns:
         List of scenes: [{'start_time': float, 'end_time': float, 'duration': float, 
@@ -709,11 +709,11 @@ def assign_clips_to_scenes(scenes, video_paths):
             is_subcut = scene.get('is_subcut', False)
             
             if is_subcut:
-                # 🎬 JUMP CUT: Skip forward 1.0s from previous end
-                start_time = current_offset + 1.0
+                # 🎬 HYPER JUMP CUT: Skip forward 1.5s from previous end for visible movement
+                start_time = current_offset + 1.5
                 end_time = start_time + duration
                 
-                # If we exceed video duration, loop back to start
+                # If we exceed video duration, loop back to start or mirror
                 if end_time > video_duration:
                     print(f"  🔁 Jump cut: video exhausted, looping from start")
                     start_time = 0.0
@@ -723,13 +723,21 @@ def assign_clips_to_scenes(scenes, video_paths):
                     if end_time > video_duration:
                         start_time = 0.0
                         end_time = min(duration, video_duration)
+                # If we're approaching the end but can still fit with offset, continue
+                elif start_time > video_duration:
+                    # Loop back with offset
+                    start_time = start_time % video_duration
+                    end_time = start_time + duration
+                    if end_time > video_duration:
+                        start_time = 0.0
+                        end_time = duration
                 
                 # Update offset for next sub-cut
                 video_offsets[segment_index] = end_time
                 
                 subcut_idx = scene.get('subcut_index', 0)
                 total_subcuts = scene.get('total_subcuts', 1)
-                print(f"  ✂️ Sub-cut {subcut_idx+1}/{total_subcuts} (JUMP): {video_path.name} [{start_time:.1f}s - {end_time:.1f}s]")
+                print(f"  ✂️ Sub-cut {subcut_idx+1}/{total_subcuts} (HYPER JUMP +1.5s): {video_path.name} [{start_time:.1f}s - {end_time:.1f}s]")
             else:
                 # 🎯 STANDARD CUT: Start at 0.0s
                 start_time = 0.0
@@ -877,7 +885,8 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     print(f"  🎯 Creating semantic scenes aligned with script segments...")
     
     # Try semantic scene creation first (matches segments to word timings)
-    scenes = create_semantic_scenes(script_data, word_timings, max_scene_duration=3.5)
+    # 🎬 HYPER-PACING: 2.0s threshold for aggressive cutting
+    scenes = create_semantic_scenes(script_data, word_timings, max_scene_duration=2.0)
     
     # Fallback 1: If semantic fails but we have word_timings, use rhythmic scenes
     if scenes is None and word_timings:
