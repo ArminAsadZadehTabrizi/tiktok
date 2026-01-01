@@ -66,32 +66,34 @@ CAPTION_POSITION = "center"
 LLM_MODEL = "gpt-4o"
 LLM_TEMPERATURE = 0.8
 
-# 🎥 YOUTUBE SOURCE POOLS (Verified & High-Traffic Sources)
+# 🎥 YOUTUBE SOURCE POOLS (Long-Format Dark Aesthetics)
+# Using 1-Hour+ loops ensures consistent visual style and higher availability.
 YOUTUBE_SOURCES = {
-    # 🏎️ FAST & AGGRESSIVE (Car Cinematography Channels)
+    # 🏎️ FAST & AGGRESSIVE (Night Drives / Neon / Rain)
     "CARS": [
-        "https://www.youtube.com/watch?v=ppqH2tYyY6o", # Woyshnis Media (The King of Car Edits)
-        "https://www.youtube.com/watch?v=0pLd8V0GzZw", # Night Run (High Quality)
-        "https://www.youtube.com/watch?v=WJ93MQy_6F0", # Tokyo Night Drive (4K)
-        "https://www.youtube.com/watch?v=1La4QzGeaaQ", # Supercars at Night
+        "https://www.youtube.com/watch?v=eSYwD3YsXJw",  # 1 Hour Night Drive 4K (Relaxing/Dark)
+        "https://www.youtube.com/watch?v=uL62i-Kk68s",  # Tokyo Night Drive 4K - 1 Hour
+        "https://www.youtube.com/watch?v=21X5lGlDOfg",  # Cyberpunk City Night Drive
+        "https://www.youtube.com/watch?v=rX372hwV65k",  # Night Drive in Rain (Heavy Atmosphere)
     ],
-    # 🥊 COMBAT & DISCIPLINE (Official Training Camps)
+    # 🥊 COMBAT & DISCIPLINE (Training / Shadow Boxing)
     "COMBAT": [
-        "https://www.youtube.com/watch?v=_YqgC7t87vY", # Mike Tyson Training (Official)
-        "https://www.youtube.com/watch?v=k9X7X5G7zZw", # Canelo Training Highlights
-        "https://www.youtube.com/watch?v=jY7Xn_s3nOU", # Lomachenko Training (Matrix Style)
+        "https://www.youtube.com/watch?v=1qf8WJtD5QI",  # Mayweather Padwork (Clean/Technical)
+        "https://www.youtube.com/watch?v=Xk_bVfk39jQ",  # Heavy Bag Workout Aesthetic (Dark)
+        "https://www.youtube.com/watch?v=_YqgC7t87vY",  # Mike Tyson (Manchmal restricted, aber gut)
+        "https://www.youtube.com/watch?v=vr7l2Xy_Zp8",  # Boxing Training Motivation (Compilation)
     ],
-    # 💪 GYM & CALISTHENICS (Verified Fitness Channels)
+    # 💪 GYM & CALISTHENICS (Dark / Outdoor / Hood)
     "GYM": [
-        "https://www.youtube.com/watch?v=J9f2g3Q9s4A", # Street Workout Night Motivation
-        "https://www.youtube.com/watch?v=VR1-10B5dBY", # David Goggins Motivation (Official)
-        "https://www.youtube.com/watch?v=P28dgyW7WQA", # Chris Heria Night Training (Official)
+        "https://www.youtube.com/watch?v=q0vgbTnAJ4c",  # Brooklyn Night Calisthenics (Dark Vibe)
+        "https://www.youtube.com/watch?v=J9f2g3Q9s4A",  # Street Workout Night
+        "https://www.youtube.com/watch?v=3S8ZkS2V_5I",  # Dark Gym Aesthetic
     ],
-    # 💰 WEALTH & EMPIRE (Mega Mansions & Jets)
+    # 💰 WEALTH & EMPIRE (Old Money / Dark Luxury)
     "LUXURY": [
-        "https://www.youtube.com/watch?v=OpZ_gW-z_ME", # Monaco Luxury Lifestyle (High Viewcount)
-        "https://www.youtube.com/watch?v=vUgOZzLktTU", # Dark Luxury Mansion Tour
-        "https://www.youtube.com/watch?v=Bearq7QeJk0", # Billionaire Yacht Lifestyle
-        "https://www.youtube.com/watch?v=1M7a65978rU", # Private Jet Cinematic
+        "https://www.youtube.com/watch?v=hN7GYVqQJkA",  # Old Money Aesthetic (Dark/Moody)
+        "https://www.youtube.com/watch?v=L_LUpNJxHXA",  # Dark Academia Atmosphere
+        "https://www.youtube.com/watch?v=V7Y8qFqaLTY",  # Bruce Wayne Lifestyle (Dark Luxury)
+        "https://www.youtube.com/watch?v=8I8og9a6dko",  # Luxury Lifestyle (Cars/Jets)
     ]
 }

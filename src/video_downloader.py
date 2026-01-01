@@ -162,6 +162,9 @@ def download_youtube_clip(category, output_path, clip_duration=4):
                 info = ydl.extract_info(video_url, download=False)
                 duration = info.get('duration', 0)
                 
+                # Display source video length for user awareness
+                print(f"    ℹ️  Source video length: {duration // 60} minutes")
+                
                 if duration < 120:  # Video too short
                     print(f"    ✗ Video too short ({duration}s), need at least 2 minutes")
                     continue
