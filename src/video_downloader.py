@@ -184,12 +184,13 @@ def download_youtube_clip(category, output_path, clip_duration=4):
                 
                 # Download only the specific segment
                 download_opts = {
-                    # Force single file download (no merging) to prevent ffmpeg errors on partials
-                    'format': 'best[height<=1080][ext=mp4]/best[ext=mp4]',
+                    # Download ONLY high-quality video (no audio) to prevent ffmpeg muxing errors
+                    # Get BEST video stream (1080p or higher) - ignore audio
+                    'format': 'bestvideo[height<=1080][ext=mp4]/bestvideo[ext=mp4]/best[ext=mp4]',
                     'outtmpl': str(output_path),
                     'quiet': True,
                     'no_warnings': True,
-                    # Ensure we get the exact time range
+                    # Precise cutting
                     'download_ranges': yt_dlp.utils.download_range_func(None, [(start_time, end_time)]),
                     'force_keyframes_at_cuts': True,
                 }
