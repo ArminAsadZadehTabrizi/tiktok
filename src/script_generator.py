@@ -32,7 +32,7 @@ def generate_script(topic=None):
     🎬 CINEMATIC HIGH-STATUS & ACTION VISUAL RULES 🎬
     ═══════════════════════════════════════════════════════════════════
     
-    🚫 ABSOLUTE NEGATIVE CONSTRAINTS - FORBIDDEN VISUALS:
+    🚫 ABSOLUTE NEGATIVE CONSTRAINTS - HARD BAN LIST:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     NEVER GENERATE THESE GENERIC "DARK" OR ATMOSPHERIC CONCEPTS:
     ❌ NO clouds (slow, fast, or storm clouds)
@@ -44,6 +44,39 @@ def generate_script(topic=None):
     ❌ NO slow atmospheric/moody footage
     ❌ NO literal re-enactments of the narration
     ❌ NO guns, drugs, dirty rooms, grunge, horror, or prison cells
+    
+    🚫 HARD BAN - FOOD & CONSUMPTION:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ❌ NO food of any kind (chocolate, candy, sweets, eating, restaurants)
+    ❌ NO drugs or substances
+    ❌ NO alcohol consumption (champagne pouring is OK as a LUXURY STATUS symbol ONLY)
+    
+    🚫 HARD BAN - SOFT ANIMALS:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ❌ NO small animals (birds, rabbits, squirrels, pets)
+    ❌ NO cute/soft animals of ANY kind
+    ✅ ONLY ALLOW: Lion, Wolf, Doberman, Snake, Black Panther - and ONLY in dark/aggressive/night settings
+    
+    🚫 HARD BAN - BRIGHT & CHEERFUL:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ❌ NO bright daylight, blue sky, green grass
+    ❌ NO flowers, gardens, or happy families
+    ❌ NO cheerful/uplifting/positive vibes
+    
+    🎯 VISUAL TRANSLATION RULE (CRITICAL):
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Visuals must represent STATUS and POWER, NOT the literal word.
+    
+    ❌ WRONG: Text mentions "pleasure" → Shows chocolate/food
+    ✅ CORRECT: Text mentions "pleasure" → Shows "Man checking luxury Patek Philippe watch stoic dark office 4k expensive"
+    
+    ❌ WRONG: Text mentions "temptation" → Shows candy/sweets
+    ✅ CORRECT: Text mentions "temptation" → Shows "Counting money hands close up night luxury expensive 4k"
+    
+    ❌ WRONG: Text mentions "addiction" → Shows drugs/alcohol
+    ✅ CORRECT: Text mentions "addiction" → Shows "Man staring stoically dark luxury penthouse night expensive 4k"
+    
+    RULE: If the text is abstract or metaphorical, translate it into POWER VISUALS (wealth, discipline, dominance).
     
     🎯 DARKNESS FROM CONTRAST, NOT GRIME: Use premium black backgrounds, night cityscapes, and high-contrast luxury settings.
     
@@ -75,13 +108,15 @@ def generate_script(topic=None):
     
     C. 🏛️♟️ STOIC & OLD MONEY (Use 25% of segments - Wisdom, Timeless Elegance, Class):
     - 'Greek statue marble museum close up luxury 4k expensive'
-    - 'Classic architecture marble columns luxury 4k cinematic'
-    - 'Chess board marble pieces luxury close up 4k expensive'
-    - 'Hourglass golden sand luxury close up 4k cinematic'
-    - 'Ancient Roman bust marble dramatic lighting luxury 4k'
-    - 'Lion walking savanna golden hour luxury 4k cinematic'
-    - 'Vintage library leather books luxury 4k expensive'
-    - 'Classic mansion interior luxury expensive 4k cinematic'
+    - 'Classic architecture marble columns night luxury 4k cinematic'
+    - 'Chess board marble pieces close up dark luxury 4k expensive'
+    - 'Dark library leather books shadows luxury 4k expensive cinematic'
+    - 'Marble statue in shadows dramatic lighting luxury 4k expensive'
+    - 'Chess board close up night luxury expensive 4k cinematic'
+    - 'Classic architecture night moonlight luxury expensive 4k'
+    - 'Ancient Roman bust marble dramatic shadows luxury 4k expensive'
+    - 'Lion walking dark night luxury 4k cinematic'
+    - 'Wolf eyes close up night dark luxury 4k expensive'
     
     🔄 3-CATEGORY ROTATION RULE (MANDATORY):
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -94,11 +129,16 @@ def generate_script(topic=None):
     Segment 3: STOIC & OLD MONEY (Greek statue)
     Segment 4: ULTRA-LUXURY & STATUS (Dubai skyline night)
     Segment 5: COMBAT & DISCIPLINE (Heavy bag workout)
-    Segment 6: STOIC & OLD MONEY (Chess board marble)
+    Segment 6: STOIC & OLD MONEY (Dark library shadows)
     Segment 7: ULTRA-LUXURY & STATUS (Monaco yacht harbor)
     Segment 8: COMBAT & DISCIPLINE (Shadow boxing luxury gym)
-    Segment 9: STOIC & OLD MONEY (Classic architecture)
+    Segment 9: STOIC & OLD MONEY (Classic architecture night)
     Segment 10: ULTRA-LUXURY & STATUS (Penthouse view)
+    
+    🌙 FORCE NIGHT/DARK MODE:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    80% of visuals should include the keyword "night" or "dark" to maintain the aesthetic.
+    Even luxury and combat shots should prioritize night settings whenever possible.
     
     ⚡ MANDATORY: COMBINE WITH LUXURY QUALITY KEYWORDS:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

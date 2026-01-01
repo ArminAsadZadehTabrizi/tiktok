@@ -16,12 +16,18 @@ DARK_AESTHETIC_FALLBACKS = [
     "dubai night city cinematic",
     "boxer training sweat slow motion",
     "lion walking dark",
-    "yacht ocean sunset luxury",
-    "man suit walking skyscraper",
-    "bugatti interior luxury 4k",
-    "kickboxing professional training",
-    "greek statue marble luxury",
-    "penthouse view night expensive"
+    "man in suit dark office thinking",
+    "counting money hands close up",
+    "black panther walking dark",
+    "mafia aesthetic night",
+    "luxury car steering wheel night",
+    "man suit walking skyscraper night",
+    "bugatti interior luxury 4k night",
+    "kickboxing professional training aggressive",
+    "greek statue marble shadows dark",
+    "penthouse view night expensive dark",
+    "wolf eyes close up dark",
+    "chess board marble night luxury"
 ]
 
 
