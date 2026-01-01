@@ -1,4 +1,5 @@
 """Pexels Video API integration for downloading luxury/motivational footage"""
+import re
 import requests
 import time
 import math
@@ -48,16 +49,16 @@ STOIC_EXCEPTIONS = [
 ]
 
 HIGH_ACTION_FALLBACKS = [
-    "luxury car night city drive",
-    "boxer training dark gym sweat",
-    "supercar accelerating flame",
-    "money counting machine close up",
-    "man in suit walking night rear view",
-    "gym bodybuilder lifting heavy",
-    "mma fighting cage slow motion",
-    "neon city cyber aesthetics",
-    "private jet interior luxury",
-    "lamborghini driving fast"
+    "shadow boxing dark gym silhouette",
+    "muay thai knee strike training",
+    "calisthenics muscle up night",
+    "boxer jumping rope fast sweat",
+    "heavy bag workout explosive hits",
+    "mma ground and pound training dummy",
+    "sprinting start block night track",
+    "formula 1 pit stop fast",
+    "drifting car tire smoke close up",
+    "supercar launch control flame exhaust"
 ]
 
 
@@ -224,16 +225,26 @@ def search_videos(visual_queries, fallback_topic=None):
     seen_video_urls = set()
     
     for i, visual_query in enumerate(visual_queries):
-        # 🚫 STRICT ACTION ENFORCEMENT
+        # 🚫 STRICT ACTION ENFORCEMENT (FIXED REGEX LOGIC)
         original_query = visual_query
         query_lower = visual_query.lower()
         
-        # Check if query contains any weak term as a SUBSTRING
-        # (e.g., "clouds" contains "cloud", "trees" contains "tree")
-        has_weak_term = any(weak_term in query_lower for weak_term in WEAK_VISUAL_TERMS)
+        # Check for weak terms using WHOLE WORD boundaries only
+        # This prevents "training" from triggering "rain", or "skyline" from triggering "sky"
+        has_weak_term = False
+        for weak_term in WEAK_VISUAL_TERMS:
+            # Escape the term just in case, and look for word boundaries
+            if re.search(r'\b' + re.escape(weak_term) + r'\b', query_lower):
+                has_weak_term = True
+                print(f"    🔍 Found blocked term: '{weak_term}'")
+                break
         
-        # Check for stoic exceptions
-        has_stoic_exception = any(stoic_term in query_lower for stoic_term in STOIC_EXCEPTIONS)
+        # Check for stoic exceptions (also using regex for safety)
+        has_stoic_exception = False
+        for stoic_term in STOIC_EXCEPTIONS:
+            if re.search(r'\b' + re.escape(stoic_term) + r'\b', query_lower):
+                has_stoic_exception = True
+                break
         
         # LOGIC: Block weak terms UNLESS it's a specific stoic object
         if has_weak_term and not has_stoic_exception:
