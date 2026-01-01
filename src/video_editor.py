@@ -941,21 +941,16 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
     # Calculate visual_cut_time by summing actual video clip durations
     transition_audio_clips = []
     if sfx_files and scenes:
-        print(f"  🔊 Adding transition SFX at semantic cuts only...")
+        print(f"  🔊 Adding transition SFX at every visual cut...")
         
         visual_cut_time = 0.0  # Cumulative time tracker
-        previous_segment_index = None
         
         for i, scene in enumerate(scenes):
-            current_segment_index = scene.get('segment_index', i)
-            is_subcut = scene.get('is_subcut', False)
-            
             # Add scene duration to cumulative time
             visual_cut_time += scene['duration']
             
-            # Only place SFX at SEMANTIC CUTS (where segment_index changes)
-            # Do NOT place at sub-cuts
-            if not is_subcut and previous_segment_index is not None and current_segment_index != previous_segment_index:
+            # Place SFX at EVERY visual cut (except the very first scene at 0:00)
+            if i > 0:
                 try:
                     # Pick random SFX from pool
                     sfx_path = random.choice(sfx_files)
@@ -977,11 +972,9 @@ def stitch_and_edit_video(video_paths, audio_path, script_data, output_path):
                     sfx = sfx.set_start(start_time)
                     
                     transition_audio_clips.append(sfx)
-                    print(f"    🎚️ Semantic cut {current_segment_index}: {sfx_path.name} at {start_time:.2f}s (visual_cut_time: {visual_cut_time:.2f}s)")
+                    print(f"    🎚️ Cut {i}: {sfx_path.name} at {start_time:.2f}s (visual_cut_time: {visual_cut_time:.2f}s)")
                 except Exception as e:
                     print(f"  ⚠️ Failed to add transition SFX: {e}")
-            
-            previous_segment_index = current_segment_index
     
     # Mix transition SFX into final audio
     if transition_audio_clips:
