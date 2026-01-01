@@ -337,46 +337,42 @@ def generate_script(topic=None):
         ]
     }
     
-    🎬 VISUAL QUERY RULES (CRITICAL - READ CAREFULLY):
+    🎬 VISUAL QUERY RULES (STRICT ACTION ONLY):
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     
     1. EVERY visual query MUST use the formula:
        [SUBJECT] + [ACTION] + [CAMERA MOVE] + [LIGHTING]
     
-    2. SUBJECT must be one of:
-       - High-Speed Vehicles (Supercars, Formula 1, Rally, Drifting, Private Jet taking off)
-       - Combat & Training (Boxing, MMA, Muay Thai, Calisthenics, Weightlifting)
-       - NO STATIC LUXURY: Do NOT use Yachts, Skylines, Watches, Buildings, or Statues.
+    2. SUBJECT must be one of (NO STATIC OBJECTS ALLOWED):
+       - Category A: High-Speed Vehicles (Supercars, Formula 1, Drifting, Rally, Private Jet takeoff)
+       - Category B: Combat & Training (Boxing, MMA, Muay Thai, Calisthenics, Weightlifting)
+       - BANNED: Do NOT use Yachts, Skylines, Watches, Buildings, or Statues.
     
-    3. ACTION must show movement or premium detail:
-       - "interior leather seats night"
-       - "skyline night city lights"
-       - "training professional discipline"
-       - "checking watch luxury close up"
+    3. MANDATORY ALTERNATION (ODD/EVEN RULE):
+       - Segment 0 (Hook): Category A (Speed)
+       - Segment 1: Category B (Combat)
+       - Segment 2: Category A (Speed)
+       - Segment 3: Category B (Combat)
+       - ...and so on.
+       - NEVER use the same category twice in a row.
     
-    4. CAMERA MOVE (pick one per visual):
-       - low angle
-       - dolly zoom
-       - fast pan
-       - tracking shot
-       - close up
-       - slow zoom in
-       - tilt up
-    
-    5. ACTION QUALITY must include (pick TWO):
+    4. ACTION QUALITY must include (pick TWO):
        - "fast"
        - "intense"
        - "aggressive"
        - "speed"
-       - "power"
        - "night"
     
-    6. MANDATORY keywords in EVERY visual:
-       - At least TWO of: "luxury", "expensive", "4k", "cinematic", "premium"
-    
-    7. FORBIDDEN visuals:
-       ❌ "clouds", "rain window", "forest", "shadows", "smoke", "ink water"
-       ❌ "guns", "drugs", "dirty rooms", "grunge", "horror", "prison cells"
+    5. FORBIDDEN visuals:
+       ❌ "clouds", "forest", "shadows", "smoke", "ink water"
+       ❌ "guns", "drugs", "dirty rooms", "grunge", "horror"
+       ❌ "sitting", "standing", "thinking", "walking" (Passive actions)
+
+    ✅ CORRECT VISUAL EXAMPLES:
+    - "Lamborghini aventador night city rain fast cinematic 4k"
+    - "Shadow boxing silhouette night street rain 4k"
+    - "Drifting car smoke tires close up cinematic 4k"
+    - "Muay thai knee strike heavy bag sweat night"
     
     SEGMENT STRUCTURE RULES:
     - Break the body into 8-12 logical sentences for 45s+ video
