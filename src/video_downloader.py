@@ -11,18 +11,20 @@ import config
 CLIP_DURATION = 2.5  # Each video clip duration in seconds (matches video_editor.py)
 MIN_VIDEO_DURATION = 15  # Minimum video duration in seconds to avoid looping with sped-up edits
 
-# High-Adrenaline Action aesthetic fallback keywords for when specific searches fail
+# Strict Action aesthetic fallback keywords - NO racetracks/grass, NO generic running/gym
 DARK_AESTHETIC_FALLBACKS = [
-    "formula 1 racing car dark cinematic",
-    "boxer training heavy bag sweat",
-    "supercar night drive fast neon",
-    "sprinter running fast track night",
-    "gym bodybuilder lifting heavy dark",
-    "drifting car smoke cinematic",
-    "mma fighter training cage",
-    "lamborghini driving night rain",
-    "lion running slow motion dark",  # Kept one animal, but active
-    "man sprinting city night"
+    "supercar night drive fast neon city",
+    "shadow boxing silhouette night street",
+    "lamborghini driving night rain city",
+    "muay thai training dark aggressive",
+    "drifting car smoke night street",
+    "calisthenics muscle up night park",
+    "ferrari speeding highway night",
+    "boxer heavy bag sweat dark gym",
+    "mclaren supercar night city fast",
+    "mma fighter cage training dark",
+    "street racing cars night fast",
+    "kickboxing sparring intense dark"
 ]
 
 # 🚫 STRICT FILTER: Block generic nature, weather, and PASSIVE human actions
@@ -49,16 +51,16 @@ STOIC_EXCEPTIONS = [
 ]
 
 HIGH_ACTION_FALLBACKS = [
-    "shadow boxing dark gym silhouette",
-    "muay thai knee strike training",
-    "calisthenics muscle up night",
-    "boxer jumping rope fast sweat",
-    "heavy bag workout explosive hits",
-    "mma ground and pound training dummy",
-    "sprinting start block night track",
-    "formula 1 pit stop fast",
-    "drifting car tire smoke close up",
-    "supercar launch control flame exhaust"
+    "shadow boxing night street silhouette",
+    "muay thai training dark smoke",
+    "calisthenics muscle up night park",
+    "supercar night city drive neon",
+    "drifting car night smoke tires",
+    "mma fighter cage training dark",
+    "boxer heavy bag workout sweat",
+    "street workout pull ups night",
+    "lamborghini tunnel run night fast",
+    "kickboxing sparring dark cinematic"
 ]
 
 

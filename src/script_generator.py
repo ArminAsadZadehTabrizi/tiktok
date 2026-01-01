@@ -156,52 +156,53 @@ def generate_script(topic=None):
     🏎️ RULE 1: "SPEED OVER STATUS"
     When the script talks about "Success", "Money", "Progress", or "Winning":
     ❌ WRONG: Shows watches, suits, static luxury items
-    ✅ CORRECT: Shows FAST CARS in motion:
-      - "Formula 1 racing car dark cinematic fast motion 4k"
+    ✅ CORRECT: Shows FAST CARS in motion (STREET/NIGHT ONLY):
       - "Supercar night drive fast neon city lights 4k"
-      - "Lamborghini driving night rain fast cinematic 4k"
+      - "Lamborghini driving night city rain fast cinematic 4k"
       - "Ferrari speeding highway night headlights 4k"
+      - "Drifting car smoke night street cinematic 4k"
     
     💪 RULE 2: "PAIN OVER PEACE"
     When the script talks about "Discipline", "Work", "Grind", or "Stoicism":
     ❌ WRONG: Shows meditation, walking, thinking in office
-    ✅ CORRECT: Shows PHYSICAL EXERTION:
-      - "Boxer training heavy bag sweat close up slow motion"
-      - "Sprinter running fast track night intense 4k"
-      - "Gym bodybuilder lifting heavy dark sweat 4k"
+    ✅ CORRECT: Shows COMBAT & NIGHT TRAINING ONLY:
+      - "Shadow boxing silhouette night street rain 4k"
+      - "Boxer training heavy bag sweat night gym dark"
+      - "Muay Thai knee strike training dark cinematic"
       - "MMA fighter training cage aggressive 4k"
+      - "Calisthenics muscle up night park shirtless"
     
     RULE: If the text is abstract, translate it into MOVEMENT VISUALS (speed, intensity, physical power).
     
     🎯 DARKNESS FROM CONTRAST, NOT GRIME: Use premium black backgrounds, night cityscapes, and high-contrast luxury settings.
     
     
-    🎯 YOU MUST ONLY USE THESE 2 HIGH-ADRENALINE ACTION CATEGORIES:
+    🎯 YOU MUST ONLY USE THESE 2 RESTRICTED VISUAL CATEGORIES:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     
-    A. 🏎️💨 SPEED & VELOCITY (Use 50% of segments - Fast Cars, Racing, Motion):
-    - 'Formula 1 racing car dark cinematic fast motion 4k'
+    A. 🏎️💨 STREET SPEED & NIGHT CARS (NO RACETRACKS/GRASS):
     - 'Supercar night drive fast neon city lights 4k'
-    - 'Lamborghini driving night rain fast cinematic 4k'
+    - 'Lamborghini driving night city rain fast cinematic 4k'
     - 'Ferrari speeding highway night headlights 4k expensive'
-    - 'Drifting car smoke cinematic dark fast 4k'
-    - 'Rally car racing dirt night fast headlights 4k'
-    - 'Bugatti veyron accelerating fast dark cinematic 4k'
+    - 'Drifting car smoke cinematic night street 4k'
     - 'McLaren supercar night city fast motion 4k'
-    - 'Porsche 911 turbo night drive fast rain 4k'
-    - 'Race car cockpit view fast motion night 4k'
+    - 'Porsche 911 turbo night drive tunnel fast 4k'
+    - 'Bugatti veyron night street rolling shot 4k'
+    - 'Luxury car interior night city lights bokeh 4k'
+    - 'Street racing cars night fast furious aesthetic 4k'
+    - 'Car chase night city cinematic action 4k'
     
-    B. 💪🥊 INTENSE PHYSICAL EXERTION (Use 50% of segments - Combat Sports, Training, Power):
-    - 'Boxer training heavy bag sweat close up slow motion'
-    - 'Sprinter running fast track night intense 4k'
-    - 'Gym bodybuilder lifting heavy dark sweat 4k'
-    - 'MMA fighter training cage aggressive 4k cinematic'
-    - 'Boxing ring fight intense punches slow motion 4k'
-    - 'Deadlift heavy weights gym struggle veins 4k'
-    - 'Man sprinting city night fast running 4k'
-    - 'Heavy bench press weights struggle gym 4k'
+    B. 🥊 COMBAT & NIGHT CALISTHENICS (NO GENERIC GYM/RUNNING):
+    - 'Shadow boxing silhouette night street rain 4k'
+    - 'Muay Thai knee strike training dark cinematic'
+    - 'Calisthenics muscle up night park shirtless'
+    - 'MMA fighter ground and pound dummy aggressive 4k'
+    - 'Boxer hitting heavy bag sweat night gym dark'
     - 'Kickboxing sparring intense fast aggressive 4k'
-    - 'Athlete push-ups intense sweat gym dark 4k'
+    - 'Street workout pull ups night dark aesthetic'
+    - 'Boxing focus mitts training fast cinematic'
+    - 'MMA cage fighting training dark atmosphere'
+    - 'Man doing pushups night street rain intense'
     
     🔄 2-CATEGORY ALTERNATION RULE (MANDATORY):
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -255,6 +256,8 @@ def generate_script(topic=None):
     EVERY visual MUST follow this exact format:
     
     [SUBJECT] + [ACTION] + [CAMERA MOVE] + [DARK CINEMATIC/MOODY]
+    
+    ❌ NO RACETRACKS: Never use 'Formula 1', 'Rally', or 'Track'. These often show grass/nature. Use 'Night City', 'Tunnel', or 'Highway' instead.
     
     ✅ GOOD EXAMPLES (ULTRA-LUXURY AESTHETIC):
     - "Bugatti interior leather seats night luxury expensive 4k cinematic"
@@ -380,13 +383,13 @@ def generate_script(topic=None):
     - Each segment text = ONE complete sentence
     - Each visual = FULL CINEMATIC QUERY following the formula above
     
-    ✅ CORRECT VISUAL EXAMPLES (2-CATEGORY HIGH-ADRENALINE AESTHETIC):
-    - "Formula 1 racing car dark cinematic fast motion 4k"
-    - "Boxer training heavy bag sweat close up slow motion 4k"
+    ✅ CORRECT VISUAL EXAMPLES (2-CATEGORY RESTRICTED AESTHETIC):
     - "Supercar night drive fast neon city lights 4k cinematic"
-    - "Sprinter running fast track night intense 4k expensive"
-    - "Lamborghini driving night rain fast cinematic 4k luxury"
-    - "Gym bodybuilder lifting heavy dark sweat 4k expensive"
+    - "Shadow boxing silhouette night street rain 4k"
+    - "Lamborghini driving night city rain fast cinematic 4k luxury"
+    - "MMA fighter ground and pound dummy aggressive 4k"
+    - "Ferrari speeding highway night headlights 4k expensive"
+    - "Calisthenics muscle up night park shirtless 4k"
     
     ❌ WRONG VISUAL EXAMPLES (DO NOT USE):
     - "money" (too short, missing luxury keywords)
