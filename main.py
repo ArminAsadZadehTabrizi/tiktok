@@ -97,8 +97,16 @@ def main():
             visual_queries.append(script_data['hook_visual'])
         # Add segment visuals
         if 'segments' in script_data:
-            for segment in script_data['segments']:
-                visual_queries.append(segment['visual'])
+            for i, segment in enumerate(script_data['segments']):
+                # Safe access: If LLM forgets 'visual', fallback to topic + generic keywords
+                fallback_visual = f"{topic or 'dark psychology'} cinematic 4k"
+                visual = segment.get('visual', fallback_visual)
+                
+                # Double safety: Ensure visual is a string
+                if not isinstance(visual, str):
+                    visual = fallback_visual
+                    
+                visual_queries.append(visual)
         
         # Fallback to topic if needed
         fallback_topic = topic if topic else "dark psychology motivation"
