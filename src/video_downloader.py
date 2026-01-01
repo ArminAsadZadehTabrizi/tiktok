@@ -112,9 +112,119 @@ def detect_category_from_query(query):
     return None
 
 
+def check_youtube_url_health(url):
+    """
+    Quickly check if a YouTube URL is accessible without downloading.
+    
+    Args:
+        url (str): YouTube video URL
+    
+    Returns:
+        bool: True if video is accessible, False if unavailable/private/deleted
+    """
+    if not YOUTUBE_AVAILABLE:
+        return False
+    
+    try:
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': True,
+            'skip_download': True,
+            'extract_flat': True,
+        }
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            # If we can extract info, the video is accessible
+            return info is not None
+    except Exception as e:
+        error_msg = str(e).lower()
+        # Check for specific error patterns indicating dead links
+        if any(keyword in error_msg for keyword in [
+            'unavailable', 'private', 'deleted', 'removed', 
+            'copyright', 'blocked', 'not available'
+        ]):
+            return False
+        # For other errors, assume the link might be valid (network issues, etc.)
+        return False
+
+
+def search_youtube_videos(category, max_results=5):
+    """
+    Dynamically search YouTube for videos matching a category.
+    
+    Args:
+        category (str): Category name (CARS/COMBAT/GYM/LUXURY)
+        max_results (int): Maximum number of video URLs to return
+    
+    Returns:
+        list: List of valid YouTube video URLs
+    """
+    if not YOUTUBE_AVAILABLE:
+        return []
+    
+    # Get search queries for this category from config
+    if not hasattr(config, 'YOUTUBE_SEARCH_QUERIES') or category not in config.YOUTUBE_SEARCH_QUERIES:
+        print(f"    ✗ No search queries defined for category: {category}")
+        return []
+    
+    search_queries = config.YOUTUBE_SEARCH_QUERIES[category]
+    min_duration = getattr(config, 'YOUTUBE_MIN_DURATION', 600)  # Default 10 minutes
+    
+    found_urls = []
+    
+    for search_query in search_queries:
+        if len(found_urls) >= max_results:
+            break
+        
+        try:
+            print(f"    🔍 Searching YouTube: '{search_query}'")
+            
+            # Search YouTube using yt-dlp
+            ydl_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                'extract_flat': True,
+                'playlistend': 10,  # Check first 10 results
+            }
+            
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                # Use ytsearch: prefix for YouTube search
+                search_url = f"ytsearch10:{search_query}"
+                search_results = ydl.extract_info(search_url, download=False)
+                
+                if not search_results or 'entries' not in search_results:
+                    continue
+                
+                # Filter results
+                for entry in search_results['entries']:
+                    if len(found_urls) >= max_results:
+                        break
+                    
+                    if entry is None:
+                        continue
+                    
+                    duration = entry.get('duration', 0)
+                    video_url = entry.get('url') or f"https://www.youtube.com/watch?v={entry.get('id')}"
+                    
+                    # Filter criteria
+                    if duration >= min_duration:  # At least 10 minutes
+                        # Quick health check
+                        if check_youtube_url_health(video_url):
+                            found_urls.append(video_url)
+                            print(f"    ✓ Found: {entry.get('title', 'Unknown')[:50]}... ({duration//60} min)")
+                        else:
+                            print(f"    ✗ Skipped unavailable: {entry.get('title', 'Unknown')[:50]}...")
+            
+        except Exception as e:
+            print(f"    ✗ Search error: {str(e)[:80]}")
+            continue
+    
+
+
 def download_youtube_clip(category, output_path, clip_duration=4):
     """
-    Download a random 4-second clip from a YouTube compilation video.
+    Download a random clip from YouTube with dynamic search fallback and multi-format retry.
     
     Args:
         category (str): Category name (CARS/COMBAT/GYM/LUXURY)
@@ -132,83 +242,138 @@ def download_youtube_clip(category, output_path, clip_duration=4):
         print(f"    ✗ Unknown category: {category}")
         return False
     
+    # STRATEGY 1: Try configured URLs first (with health check)
     urls = config.YOUTUBE_SOURCES[category]
-    if not urls:
-        print(f"    ✗ No URLs configured for category: {category}")
+    valid_urls = []
+    
+    if urls:
+        print(f"    🔍 Validating {len(urls)} configured URL(s)...")
+        for url in urls:
+            if check_youtube_url_health(url):
+                valid_urls.append(url)
+                print(f"    ✓ Valid URL")
+            else:
+                print(f"    ✗ Dead/unavailable URL, skipping")
+    
+    # STRATEGY 2: If no valid URLs, use dynamic search
+    enable_search = getattr(config, 'YOUTUBE_ENABLE_SEARCH', True)
+    if not valid_urls and enable_search:
+        print(f"    🔎 No valid configured URLs, falling back to dynamic search...")
+        valid_urls = search_youtube_videos(category, max_results=3)
+        
+        if not valid_urls:
+            print(f"    ✗ Dynamic search returned no results for {category}")
+            return False
+    
+    if not valid_urls:
+        print(f"    ✗ No valid URLs available for category: {category}")
         return False
     
-    # Try up to 3 random videos from the category
+    # STRATEGY 3: Try multiple videos and formats with retry logic
     attempted_urls = []
-    for attempt in range(min(1, len(urls))):
+    max_attempts = 3
+    
+    for attempt in range(min(max_attempts, len(valid_urls))):
         # Pick a random URL we haven't tried yet
-        available_urls = [url for url in urls if url not in attempted_urls]
+        available_urls = [url for url in valid_urls if url not in attempted_urls]
         if not available_urls:
             break
         
         video_url = random.choice(available_urls)
         attempted_urls.append(video_url)
         
-        try:
-            print(f"    🎬 Attempting YouTube clip from {category} (attempt {attempt + 1})")
-            
-            # Get video info without downloading
-            ydl_opts = {
-                'quiet': True,
-                'no_warnings': True,
-                'extract_flat': False,
-            }
-            
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(video_url, download=False)
-                duration = info.get('duration', 0)
+        # Try multiple format strategies for this video
+        format_strategies = [
+            ('best[height<=1080][ext=mp4]/best[ext=mp4]', 'Pre-merged stream'),
+            ('bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]', 'Video+audio merge'),
+            ('best[ext=mp4]/best', 'Any MP4 format'),
+        ]
+        
+        for format_string, format_desc in format_strategies:
+            try:
+                print(f"    🎬 Attempt {attempt + 1}/{max_attempts}: {format_desc}")
                 
-                # Display source video length for user awareness
-                print(f"    ℹ️  Source video length: {duration // 60} minutes")
-                
-                if duration < 120:  # Video too short
-                    print(f"    ✗ Video too short ({duration}s), need at least 2 minutes")
-                    continue
-                
-                # Calculate random start time (avoid first/last 60s)
-                safe_start = 60
-                safe_end = duration - 60 - clip_duration
-                
-                if safe_end <= safe_start:
-                    print(f"    ✗ Video not long enough for safe clip extraction")
-                    continue
-                
-                start_time = random.randint(safe_start, safe_end)
-                end_time = start_time + clip_duration
-                
-                print(f"    ⏱️  Video duration: {duration}s, extracting {start_time}s-{end_time}s")
-                
-                # Download only the specific segment
-                download_opts = {
-                    # Download ONLY high-quality video (no audio) to prevent ffmpeg muxing errors
-                    # Get BEST video stream (1080p or higher) - ignore audio completely
-                    'format': 'bestvideo[height<=1080][ext=mp4]/bestvideo[ext=mp4]',
-                    'outtmpl': str(output_path),
+                # Get video info without downloading
+                ydl_opts = {
                     'quiet': True,
                     'no_warnings': True,
-                    # Precise cutting
-                    'download_ranges': yt_dlp.utils.download_range_func(None, [(start_time, end_time)]),
-                    'force_keyframes_at_cuts': True,
+                    'extract_flat': False,
                 }
                 
-                with yt_dlp.YoutubeDL(download_opts) as ydl_download:
-                    ydl_download.download([video_url])
+                # Add cookie file if configured
+                cookie_file = getattr(config, 'YOUTUBE_COOKIE_FILE', None)
+                if cookie_file:
+                    ydl_opts['cookiefile'] = str(cookie_file)
                 
-                # Verify the file was created
-                if output_path.exists() and output_path.stat().st_size > 0:
-                    print(f"    ✓ YouTube clip downloaded successfully ({category})")
-                    return True
-                else:
-                    print(f"    ✗ Download failed - file not created")
-                    continue
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(video_url, download=False)
+                    duration = info.get('duration', 0)
                     
-        except Exception as e:
-            print(f"    ✗ YouTube download error: {str(e)[:100]}")
-            continue
+                    if duration < 120:  # Video too short
+                        print(f"    ✗ Video too short ({duration}s), need at least 2 minutes")
+                        break  # Try next URL
+                    
+                    # Calculate random start time (avoid first/last 60s)
+                    safe_start = 60
+                    safe_end = duration - 60 - clip_duration
+                    
+                    if safe_end <= safe_start:
+                        print(f"    ✗ Video not long enough for safe clip extraction")
+                        break  # Try next URL
+                    
+                    start_time = random.randint(safe_start, safe_end)
+                    end_time = start_time + clip_duration
+                    
+                    print(f"    ⏱️  Extracting {start_time}s-{end_time}s from {duration}s video")
+                    
+                    # Download only the specific segment
+                    download_opts = {
+                        'format': format_string,
+                        'outtmpl': str(output_path),
+                        'quiet': False,  # Enable output to see ffmpeg errors
+                        'no_warnings': False,
+                        # Precise cutting
+                        'download_ranges': yt_dlp.utils.download_range_func(None, [(start_time, end_time)]),
+                        'force_keyframes_at_cuts': True,
+                    }
+                    
+                    # Add cookie file if configured
+                    if cookie_file:
+                        download_opts['cookiefile'] = str(cookie_file)
+                    
+                    with yt_dlp.YoutubeDL(download_opts) as ydl_download:
+                        ydl_download.download([video_url])
+                    
+                    # Verify the file was created
+                    if output_path.exists() and output_path.stat().st_size > 0:
+                        print(f"    ✓ YouTube clip downloaded successfully ({category}, {format_desc})")
+                        return True
+                    else:
+                        print(f"    ✗ Download failed - file not created")
+                        continue  # Try next format
+                        
+            except yt_dlp.utils.DownloadError as e:
+                error_msg = str(e).lower()
+                
+                # Check for specific error types
+                if 'ffmpeg' in error_msg and 'exit' in error_msg:
+                    print(f"    ✗ FFmpeg error with {format_desc}, trying different format...")
+                    time.sleep(0.5)
+                    continue  # Try next format
+                elif 'sign in' in error_msg or 'age' in error_msg:
+                    print(f"    ✗ Age-restricted content. Export YouTube cookies to youtube_cookies.txt")
+                    break  # Try next URL (cookies won't help with format change)
+                else:
+                    print(f"    ✗ Download error: {str(e)[:100]}")
+                    continue  # Try next format
+                    
+            except Exception as e:
+                print(f"    ✗ Unexpected error: {str(e)[:100]}")
+                continue  # Try next format
+        
+        # Add delay between video attempts
+        if attempt < max_attempts - 1:
+            time.sleep(1)
     
     print(f"    ✗ All YouTube download attempts failed for {category}")
     return False
