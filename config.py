@@ -24,9 +24,36 @@ ASSETS_DIR = BASE_DIR / "assets"
 OUTPUT_DIR = BASE_DIR / "output"
 BACKGROUND_MUSIC_PATH = ASSETS_DIR / "background_music.mp3"
 
+# ==============================================================================
+# 📹 VIDEO SOURCE CONFIGURATION (PRIORITY SYSTEM)
+# ==============================================================================
+# Priority 1: Local Files (assets/my_footage/*.mp4)
+# Priority 2: Curated YouTube List (Below)
+# Priority 3: Automated Search (Fallback)
+
+# ✅ MANUAL CURATED LIST (High Quality / No Text / Dark Aesthetic)
+MANUAL_YOUTUBE_URLS = [
+    "https://www.youtube.com/watch?v=OZBP9lP_WlU",
+    "https://www.youtube.com/watch?v=zMQ3PYM-7lE",
+    "https://www.youtube.com/watch?v=pIHpE3PX4Tg",
+    "https://www.youtube.com/watch?v=6Ny64-5xSk4",
+    "https://www.youtube.com/watch?v=GUrr0vRGke0",
+    "https://www.youtube.com/watch?v=BH6zVRKSOD0",
+    "https://www.youtube.com/watch?v=S_X6WCZZSa8",
+    "https://www.youtube.com/watch?v=w_0kDNPJ2oQ",
+    "https://www.youtube.com/watch?v=_iHuB7tbdXQ",
+    "https://www.youtube.com/watch?v=Vjd4NJaoxIs",
+    "https://www.youtube.com/watch?v=160tqFcKXZM"
+]
+
+# ⚙️ DOWNLOAD SETTINGS
+YOUTUBE_DOWNLOAD_STRATEGY = "stable"  # 'stable' (pre-merged) or 'quality' (separate streams)
+LOCAL_FOOTAGE_DIR = ASSETS_DIR / "my_footage"
+
 # Ensure directories exist
 ASSETS_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
+LOCAL_FOOTAGE_DIR.mkdir(exist_ok=True)  # Create manual footage directory
 
 # Video Settings
 VIDEO_WIDTH = 1080

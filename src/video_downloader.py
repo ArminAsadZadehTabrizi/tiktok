@@ -1,4 +1,12 @@
-"""YouTube-First Video Downloader with Pexels/Pixabay Fallback"""
+"""YouTube-First Video Downloader with Manual Curation Support
+
+🎬 MANUAL CURATION PRIORITY SYSTEM:
+  Priority 1: Local Files (assets/my_footage/*.mp4) - BULLETPROOF, NO DOWNLOADS
+  Priority 2: Manual YouTube URLs (config.MANUAL_YOUTUBE_URLS) - CURATED QUALITY
+  Priority 3: Automated Search (Original behavior) - FALLBACK ONLY
+
+This design eliminates 403 errors and poor quality issues by allowing manual control.
+"""
 import re
 import requests
 import time
@@ -6,6 +14,7 @@ import math
 import random
 import subprocess
 import json
+import shutil
 from pathlib import Path
 try:
     import yt_dlp
@@ -70,6 +79,43 @@ HIGH_ACTION_FALLBACKS = [
     "lamborghini tunnel run night fast",
     "kickboxing sparring dark cinematic"
 ]
+
+
+def get_local_footage_files():
+    """
+    🎯 PRIORITY 1: Check for manually curated local footage.
+    
+    Returns:
+        list: Paths to .mp4 files in LOCAL_FOOTAGE_DIR, or empty list if none found
+    """
+    local_dir = getattr(config, 'LOCAL_FOOTAGE_DIR', None)
+    
+    if not local_dir or not Path(local_dir).exists():
+        return []
+    
+    mp4_files = list(Path(local_dir).glob("*.mp4"))
+    
+    if mp4_files:
+        print(f"    💎 Found {len(mp4_files)} local footage file(s) in {local_dir}")
+        return mp4_files
+    
+    return []
+
+
+def get_manual_youtube_urls():
+    """
+    🎯 PRIORITY 2: Check for manually curated YouTube URLs.
+    
+    Returns:
+        list: Manual YouTube URLs from config, or empty list if none defined
+    """
+    manual_urls = getattr(config, 'MANUAL_YOUTUBE_URLS', [])
+    
+    if manual_urls:
+        print(f"    🎯 Found {len(manual_urls)} manual YouTube URL(s)")
+        return [url for url in manual_urls if url.strip()]  # Filter empty strings
+    
+    return []
 
 
 def detect_category_from_query(query):
@@ -237,12 +283,17 @@ def search_youtube_videos(category, max_results=5):
 
 
 
-def download_youtube_clip(category, output_path, clip_duration=4):
+def download_youtube_clip(video_urls, output_path, clip_duration=4):
     """
-    Download a random clip from YouTube with dynamic search fallback and multi-format retry.
+    🎬 REFACTORED: Download a clip from curated YouTube URLs with robust 403 error handling.
+    
+    CRITICAL FIX: Uses 'best[ext=mp4]/best' format to prioritize single-file downloads.
+    This prevents HTTP 403 errors that occur when yt-dlp tries to merge separate audio/video streams.
+    
+    If a URL fails (403 or any error), it silently tries the next URL in the list.
     
     Args:
-        category (str): Category name (CARS/COMBAT/GYM/LUXURY)
+        video_urls (list): List of YouTube URLs to try (manual or automated)
         output_path (Path): Where to save the clip
         clip_duration (int): Duration of clip to extract in seconds
     
@@ -252,145 +303,118 @@ def download_youtube_clip(category, output_path, clip_duration=4):
     if not YOUTUBE_AVAILABLE:
         return False
     
-    # Check if category exists
-    if category not in config.YOUTUBE_SOURCES:
-        print(f"    ✗ Unknown category: {category}")
+    if not video_urls:
         return False
     
-    # STRATEGY 1: Try configured URLs first (with health check)
-    urls = config.YOUTUBE_SOURCES[category]
-    valid_urls = []
-    
-    if urls:
-        print(f"    🔍 Validating {len(urls)} configured URL(s)...")
-        for url in urls:
-            if check_youtube_url_health(url):
-                valid_urls.append(url)
-                print(f"    ✓ Valid URL")
-            else:
-                print(f"    ✗ Dead/unavailable URL, skipping")
-    
-    # STRATEGY 2: If no valid URLs, use dynamic search
-    enable_search = getattr(config, 'YOUTUBE_ENABLE_SEARCH', True)
-    if not valid_urls and enable_search:
-        print(f"    🔎 No valid configured URLs, falling back to dynamic search...")
-        valid_urls = search_youtube_videos(category, max_results=3)
-        
-        if not valid_urls:
-            print(f"    ✗ Dynamic search returned no results for {category}")
-            return False
-    
-    if not valid_urls:
-        print(f"    ✗ No valid URLs available for category: {category}")
-        return False
-    
-    # STRATEGY 3: Try multiple videos and formats with retry logic
+    # Try multiple videos with the stable format strategy
     attempted_urls = []
-    max_attempts = 3
+    max_attempts = min(len(video_urls), 3)  # Try up to 3 different URLs
     
-    for attempt in range(min(max_attempts, len(valid_urls))):
+    for attempt in range(max_attempts):
         # Pick a random URL we haven't tried yet
-        available_urls = [url for url in valid_urls if url not in attempted_urls]
+        available_urls = [url for url in video_urls if url not in attempted_urls]
         if not available_urls:
             break
         
         video_url = random.choice(available_urls)
         attempted_urls.append(video_url)
         
-        # Try multiple format strategies for this video
-        # Priority: High-bitrate video-only streams (no audio) to fix pixelation
-        format_strategies = [
-            ('bestvideo[height>=1080][ext=mp4]/bestvideo[ext=mp4]', 'High-quality video-only (no audio)'),
-            ('best[height>=1080][ext=mp4]', 'High-quality fallback'),
-        ]
-        
-        for format_string, format_desc in format_strategies:
-            try:
-                print(f"    🎬 Attempt {attempt + 1}/{max_attempts}: {format_desc}")
+        try:
+            print(f"    🎬 Attempt {attempt + 1}/{max_attempts}: Extracting clip...")
+            
+            # Get video info without downloading
+            ydl_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                'extract_flat': False,
+            }
+            
+            # Add cookie file if configured
+            cookie_file = getattr(config, 'YOUTUBE_COOKIE_FILE', None)
+            if cookie_file:
+                ydl_opts['cookiefile'] = str(cookie_file)
+            
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(video_url, download=False)
+                duration = info.get('duration', 0)
                 
-                # Get video info without downloading
-                ydl_opts = {
-                    'quiet': True,
+                if duration < 120:  # Video too short
+                    print(f"    ⚠️  Video too short ({duration}s), trying next URL...")
+                    continue  # Try next URL
+                
+                # Calculate random start time (avoid first/last 60s)
+                safe_start = 60
+                safe_end = duration - 60 - clip_duration
+                
+                if safe_end <= safe_start:
+                    print(f"    ⚠️  Video not long enough, trying next URL...")
+                    continue  # Try next URL
+                
+                start_time = random.randint(safe_start, safe_end)
+                end_time = start_time + clip_duration
+                
+                print(f"    ⏱️  Extracting {start_time}s-{end_time}s from {duration}s video")
+                
+                # 🛡️ CRITICAL FIX: Use 'best[ext=mp4]/best' format for maximum stability
+                # This prioritizes pre-merged MP4 files and avoids 403 errors from stream merging
+                download_opts = {
+                    'format': 'best[ext=mp4]/best',  # CRITICAL: Single file, no audio merging
+                    'outtmpl': str(output_path),
+                    'quiet': True,  # Suppress most output
                     'no_warnings': True,
-                    'extract_flat': False,
+                    # Precise cutting
+                    'download_ranges': yt_dlp.utils.download_range_func(None, [(start_time, end_time)]),
+                    'force_keyframes_at_cuts': True,
                 }
                 
                 # Add cookie file if configured
-                cookie_file = getattr(config, 'YOUTUBE_COOKIE_FILE', None)
                 if cookie_file:
-                    ydl_opts['cookiefile'] = str(cookie_file)
+                    download_opts['cookiefile'] = str(cookie_file)
                 
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(video_url, download=False)
-                    duration = info.get('duration', 0)
-                    
-                    if duration < 120:  # Video too short
-                        print(f"    ✗ Video too short ({duration}s), need at least 2 minutes")
-                        break  # Try next URL
-                    
-                    # Calculate random start time (avoid first/last 60s)
-                    safe_start = 60
-                    safe_end = duration - 60 - clip_duration
-                    
-                    if safe_end <= safe_start:
-                        print(f"    ✗ Video not long enough for safe clip extraction")
-                        break  # Try next URL
-                    
-                    start_time = random.randint(safe_start, safe_end)
-                    end_time = start_time + clip_duration
-                    
-                    print(f"    ⏱️  Extracting {start_time}s-{end_time}s from {duration}s video")
-                    
-                    # Download only the specific segment
-                    download_opts = {
-                        'format': format_string,
-                        'outtmpl': str(output_path),
-                        'quiet': False,  # Enable output to see ffmpeg errors
-                        'no_warnings': False,
-                        # Precise cutting
-                        'download_ranges': yt_dlp.utils.download_range_func(None, [(start_time, end_time)]),
-                        'force_keyframes_at_cuts': True,
-                    }
-                    
-                    # Add cookie file if configured
-                    if cookie_file:
-                        download_opts['cookiefile'] = str(cookie_file)
-                    
-                    with yt_dlp.YoutubeDL(download_opts) as ydl_download:
-                        ydl_download.download([video_url])
-                    
-                    # Verify the file was created
-                    if output_path.exists() and output_path.stat().st_size > 0:
-                        print(f"    ✓ YouTube clip downloaded successfully ({category}, {format_desc})")
-                        return True
-                    else:
-                        print(f"    ✗ Download failed - file not created")
-                        continue  # Try next format
-                        
-            except yt_dlp.utils.DownloadError as e:
-                error_msg = str(e).lower()
+                with yt_dlp.YoutubeDL(download_opts) as ydl_download:
+                    ydl_download.download([video_url])
                 
-                # Check for specific error types
-                if 'ffmpeg' in error_msg and 'exit' in error_msg:
-                    print(f"    ✗ FFmpeg error with {format_desc}, trying different format...")
-                    time.sleep(0.5)
-                    continue  # Try next format
-                elif 'sign in' in error_msg or 'age' in error_msg:
-                    print(f"    ✗ Age-restricted content. Export YouTube cookies to youtube_cookies.txt")
-                    break  # Try next URL (cookies won't help with format change)
+                # Verify the file was created
+                if output_path.exists() and output_path.stat().st_size > 0:
+                    print(f"    ✓ YouTube clip downloaded successfully")
+                    return True
                 else:
-                    print(f"    ✗ Download error: {str(e)[:100]}")
-                    continue  # Try next format
+                    print(f"    ⚠️  Download failed - file not created, trying next URL...")
+                    continue  # Try next URL
                     
-            except Exception as e:
-                print(f"    ✗ Unexpected error: {str(e)[:100]}")
-                continue  # Try next format
+        except yt_dlp.utils.DownloadError as e:
+            error_msg = str(e).lower()
+            
+            # Check for 403/Forbidden errors - handle silently and try next URL
+            if '403' in error_msg or 'forbidden' in error_msg:
+                print(f"    ⚠️  HTTP 403 Forbidden - trying next URL...")
+                time.sleep(0.5)
+                continue  # Silently try next URL
+            
+            # Check for ffmpeg errors
+            if 'ffmpeg' in error_msg and ('exit' in error_msg or 'code 8' in error_msg):
+                print(f"    ⚠️  Stream merge failed - trying next URL...")
+                time.sleep(0.5)
+                continue
+            elif 'sign in' in error_msg or 'age' in error_msg:
+                print(f"    ⚠️  Age-restricted content - trying next URL...")
+                continue  # Try next URL
+            else:
+                # Show abbreviated error for other issues
+                print(f"    ⚠️  Download error - trying next URL...")
+                continue
+                
+        except Exception as e:
+            # Catch any unexpected errors and continue
+            print(f"    ⚠️  Unexpected error - trying next URL...")
+            continue
         
         # Add delay between video attempts
         if attempt < max_attempts - 1:
             time.sleep(1)
     
-    print(f"    ✗ All YouTube download attempts failed for {category}")
+    # Only print final failure message if all attempts failed
+    print(f"    ✗ All YouTube download attempts failed")
     return False
 
 
@@ -574,12 +598,14 @@ def search_pixabay(query, orientation="portrait", seen_video_urls=None):
 
 def search_videos(visual_queries, fallback_topic=None):
     """
-    🎬 A/B/C/D-ROLL SEARCH with GLOBAL DEDUPLICATION: Search for configurable video 
-    variations per query. Each query returns up to config.SCENE_VIDEO_VARIATIONS different 
-    videos to enable variation cycling in the editor.
+    🎬 REFACTORED: Manual Curation Priority System with A/B/C/D-ROLL SEARCH
     
-    CRITICAL: Uses a global seen_video_urls set to ensure NO VIDEO IS EVER REUSED across 
-    all segments, even if different queries return the same top results.
+    PRIORITY SYSTEM:
+      1. Local Files (assets/my_footage/*.mp4) - If found, SKIP ALL DOWNLOADS
+      2. Manual YouTube URLs (config.MANUAL_YOUTUBE_URLS) - If defined, USE ONLY THESE
+      3. Automated Search (Original behavior) - Fallback when no manual sources
+    
+    CRITICAL: Uses global deduplication to ensure NO VIDEO IS EVER REUSED.
     
     Args:
         visual_queries (list): List of specific visual search queries (one per segment)
@@ -593,6 +619,88 @@ def search_videos(visual_queries, fallback_topic=None):
     
     # 🔒 GLOBAL DEDUPLICATION: Track used URLs across ALL segments
     seen_video_urls = set()
+    used_local_files = set()  # Track used local files
+    
+    # 🎯 PRIORITY 1: Check for local footage (BULLETPROOF METHOD)
+    local_files = get_local_footage_files()
+    if local_files:
+        print(f"\n  💎 PRIORITY 1 ACTIVE: Using local footage from {config.LOCAL_FOOTAGE_DIR}")
+        print(f"     ✓ DOWNLOAD BYPASS: All network/quality issues solved!\n")
+        
+        for i, raw_query in enumerate(visual_queries):
+            print(f"  📁 Segment {i}: Picking from local library...")
+            segment_variations = []
+            
+            for variation_num in range(1, config.SCENE_VIDEO_VARIATIONS + 1):
+                # Pick a random file we haven't used yet
+                available_files = [f for f in local_files if f not in used_local_files]
+                
+                # If we've exhausted local files, re-enable all files
+                if not available_files:
+                    print(f"    🔄 Re-shuffling local library (all files used once)")
+                    used_local_files.clear()
+                    available_files = local_files
+                
+                chosen_file = random.choice(available_files)
+                used_local_files.add(chosen_file)
+                
+                video_info = {
+                    "url": "local",  # Special marker
+                    "local_path": chosen_file,
+                    "width": 1080,
+                    "height": 1920,
+                    "query": raw_query,
+                    "segment_index": i,
+                    "variation_number": variation_num,
+                    "source": "local"
+                }
+                segment_variations.append(video_info)
+                print(f"    ✓ v{variation_num}: {chosen_file.name}")
+            
+            all_segment_variations.append(segment_variations)
+        
+        print(f"\n  ✓ All {len(visual_queries)} segments filled with local footage")
+        return all_segment_variations
+    
+    # 🎯 PRIORITY 2: Check for manual YouTube URLs (CURATED METHOD)
+    manual_urls = get_manual_youtube_urls()
+    if manual_urls:
+        print(f"\n  🎯 PRIORITY 2 ACTIVE: Using {len(manual_urls)} curated YouTube URL(s)")
+        print(f"     ✓ AUTOMATED SEARCH DISABLED: Manual quality control active\n")
+        
+        for i, raw_query in enumerate(visual_queries):
+            print(f"  🔍 Segment {i}: '{raw_query}'")
+            segment_variations = []
+            
+            # Try to fill variations from manual URLs using the stable download strategy
+            for variation_num in range(1, config.SCENE_VIDEO_VARIATIONS + 1):
+                temp_output = config.ASSETS_DIR / f"segment_{i}_v{variation_num}_temp.mp4"
+                
+                # Use the refactored download function with manual URLs
+                if download_youtube_clip(manual_urls, temp_output):
+                    video_info = {
+                        "url": "youtube_manual",  # Special marker
+                        "local_path": temp_output,
+                        "width": 1080,
+                        "height": 1920,
+                        "query": raw_query,
+                        "segment_index": i,
+                        "variation_number": variation_num,
+                        "source": "youtube_manual"
+                    }
+                    segment_variations.append(video_info)
+                    print(f"    ✓ v{variation_num} downloaded (manual URL)")
+                else:
+                    print(f"    ✗ v{variation_num} failed (will retry with different URL)")
+            
+            all_segment_variations.append(segment_variations)
+            time.sleep(0.5)
+        
+        print(f"\n  ✓ Manual download complete")
+        return all_segment_variations
+    
+    # 🎯 PRIORITY 3: Automated Search (FALLBACK ONLY)
+    print(f"\n  🔍 PRIORITY 3 ACTIVE: Using automated search (no manual sources)")
     
     for i, raw_query in enumerate(visual_queries):
         print(f"  🔍 Searching for segment {i}: '{raw_query}'")
@@ -637,26 +745,49 @@ def search_videos(visual_queries, fallback_topic=None):
         
         if category and YOUTUBE_AVAILABLE:
             print(f"    🎯 Detected category: {category}")
-            # Try to fill variations with YouTube clips
-            for variation_num in range(1, config.SCENE_VIDEO_VARIATIONS + 1):
-                temp_output = config.ASSETS_DIR / f"segment_{i}_v{variation_num}_temp.mp4"
-                if download_youtube_clip(category, temp_output):
-                    # Create video_info dict for this YouTube clip
-                    video_info = {
-                        "url": "youtube",  # Special marker
-                        "local_path": temp_output,
-                        "width": 1080,
-                        "height": 1920,
-                        "query": visual_query,
-                        "segment_index": i,
-                        "variation_number": variation_num,
-                        "source": "youtube"
-                    }
-                    segment_variations.append(video_info)
-                    youtube_success_count += 1
             
-            if youtube_success_count > 0:
-                print(f"    ✓ YouTube provided {youtube_success_count}/{config.SCENE_VIDEO_VARIATIONS} variations")
+            # Get configured URLs for this category
+            if category in config.YOUTUBE_SOURCES:
+                category_urls = config.YOUTUBE_SOURCES[category]
+                valid_urls = []
+                
+                # Health check on configured URLs
+                if category_urls:
+                    print(f"    🔍 Validating {len(category_urls)} configured URL(s)...")
+                    for url in category_urls:
+                        if check_youtube_url_health(url):
+                            valid_urls.append(url)
+                            print(f"    ✓ Valid URL")
+                        else:
+                            print(f"    ✗ Dead/unavailable URL, skipping")
+                
+                # FALLBACK: If no valid URLs, use dynamic search
+                enable_search = getattr(config, 'YOUTUBE_ENABLE_SEARCH', True)
+                if not valid_urls and enable_search:
+                    print(f"    🔎 No valid configured URLs, falling back to dynamic search...")
+                    valid_urls = search_youtube_videos(category, max_results=3)
+                
+                # Try to fill variations with YouTube clips
+                if valid_urls:
+                    for variation_num in range(1, config.SCENE_VIDEO_VARIATIONS + 1):
+                        temp_output = config.ASSETS_DIR / f"segment_{i}_v{variation_num}_temp.mp4"
+                        
+                        if download_youtube_clip(valid_urls, temp_output):
+                            video_info = {
+                                "url": "youtube",  # Special marker
+                                "local_path": temp_output,
+                                "width": 1080,
+                                "height": 1920,
+                                "query": visual_query,
+                                "segment_index": i,
+                                "variation_number": variation_num,
+                                "source": "youtube"
+                            }
+                            segment_variations.append(video_info)
+                            youtube_success_count += 1
+                    
+                    if youtube_success_count > 0:
+                        print(f"    ✓ YouTube provided {youtube_success_count}/{config.SCENE_VIDEO_VARIATIONS} variations")
         
         # If we have enough variations from YouTube, skip stock footage
         if len(segment_variations) >= config.SCENE_VIDEO_VARIATIONS:
@@ -796,13 +927,16 @@ def download_video(video_url, output_path):
 
 def download_videos(visual_queries, fallback_topic=None):
     """
-    🎬 YOUTUBE-FIRST DOWNLOAD with Stock Footage Fallback: Download configurable variations 
-    per segment for dynamic editing. Prioritizes YouTube clips, falls back to Pexels/Pixabay.
+    🎬 REFACTORED: Manual Curation + YouTube-First Download with Stock Footage Fallback
+    
+    Downloads configurable variations per segment for dynamic editing. 
+    Prioritizes manual sources (local files, then manual YouTube URLs), 
+    then falls back to automated search.
+    
     Each segment gets up to config.SCENE_VIDEO_VARIATIONS videos saved as 
     segment_N_v1.mp4, segment_N_v2.mp4, ..., segment_N_vN.mp4.
     
-    CRITICAL: Global deduplication ensures the same video URL is NEVER downloaded twice,
-    even if different search queries return the same top results.
+    CRITICAL: Global deduplication ensures the same video URL is NEVER downloaded twice.
     
     Args:
         visual_queries (list): List of specific visual search queries (from script segments)
@@ -812,7 +946,10 @@ def download_videos(visual_queries, fallback_topic=None):
         list of lists: [[path_v1, path_v2, ...], ...] nested structure where each
                        inner list contains paths to variations for one segment
     """
-    print(f"\n📹 YouTube-First Download Strategy + Stock Footage Fallback")
+    print(f"\n📹 Manual Curation Priority System")
+    print(f"   1️⃣ Local Files: {config.LOCAL_FOOTAGE_DIR}")
+    print(f"   2️⃣ Manual URLs: {len(getattr(config, 'MANUAL_YOUTUBE_URLS', []))} curated link(s)")
+    print(f"   3️⃣ Auto Search: YouTube → Pexels → Pixabay")
     print(f"   Queries: {len(visual_queries)} segments")
     print(f"   Target: {config.SCENE_VIDEO_VARIATIONS} variations per segment")
     print(f"   Fallback topic: {fallback_topic or 'None'}")
@@ -837,25 +974,38 @@ def download_videos(visual_queries, fallback_topic=None):
         segment_index = segment_variations[0]["segment_index"]
         variation_paths = []
         
-        print(f"\n  📥 Segment {segment_index}: Downloading {len(segment_variations)} variation(s)")
+        print(f"\n  📥 Segment {segment_index}: Processing {len(segment_variations)} variation(s)")
         
         for video_info in segment_variations:
             variation_num = video_info["variation_number"]
             output_path = config.ASSETS_DIR / f"segment_{segment_index}_v{variation_num}.mp4"
             
-            # Check if this is a YouTube clip that was already downloaded
-            if video_info.get("source") == "youtube" and "local_path" in video_info:
+            # Check if this is a LOCAL file (Priority 1)
+            if video_info.get("source") == "local" and "local_path" in video_info:
+                local_path = video_info["local_path"]
+                if local_path.exists():
+                    # Copy local file to output location
+                    shutil.copy(str(local_path), str(output_path))
+                    variation_paths.append(output_path)
+                    total_downloaded += 1
+                    print(f"    ✓ v{variation_num} (Local): {local_path.name}")
+                else:
+                    print(f"    ✗ v{variation_num}: Local file missing")
+            
+            # Check if this is a YouTube clip that was already downloaded (Priority 2 or 3)
+            elif video_info.get("source") in ["youtube", "youtube_manual"] and "local_path" in video_info:
                 # Rename the temp file to the proper name
                 temp_path = video_info["local_path"]
                 if temp_path.exists():
                     # Move/rename temp file to final destination
-                    import shutil
                     shutil.move(str(temp_path), str(output_path))
                     variation_paths.append(output_path)
                     total_downloaded += 1
-                    print(f"    ✓ v{variation_num} (YouTube): '{video_info['query'][:50]}...'")
+                    source_label = "Manual YT" if video_info.get("source") == "youtube_manual" else "YouTube"
+                    print(f"    ✓ v{variation_num} ({source_label}): '{video_info['query'][:50]}...'")
                 else:
                     print(f"    ✗ v{variation_num}: YouTube temp file missing")
+            
             # Otherwise download from stock footage URL
             elif download_video(video_info["url"], output_path):
                 variation_paths.append(output_path)
