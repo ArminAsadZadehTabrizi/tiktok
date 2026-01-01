@@ -413,6 +413,9 @@ def search_videos(visual_queries, fallback_topic=None):
     seen_video_urls = set()
     
     for i, raw_query in enumerate(visual_queries):
+        print(f"  🔍 Searching for segment {i}: '{raw_query}'")
+        segment_variations = []  # <--- INITIALIZE HERE (Prevents crash if YouTube fails)
+        
         # ✨ CLEAN THE QUERY FIRST
         visual_query = clean_and_map_query(raw_query)
         print(f"  🧹 Cleaned Query: '{raw_query}' -> '{visual_query}'")
