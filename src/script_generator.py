@@ -195,7 +195,18 @@ def generate_script(topic=None):
     Write a script for a viral YouTube Short/TikTok.
     
     STRUCTURE (Total word count MUST be 130-140 words. Video MUST be 45-55 seconds):
-    1. The Hook (0-3s): MAXIMUM 7 words. MUST be a punchy one-liner. Start with direct viewer address ("You...", "Stop scrolling...", "Never..."). State a shocking fact or command. End with punctuation (. ? !). Examples: "Stop scrolling." / "You are being lied to." / "Never trust first impressions."
+    1. The Hook (0-3s): MAXIMUM 7 words. MUST be a "Pattern Interrupt" or "Status Attack".
+       - RULES:
+         - DO NOT use generic openers like "Did you know".
+         - ATTACK the viewer's status quo ("You are weak", "You stay poor").
+         - Or REVEAL a conspiracy ("They lied to you", "The Matrix is real").
+         - MUST trigger an immediate emotional response (Anger, Fear, Ambition).
+       - EXAMPLES:
+         - "Poverty is a choice."
+         - "Your friends secretly hate you."
+         - "You are being programmed."
+         - "Stop being a victim."
+         - "They want you weak."
     2. The Concept (3-20s): Explain the SPECIFIC psychological concept or law (Name the law/theory!). Explain HOW it works mechanically.
     3. The Application (20-45s): Give ONE specific example of this in real life and ONE specific thing to do differently. 
     4. Call to Action (45-55s): A final dark truth or realization. Then "Subscribe for more psychology."

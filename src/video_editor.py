@@ -179,8 +179,8 @@ def create_headline_hook(text, start, duration):
     """
     if duration < 0.3: duration = 0.3
     
-    # 🚨 WARNING SIGN AESTHETIC: Bright Red for maximum attention
-    foreground_color = "#FF0000"  # Bright Red
+    # 💎 LUXURY STATUS AESTHETIC: Gold for High-Value / Success vibe
+    foreground_color = "#FFD700"  # Luxury Gold
     font_size = config.CAPTION_FONTSIZE + 60  # MASSIVE size (140px typically)
     stroke_width = 12  # Extra thick stroke for "warning sign" effect
     
