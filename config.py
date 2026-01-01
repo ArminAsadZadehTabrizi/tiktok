@@ -66,31 +66,32 @@ CAPTION_POSITION = "center"
 LLM_MODEL = "gpt-4o"
 LLM_TEMPERATURE = 0.8
 
-# 🎥 YOUTUBE SOURCE POOLS (Verified High-Quality Sources)
-# The bot will pick a random video, random timestamp, and rip a 4s clip.
+# 🎥 YOUTUBE SOURCE POOLS (Verified & High-Traffic Sources)
 YOUTUBE_SOURCES = {
-    # 🏎️ FAST & AGGRESSIVE (Autos)
+    # 🏎️ FAST & AGGRESSIVE (Car Cinematography Channels)
     "CARS": [
-        "https://www.youtube.com/watch?v=ppqH2tYyY6o",  # Woyshnis Media (Best Car Edits)
-        "https://www.youtube.com/watch?v=0pLd8V0GzZw",  # Night Run (High Quality)
-        "https://www.youtube.com/watch?v=WJ93MQy_6F0",  # Tokyo Night Drive
+        "https://www.youtube.com/watch?v=ppqH2tYyY6o", # Woyshnis Media (The King of Car Edits)
+        "https://www.youtube.com/watch?v=0pLd8V0GzZw", # Night Run (High Quality)
+        "https://www.youtube.com/watch?v=WJ93MQy_6F0", # Tokyo Night Drive (4K)
+        "https://www.youtube.com/watch?v=1La4QzGeaaQ", # Supercars at Night
     ],
-    # 🥊 COMBAT & DISCIPLINE (Kampfsport)
+    # 🥊 COMBAT & DISCIPLINE (Official Training Camps)
     "COMBAT": [
-        "https://www.youtube.com/watch?v=_YqgC7t87vY",  # Mike Tyson Training (Official)
-        "https://www.youtube.com/watch?v=k9X7X5G7zZw",  # Canelo Training
-        "https://www.youtube.com/watch?v=jY7Xn_s3nOU",  # Lomachenko (Matrix style)
+        "https://www.youtube.com/watch?v=_YqgC7t87vY", # Mike Tyson Training (Official)
+        "https://www.youtube.com/watch?v=k9X7X5G7zZw", # Canelo Training Highlights
+        "https://www.youtube.com/watch?v=jY7Xn_s3nOU", # Lomachenko Training (Matrix Style)
     ],
-    # 💪 GYM & CALISTHENICS (Nacht/Outdoor Training)
+    # 💪 GYM & CALISTHENICS (Verified Fitness Channels)
     "GYM": [
-        "https://www.youtube.com/watch?v=J9f2g3Q9s4A",  # Street Workout Night
-        "https://www.youtube.com/watch?v=VR1-10B5dBY",  # David Goggins Motivation
-        "https://www.youtube.com/watch?v=P28dgyW7WQA",  # Chris Heria Night Training
+        "https://www.youtube.com/watch?v=J9f2g3Q9s4A", # Street Workout Night Motivation
+        "https://www.youtube.com/watch?v=VR1-10B5dBY", # David Goggins Motivation (Official)
+        "https://www.youtube.com/watch?v=P28dgyW7WQA", # Chris Heria Night Training (Official)
     ],
-    # 💰 WEALTH & EMPIRE (Villen, Yachten, Jets)
+    # 💰 WEALTH & EMPIRE (Mega Mansions & Jets)
     "LUXURY": [
-        "https://www.youtube.com/watch?v=OpZ_gW-z_ME",  # Monaco Luxury Lifestyle
-        "https://www.youtube.com/watch?v=1M7a65978rU",  # Private Jet Cinematic
-        "https://www.youtube.com/watch?v=vUgOZzLktTU",  # Dark Luxury Mansion
+        "https://www.youtube.com/watch?v=OpZ_gW-z_ME", # Monaco Luxury Lifestyle (High Viewcount)
+        "https://www.youtube.com/watch?v=vUgOZzLktTU", # Dark Luxury Mansion Tour
+        "https://www.youtube.com/watch?v=Bearq7QeJk0", # Billionaire Yacht Lifestyle
+        "https://www.youtube.com/watch?v=1M7a65978rU", # Private Jet Cinematic
     ]
 }
