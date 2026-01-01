@@ -127,6 +127,10 @@ def generate_script(topic=None):
     ❌ NO literal re-enactments of the narration
     ❌ NO guns, drugs, dirty rooms, grunge, horror, or prison cells
     
+    ❌ NO WEATHER: No storms, no rain, no lightning, no clouds. If you want "atmosphere", use "Neon City" or "Dark Smoke".
+    
+    ❌ NO PASSIVE PEOPLE: No one just sitting, standing, or thinking. Characters must be MOVING (Driving, Fighting, Training, Running).
+    
     🚫 HARD BAN - FOOD & CONSUMPTION:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     ❌ NO food of any kind (chocolate, candy, sweets, eating, restaurants)

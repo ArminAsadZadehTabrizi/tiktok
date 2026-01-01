@@ -24,17 +24,27 @@ DARK_AESTHETIC_FALLBACKS = [
     "man sprinting city night"
 ]
 
-# 🚫 STRICT ACTION ENFORCEMENT: Intercept weak nature/atmospheric queries
+# 🚫 STRICT FILTER: Block generic nature, weather, and PASSIVE human actions
 WEAK_VISUAL_TERMS = [
+    # Nature & Weather (Roots)
     "ocean", "sea", "water", "river", "lake", "beach", "sand",
-    "forest", "tree", "woods", "nature", "flower",
-    "sky", "cloud", "sun", "sunrise", "sunset",
-    "grass", "field", "mountain", "landscape"
+    "forest", "tree", "wood", "nature", "flower", "garden",
+    "sky", "cloud", "sun", "rain", "storm", "fog", "mist", "weather",
+    "grass", "field", "mountain", "landscape", "hill", "cliff",
+    
+    # Passive/Boring Human Actions
+    "sitting", "standing", "thinking", "walking alone", "looking", 
+    "depressed", "sad", "lonely", "chair", "bench", "bed", "sleeping",
+    "room", "wall", "window", "reading", "writing", "paper"
 ]
 
+# ✅ ALLOWED STOIC CONCEPTS (Removed weather terms)
 STOIC_EXCEPTIONS = [
-    "statue", "marble", "sculpture", "chess",
-    "lion", "wolf", "eagle", "storm", "thunder", "rain"
+    "statue", "marble", "sculpture", "bust",
+    "chess", "king", "queen", "rook",
+    "lion", "wolf", "eagle", "tiger", "panther",
+    "hourglass", "skull" 
+    # REMOVED: storm, rain, thunder (too generic)
 ]
 
 HIGH_ACTION_FALLBACKS = [
@@ -214,19 +224,20 @@ def search_videos(visual_queries, fallback_topic=None):
     seen_video_urls = set()
     
     for i, visual_query in enumerate(visual_queries):
-        # 🚫 STRICT ACTION ENFORCEMENT: Intercept weak nature/atmospheric queries
+        # 🚫 STRICT ACTION ENFORCEMENT
         original_query = visual_query
         query_lower = visual_query.lower()
-        query_words = query_lower.split()
         
-        # Check if query contains any weak visual terms
-        has_weak_term = any(weak_term in query_words for weak_term in WEAK_VISUAL_TERMS)
+        # Check if query contains any weak term as a SUBSTRING
+        # (e.g., "clouds" contains "cloud", "trees" contains "tree")
+        has_weak_term = any(weak_term in query_lower for weak_term in WEAK_VISUAL_TERMS)
         
-        # Check if query contains any stoic exceptions
-        has_stoic_exception = any(stoic_term in query_words for stoic_term in STOIC_EXCEPTIONS)
+        # Check for stoic exceptions
+        has_stoic_exception = any(stoic_term in query_lower for stoic_term in STOIC_EXCEPTIONS)
         
-        # If weak term detected AND no stoic exception, replace query with high-action fallback
+        # LOGIC: Block weak terms UNLESS it's a specific stoic object
         if has_weak_term and not has_stoic_exception:
+            # Pick a random high-action fallback
             visual_query = random.choice(HIGH_ACTION_FALLBACKS)
             print(f"  🚫 Intercepted weak query '{original_query}'. Replaced with Action Fallback: '{visual_query}'")
         
