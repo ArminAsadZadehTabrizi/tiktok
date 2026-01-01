@@ -5,17 +5,38 @@ import os
 import random
 import config
 
-# DARK PSYCHOLOGY & HUMAN NATURE TOPICS: Specific psychological theories and paradoxes
+# EXPANDED VIRAL TOPICS: Money, Power, Dark Psychology, Modern Dominance
 VIRAL_TOPICS = [
-    "The Crab Bucket Theory (Why friends hold you back)",
-    "The Ben Franklin Effect (How to make enemies like you)",
-    "The Spotlight Effect (Nobody actually cares about you)",
-    "The Sunk Cost Fallacy (Why you stay in bad relationships)",
-    "Parkinson's Law (Why you waste time)",
-    "The 80/20 Rule (Pareto Principle) applied to social life",
-    "The Doorway Effect (Why you forget things entering a room)",
-    "Stoicism: Memento Mori (The power of remembering death)",
-    "Dark Psychology: Triangulation in relationships"
+    # MONEY & POWER LAWS
+    "The Matthew Effect (Why the rich get richer)",
+    "Price's Law (Why 50% of employees are useless)",
+    "The Cantillon Effect (How inflation steals your wealth)",
+    "Gresham's Law (Why bad behavior drives out good)",
+    "The Pareto Principle (80/20 Rule) in Business",
+    "Opportunity Cost (The real cost of your Netflix addiction)",
+    "Survivorship Bias (Why you shouldn't listen to losers)",
+    
+    # DARK PSYCHOLOGY & MANIPULATION
+    "The Ben Franklin Effect (Make enemies serve you)",
+    "The Halo Effect (Why looks matter more than skills)",
+    "Social Proof (How to hack authority)",
+    "Scarcity Principle (Creating artificial value)",
+    "Reciprocity Traps (How free gifts enslave you)",
+    "Gaslighting Signs (Are you being manipulated?)",
+    "Triangulation (The narcissist's favorite weapon)",
+    "Machiavellianism (The art of strategic cruelty)",
+    "Love Bombing (The most dangerous relationship trap)",
+    
+    # MODERN STATUS & COMPETITION
+    "The Crab Bucket Theory (Why friends sabotage you)",
+    "Tall Poppy Syndrome (Why society hates winners)",
+    "Hypergamy (The uncomfortable truth about dating)",
+    "The Spotlight Effect (Nobody cares about your failures)",
+    "Analysis Paralysis (Why smart people stay poor)",
+    "The Sunk Cost Fallacy (When to quit)",
+    "Parkinson's Law (Why you are slow)",
+    "Gatekeeping (How elites keep you out)",
+    "The Doorway Effect (glitches in the brain)"
 ]
 
 def generate_script(topic=None):
@@ -28,6 +49,66 @@ def generate_script(topic=None):
     Instead, you explain specific psychological biases, economic laws, or uncomfortable truths about human nature.
     Your tone is analytical, slightly dark, and revealing. You are teaching the viewer a secret weapon.
     Your hooks are SHORT and BRUTAL. Never exceed 7 words for hooks.
+    
+    ═══════════════════════════════════════════════════════════════════
+    🔥 TEXT STYLE RULES - MODERN DOMINANCE LANGUAGE 🔥
+    ═══════════════════════════════════════════════════════════════════
+    
+    🚫 NO "ANCIENT WISDOM" METAPHORS:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    DO NOT use metaphors about:
+    ❌ Nature (rivers, trees, mountains, seasons, forests)
+    ❌ Elements (water, fire, earth, wind)
+    ❌ Weather (storms, rain, snow)
+    ❌ Plants (seeds, roots, growth, flowers)
+    
+    ✅ USE MODERN POWER METAPHORS FROM:
+    - 💰 MARKETS (portfolios, assets, investments, ROI, capital)
+    - ⚔️ WAR (strategies, tactics, conquests, territories, weapons)
+    - 🏆 SPORTS (competitions, championships, victories, training camps)
+    - 🖥️ TECHNOLOGY (algorithms, systems, code, networks, optimization)
+    
+    📊 CONCRETE EXAMPLES - LANGUAGE TRANSLATION:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ❌ BAD (Ancient Wisdom): "Be strong like a mountain."
+    ✅ GOOD (Modern Dominance): "Be unshakeable like a bank vault."
+    
+    ❌ BAD (Ancient Wisdom): "Flow like water."
+    ✅ GOOD (Modern Dominance): "Adapt like an algorithm."
+    
+    ❌ BAD (Ancient Wisdom): "Patience is like planting seeds."
+    ✅ GOOD (Modern Dominance): "Patience is compound interest on effort."
+    
+    ❌ BAD (Ancient Wisdom): "Stand tall like an oak tree."
+    ✅ GOOD (Modern Dominance): "Dominate the room like a CEO entering a boardroom."
+    
+    ❌ BAD (Ancient Wisdom): "Let go of what no longer serves you."
+    ✅ GOOD (Modern Dominance): "Cut dead weight like a ruthless investor."
+    
+    🎯 MODERN CONTEXT RULE (MANDATORY):
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ALWAYS tie the lesson to one of these EXTERNAL RESULTS:
+    
+    💰 MONEY:
+    - "This principle increases your net worth"
+    - "Wealth compounds when you..."
+    - "Every hour wasted is money burned"
+    - "Your bank account reflects your decisions"
+    
+    💔 DATING / STATUS:
+    - "High-value partners notice when you..."
+    - "Attraction is not negotiation"
+    - "Status is earned through action"
+    - "Respect is taken, not given"
+    
+    🏆 POWER / COMPETITION:
+    - "Winners eliminate distractions"
+    - "Losers make excuses, champions adapt"
+    - "Dominance requires sacrifice"
+    - "The market rewards the ruthless"
+    
+    CRITICAL: The viewer doesn't want inner peace. They want EXTERNAL RESULTS.
+    Every sentence must promise or threaten tangible outcomes: wealth, respect, attraction, power.
     
     ═══════════════════════════════════════════════════════════════════
     🎬 CINEMATIC HIGH-STATUS & ACTION VISUAL RULES 🎬
