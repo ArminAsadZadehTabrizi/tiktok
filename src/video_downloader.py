@@ -220,6 +220,9 @@ def search_youtube_videos(category, max_results=5):
             print(f"    ✗ Search error: {str(e)[:80]}")
             continue
     
+    print(f"    📊 Search complete: {len(found_urls)} valid video(s) found")
+    return found_urls
+
 
 
 def download_youtube_clip(category, output_path, clip_duration=4):
