@@ -177,49 +177,66 @@ def generate_script(topic=None):
     🎯 DARKNESS FROM CONTRAST, NOT GRIME: Use premium black backgrounds, night cityscapes, and high-contrast luxury settings.
     
     
-    🎯 YOU MUST ONLY USE THESE 2 RESTRICTED VISUAL CATEGORIES:
+    🎯 YOU MUST ONLY USE THESE 3 RESTRICTED VISUAL CATEGORIES:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     
-    A. 🏎️💨 STREET SPEED & NIGHT CARS (NO RACETRACKS/GRASS):
-    - 'Supercar night drive fast neon city lights 4k'
-    - 'Lamborghini driving night city rain fast cinematic 4k'
-    - 'Ferrari speeding highway night headlights 4k expensive'
-    - 'Drifting car smoke cinematic night street 4k'
-    - 'McLaren supercar night city fast motion 4k'
-    - 'Porsche 911 turbo night drive tunnel fast 4k'
-    - 'Bugatti veyron night street rolling shot 4k'
-    - 'Luxury car interior night city lights bokeh 4k'
-    - 'Street racing cars night fast furious aesthetic 4k'
-    - 'Car chase night city cinematic action 4k'
+    A. 🏎️ SPEED & POWER (Cars/Bikes):
+    - 'Supercar night drive fast neon city lights cinematic luxury'
+    - 'Lamborghini driving night city rain fast cinematic luxury'
+    - 'Ferrari speeding highway night headlights cinematic expensive'
+    - 'Drifting car smoke cinematic night street luxury'
+    - 'McLaren supercar night city fast motion cinematic'
+    - 'Porsche 911 turbo night drive tunnel fast luxury'
+    - 'Bugatti veyron night street rolling shot cinematic'
+    - 'Luxury car interior night city lights bokeh cinematic'
+    - 'Street racing cars night fast aesthetic cinematic'
+    - 'Motorcycle night city fast neon lights cinematic'
     
-    B. 🥊 COMBAT & NIGHT CALISTHENICS (NO GENERIC GYM/RUNNING):
-    - 'Shadow boxing silhouette night street rain 4k'
+    B. 🥊 COMBAT & STRENGTH (Physical):
+    - 'Shadow boxing silhouette night street rain cinematic'
     - 'Muay Thai knee strike training dark cinematic'
-    - 'Calisthenics muscle up night park shirtless'
-    - 'MMA fighter ground and pound dummy aggressive 4k'
-    - 'Boxer hitting heavy bag sweat night gym dark'
-    - 'Kickboxing sparring intense fast aggressive 4k'
-    - 'Street workout pull ups night dark aesthetic'
+    - 'Calisthenics muscle up night park shirtless cinematic'
+    - 'MMA fighter ground and pound dummy aggressive cinematic'
+    - 'Boxer hitting heavy bag sweat night gym dark cinematic'
+    - 'Kickboxing sparring intense fast aggressive cinematic'
+    - 'Street workout pull ups night dark aesthetic cinematic'
     - 'Boxing focus mitts training fast cinematic'
-    - 'MMA cage fighting training dark atmosphere'
-    - 'Man doing pushups night street rain intense'
+    - 'MMA cage fighting training dark atmosphere cinematic'
+    - 'Man doing pushups night street rain intense cinematic'
     
-    🔄 2-CATEGORY ALTERNATION RULE (MANDATORY):
+    C. 💰 WEALTH & EMPIRE (Status):
+    - 'Counting money cash hands dark luxury cinematic'
+    - 'Private jet interior night luxury cinematic expensive'
+    - 'Man in suit adjusting tie dark office cinematic luxury'
+    - 'Chess board strategy game close up dark cinematic'
+    - 'Luxury penthouse city view night dark cinematic expensive'
+    - 'Business man suit walking dark hallway cinematic luxury'
+    - 'Money safe vault opening dark cinematic expensive'
+    - 'Private jet taking off night luxury cinematic'
+    - 'Cigar smoke dark luxury close up cinematic'
+    - 'Poker chips casino dark luxury cinematic expensive'
+    
+    🔄 3-CATEGORY ALTERNATION (A → B → C):
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    Alternate between categories - NEVER use the same category twice in a row:
-    1. SPEED & VELOCITY → 2. INTENSE PHYSICAL EXERTION → (repeat)
+    Alternate through all 3 categories in order - NEVER use the same category twice in a row:
+    Segment 0 (Hook): Category A (Speed - High attention grabber)
+    Segment 1: Category B (Combat)
+    Segment 2: Category C (Wealth)
+    Segment 3: Category A (Speed)
+    Segment 4: Category B (Combat)
+    Segment 5: Category C (Wealth)
+    ...and repeat cycle.
     
-    Example sequence (10 segments):
-    Segment 1: SPEED & VELOCITY (Formula 1 racing car)
-    Segment 2: INTENSE PHYSICAL EXERTION (Boxer training heavy bag)
-    Segment 3: SPEED & VELOCITY (Supercar night drive)
-    Segment 4: INTENSE PHYSICAL EXERTION (Sprinter running track)
-    Segment 5: SPEED & VELOCITY (Lamborghini night rain)
-    Segment 6: INTENSE PHYSICAL EXERTION (Gym heavy lifting)
-    Segment 7: SPEED & VELOCITY (Drifting car smoke)
-    Segment 8: INTENSE PHYSICAL EXERTION (MMA fighter training)
-    Segment 9: SPEED & VELOCITY (Ferrari highway night)
-    Segment 10: INTENSE PHYSICAL EXERTION (Boxing ring fight)
+    Example sequence (9 segments):
+    Segment 0 (Hook): A - Lamborghini night drive
+    Segment 1: B - Shadow boxing street
+    Segment 2: C - Counting money dark
+    Segment 3: A - Ferrari speeding highway
+    Segment 4: B - MMA training cage
+    Segment 5: C - Private jet interior
+    Segment 6: A - Drifting car smoke
+    Segment 7: B - Boxer heavy bag
+    Segment 8: C - Chess board dark
     
     🌙 FORCE NIGHT/DARK MODE:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -231,7 +248,6 @@ def generate_script(topic=None):
     EVERY visual query MUST include at least TWO of these high-quality keywords:
     - "luxury"
     - "expensive"
-    - "4k"
     - "cinematic"
     - "premium"
     
@@ -337,55 +353,69 @@ def generate_script(topic=None):
         ]
     }
     
-    🎬 VISUAL QUERY RULES (STRICT ACTION ONLY):
+    🎬 VISUAL QUERY RULES (3-CATEGORY SYSTEM):
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     
     1. EVERY visual query MUST use the formula:
        [SUBJECT] + [ACTION] + [CAMERA MOVE] + [LIGHTING]
     
-    2. SUBJECT must be one of (NO STATIC OBJECTS ALLOWED):
-       - Category A: High-Speed Vehicles (Supercars, Formula 1, Drifting, Rally, Private Jet takeoff)
-       - Category B: Combat & Training (Boxing, MMA, Muay Thai, Calisthenics, Weightlifting)
-       - BANNED: Do NOT use Yachts, Skylines, Watches, Buildings, or Statues.
-    
-    3. MANDATORY ALTERNATION (ODD/EVEN RULE):
-       - Segment 0 (Hook): Category A (Speed)
+    2. SUBJECT must be one of these 3 Categories:
+       
+       A. 🏎️ SPEED & POWER (Cars/Bikes):
+          - Supercars (Lamborghini, Ferrari), Drifting, Night Driving, Motorcycles.
+          - Style: Fast, Neon, Rain, Wet Asphalt.
+       
+       B. 🥊 COMBAT & STRENGTH (Physical):
+          - Boxing, MMA, Muay Thai, Heavy Lifting, Calisthenics.
+          - Style: Sweat, Gritty, Dark Gym, Silhouette.
+          
+       C. 💰 WEALTH & EMPIRE (Status):
+          - Money (Counting cash, safes), Private Jets (Interior/Exterior), 
+          - Suits (Adjusting tie, dark office), Chess (Strategy), Cigars (Optional).
+          - Style: Old Money, Mafia Aesthetic, Dark Luxury.
+
+    🔄 3-CATEGORY ALTERNATION (A -> B -> C):
+       - Segment 0 (Hook): Category A (Speed - High attention)
        - Segment 1: Category B (Combat)
-       - Segment 2: Category A (Speed)
-       - Segment 3: Category B (Combat)
-       - ...and so on.
+       - Segment 2: Category C (Wealth)
+       - Segment 3: Category A (Speed)
+       - ...repeat cycle.
        - NEVER use the same category twice in a row.
     
-    4. ACTION QUALITY must include (pick TWO):
-       - "fast"
-       - "intense"
-       - "aggressive"
-       - "speed"
-       - "night"
+    3. CINEMATIC QUALITY must include (pick TWO):
+       - "luxury"
+       - "expensive"
+       - "cinematic"
+       - "premium"
     
-    5. FORBIDDEN visuals:
+    4. FORBIDDEN visuals:
        ❌ "clouds", "forest", "shadows", "smoke", "ink water"
        ❌ "guns", "drugs", "dirty rooms", "grunge", "horror"
        ❌ "sitting", "standing", "thinking", "walking" (Passive actions)
 
     ✅ CORRECT VISUAL EXAMPLES:
-    - "Lamborghini aventador night city rain fast cinematic 4k"
-    - "Shadow boxing silhouette night street rain 4k"
-    - "Drifting car smoke tires close up cinematic 4k"
-    - "Muay thai knee strike heavy bag sweat night"
+    - "Lamborghini aventador night city rain fast cinematic luxury"
+    - "Shadow boxing silhouette night street rain cinematic"
+    - "Drifting car smoke tires close up cinematic luxury"
+    - "Muay thai knee strike heavy bag sweat night cinematic"
+    - "Counting money cash hands dark luxury cinematic expensive"
+    - "Private jet interior night luxury cinematic expensive"
     
     SEGMENT STRUCTURE RULES:
     - Break the body into 8-12 logical sentences for 45s+ video
     - Each segment text = ONE complete sentence
     - Each visual = FULL CINEMATIC QUERY following the formula above
     
-    ✅ CORRECT VISUAL EXAMPLES (2-CATEGORY RESTRICTED AESTHETIC):
-    - "Supercar night drive fast neon city lights 4k cinematic"
-    - "Shadow boxing silhouette night street rain 4k"
-    - "Lamborghini driving night city rain fast cinematic 4k luxury"
-    - "MMA fighter ground and pound dummy aggressive 4k"
-    - "Ferrari speeding highway night headlights 4k expensive"
-    - "Calisthenics muscle up night park shirtless 4k"
+    ✅ CORRECT VISUAL EXAMPLES (3-CATEGORY SYSTEM):
+    - "Supercar night drive fast neon city lights cinematic luxury"
+    - "Shadow boxing silhouette night street rain cinematic"
+    - "Counting money cash hands dark luxury cinematic expensive"
+    - "Lamborghini driving night city rain fast cinematic luxury"
+    - "MMA fighter ground and pound dummy aggressive cinematic"
+    - "Private jet interior night luxury cinematic expensive"
+    - "Ferrari speeding highway night headlights cinematic expensive"
+    - "Calisthenics muscle up night park shirtless cinematic"
+    - "Man in suit adjusting tie dark office cinematic luxury"
     
     ❌ WRONG VISUAL EXAMPLES (DO NOT USE):
     - "money" (too short, missing luxury keywords)
@@ -399,8 +429,8 @@ def generate_script(topic=None):
     - NEVER use generic phrases like "Get uncomfortable" or "Hustle hard"
     - ALWAYS name the specific theory/law
     - The Hook MUST be MAXIMUM 7 words with ending punctuation
-    - EVERY visual must be a COMPLETE query with Subject + Action + Camera + Motion Keywords (TWO of: fast/slow motion/4k/cinematic/intense)
-    - Alternate between the 2 categories: SPEED & VELOCITY → INTENSE PHYSICAL EXERTION
+    - EVERY visual must be a COMPLETE query with Subject + Action + Camera + Cinematic Keywords (TWO of: luxury/expensive/cinematic/premium)
+    - Alternate through 3 categories: SPEED & POWER → COMBAT & STRENGTH → WEALTH & EMPIRE
     """
 
     # DYNAMIC TOPIC INSERTION

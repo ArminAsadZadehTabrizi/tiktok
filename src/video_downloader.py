@@ -1,30 +1,36 @@
-"""Pexels Video API integration for downloading luxury/motivational footage"""
+"""YouTube-First Video Downloader with Pexels/Pixabay Fallback"""
 import re
 import requests
 import time
 import math
 import random
+import subprocess
+import json
 from pathlib import Path
+try:
+    import yt_dlp
+    YOUTUBE_AVAILABLE = True
+except ImportError:
+    YOUTUBE_AVAILABLE = False
+    print("⚠️  yt-dlp not installed. YouTube downloads will be skipped.")
 import config
 
 # Constants
 CLIP_DURATION = 2.5  # Each video clip duration in seconds (matches video_editor.py)
 MIN_VIDEO_DURATION = 15  # Minimum video duration in seconds to avoid looping with sped-up edits
 
-# Strict Action aesthetic fallback keywords - NO racetracks/grass, NO generic running/gym
+# High-End Luxury aesthetic fallback keywords - Cars, Combat, AND Wealth/Empire
 DARK_AESTHETIC_FALLBACKS = [
     "supercar night drive fast neon city",
-    "shadow boxing silhouette night street",
-    "lamborghini driving night rain city",
-    "muay thai training dark aggressive",
-    "drifting car smoke night street",
-    "calisthenics muscle up night park",
-    "ferrari speeding highway night",
-    "boxer heavy bag sweat dark gym",
-    "mclaren supercar night city fast",
-    "mma fighter cage training dark",
-    "street racing cars night fast",
-    "kickboxing sparring intense dark"
+    "shadow boxing silhouette night street rain",
+    "counting money cash hands dark luxury",
+    "private jet interior night luxury",
+    "mafia boss suit dark lighting",
+    "boxer training heavy bag sweat",
+    "lamborghini driving night rain",
+    "chess board game strategy dark",
+    "black panther walking dark",
+    "man in suit adjusting tie dark"
 ]
 
 # 🚫 STRICT FILTER: Block generic nature and PASSIVE human actions
@@ -66,49 +72,181 @@ HIGH_ACTION_FALLBACKS = [
 ]
 
 
+def detect_category_from_query(query):
+    """
+    Detect YouTube category from visual query text.
+    
+    Args:
+        query (str): Visual search query
+    
+    Returns:
+        str or None: Category name (CARS/COMBAT/GYM/LUXURY) or None if no match
+    """
+    query_lower = query.lower()
+    
+    # Category detection rules (order matters - more specific first)
+    if any(keyword in query_lower for keyword in [
+        "car", "drive", "speed", "supercar", "ferrari", "lamborghini", 
+        "porsche", "mclaren", "bugatti", "drift", "racing", "tunnel", "highway"
+    ]):
+        return "CARS"
+    
+    if any(keyword in query_lower for keyword in [
+        "fight", "box", "punch", "combat", "mma", "kickbox", "spar", 
+        "heavy bag", "cage", "ring", "fighter"
+    ]):
+        return "COMBAT"
+    
+    if any(keyword in query_lower for keyword in [
+        "gym", "train", "muscle", "calisthenics", "workout", "pullup", 
+        "pushup", "pull up", "push up", "bodyweight", "street workout"
+    ]):
+        return "GYM"
+    
+    if any(keyword in query_lower for keyword in [
+        "money", "rich", "yacht", "villa", "jet", "luxury", "wealth", 
+        "cash", "mansion", "penthouse", "private", "champagne"
+    ]):
+        return "LUXURY"
+    
+    return None
+
+
+def download_youtube_clip(category, output_path, clip_duration=4):
+    """
+    Download a random 4-second clip from a YouTube compilation video.
+    
+    Args:
+        category (str): Category name (CARS/COMBAT/GYM/LUXURY)
+        output_path (Path): Where to save the clip
+        clip_duration (int): Duration of clip to extract in seconds
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    if not YOUTUBE_AVAILABLE:
+        return False
+    
+    # Check if category exists
+    if category not in config.YOUTUBE_SOURCES:
+        print(f"    ✗ Unknown category: {category}")
+        return False
+    
+    urls = config.YOUTUBE_SOURCES[category]
+    if not urls:
+        print(f"    ✗ No URLs configured for category: {category}")
+        return False
+    
+    # Try up to 3 random videos from the category
+    attempted_urls = []
+    for attempt in range(min(3, len(urls))):
+        # Pick a random URL we haven't tried yet
+        available_urls = [url for url in urls if url not in attempted_urls]
+        if not available_urls:
+            break
+        
+        video_url = random.choice(available_urls)
+        attempted_urls.append(video_url)
+        
+        try:
+            print(f"    🎬 Attempting YouTube clip from {category} (attempt {attempt + 1})")
+            
+            # Get video info without downloading
+            ydl_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                'extract_flat': False,
+            }
+            
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(video_url, download=False)
+                duration = info.get('duration', 0)
+                
+                if duration < 120:  # Video too short
+                    print(f"    ✗ Video too short ({duration}s), need at least 2 minutes")
+                    continue
+                
+                # Calculate random start time (avoid first/last 60s)
+                safe_start = 60
+                safe_end = duration - 60 - clip_duration
+                
+                if safe_end <= safe_start:
+                    print(f"    ✗ Video not long enough for safe clip extraction")
+                    continue
+                
+                start_time = random.randint(safe_start, safe_end)
+                end_time = start_time + clip_duration
+                
+                print(f"    ⏱️  Video duration: {duration}s, extracting {start_time}s-{end_time}s")
+                
+                # Download only the specific segment
+                download_opts = {
+                    'format': 'bestvideo[height<=1920][ext=mp4]+bestaudio[ext=m4a]/best[height<=1920][ext=mp4]/best',
+                    'outtmpl': str(output_path),
+                    'quiet': True,
+                    'no_warnings': True,
+                    'download_ranges': yt_dlp.utils.download_range_func(None, [(start_time, end_time)]),
+                    'force_keyframes_at_cuts': True,
+                    'postprocessors': [{
+                        'key': 'FFmpegVideoConvertor',
+                        'preferedformat': 'mp4',
+                    }],
+                }
+                
+                with yt_dlp.YoutubeDL(download_opts) as ydl_download:
+                    ydl_download.download([video_url])
+                
+                # Verify the file was created
+                if output_path.exists() and output_path.stat().st_size > 0:
+                    print(f"    ✓ YouTube clip downloaded successfully ({category})")
+                    return True
+                else:
+                    print(f"    ✗ Download failed - file not created")
+                    continue
+                    
+        except Exception as e:
+            print(f"    ✗ YouTube download error: {str(e)[:100]}")
+            continue
+    
+    print(f"    ✗ All YouTube download attempts failed for {category}")
+    return False
+
+
 def clean_and_map_query(query):
     """
     Simplifies LLM queries into high-performance stock footage tags.
-    Removes fluff words and maps specific brands to broader categories.
+    Removes ONLY technical fluff, KEEPS aesthetic keywords.
     """
     query = query.lower()
     
-    # 1. REMOVE FLUFF WORDS (They confuse the search engine)
+    # 1. REMOVE ONLY TECHNICAL FLUFF (Keep style keywords!)
     remove_words = [
-        "4k", "cinematic", "expensive", "luxury", "premium", 
-        "ultra hd", "8k", "detailed", "realistic", "photorealistic",
-        "shot", "angle", "view", "camera"
+        "4k", "8k", "ultra hd", "hd", "60fps", "detailed", "realistic", 
+        "photorealistic", "shot", "angle", "view", "camera", "lens"
     ]
     for word in remove_words:
         query = query.replace(word, "")
     
-    # 2. MAP SPECIFIC TERMS TO BROAD HIGH-QUALITY TAGS
-    # (Free sites have more "Supercar" videos than "McLaren" videos)
+    # 2. MAP TERMS TO HIGH-END TAGS
     replacements = {
-        "ferrari": "supercar red",
+        "ferrari": "supercar",
         "lamborghini": "supercar",
-        "mclaren": "sportscar",
-        "bugatti": "hypercar",
         "porsche": "sportscar",
+        "mclaren": "supercar",
         "muay thai": "kickboxing",
         "mma": "mixed martial arts",
         "calisthenics": "street workout",
-        "jiu jitsu": "grappling",
-        "headlights": "lights",
-        "highway": "road"
+        "money": "money cash luxury",  # Force luxury context
+        "jet": "private jet luxury",   # Force luxury context
+        "chess": "chess dark"
     }
     
     for key, value in replacements.items():
         if key in query:
             query = query.replace(key, value)
-    
-    # 3. ENSURE 'NIGHT' IS PRESENT (If aesthetic requires it)
-    if "dark" in query and "night" not in query:
-        query += " night"
-        
-    # Clean up multiple spaces
+            
+    # Clean up spaces
     query = " ".join(query.split())
-    
     return query
 
 
@@ -308,6 +446,44 @@ def search_videos(visual_queries, fallback_topic=None):
         
         print(f"  🔍 Searching for segment {i} ({config.SCENE_VIDEO_VARIATIONS} variations): '{visual_query}'")
         
+        # 🎬 YOUTUBE-FIRST STRATEGY: Try to download from YouTube before falling back to stock
+        category = detect_category_from_query(visual_query)
+        youtube_success_count = 0
+        
+        if category and YOUTUBE_AVAILABLE:
+            print(f"    🎯 Detected category: {category}")
+            # Try to fill variations with YouTube clips
+            for variation_num in range(1, config.SCENE_VIDEO_VARIATIONS + 1):
+                temp_output = config.ASSETS_DIR / f"segment_{i}_v{variation_num}_temp.mp4"
+                if download_youtube_clip(category, temp_output):
+                    # Create video_info dict for this YouTube clip
+                    video_info = {
+                        "url": "youtube",  # Special marker
+                        "local_path": temp_output,
+                        "width": 1080,
+                        "height": 1920,
+                        "query": visual_query,
+                        "segment_index": i,
+                        "variation_number": variation_num,
+                        "source": "youtube"
+                    }
+                    segment_variations.append(video_info)
+                    youtube_success_count += 1
+            
+            if youtube_success_count > 0:
+                print(f"    ✓ YouTube provided {youtube_success_count}/{config.SCENE_VIDEO_VARIATIONS} variations")
+        
+        # If we have enough variations from YouTube, skip stock footage
+        if len(segment_variations) >= config.SCENE_VIDEO_VARIATIONS:
+            all_segment_variations.append(segment_variations)
+            print(f"    ✓ Quota filled with YouTube clips ({len(segment_variations)} variations)")
+            time.sleep(0.5)
+            continue
+        
+        # 📦 STOCK FOOTAGE FALLBACK: Use Pexels/Pixabay if YouTube didn't provide enough
+        remaining_needed = config.SCENE_VIDEO_VARIATIONS - len(segment_variations)
+        print(f"    📦 Need {remaining_needed} more variation(s), falling back to stock footage...")
+        
         # HYBRID SEARCH: Randomly choose between Pexels and Pixabay
         if random.random() > 0.5:
             primary_source = "pixabay"
@@ -363,10 +539,15 @@ def search_videos(visual_queries, fallback_topic=None):
             video_urls.extend(additional)
         
         # 🎬 A/B/C/D-ROLL: Collect TOP variations for this segment (up to config limit)
-        segment_variations = []
+        # Note: segment_variations may already have YouTube clips, so we append stock footage
         if video_urls:
-            # Take up to SCENE_VIDEO_VARIATIONS distinct videos
-            for variation_num, url in enumerate(video_urls[:config.SCENE_VIDEO_VARIATIONS], start=1):
+            # Calculate how many more variations we need and what numbers to use
+            start_variation_num = len(segment_variations) + 1
+            remaining_slots = config.SCENE_VIDEO_VARIATIONS - len(segment_variations)
+            
+            # Add stock footage to fill remaining variations
+            for idx, url in enumerate(video_urls[:remaining_slots]):
+                variation_num = start_variation_num + idx
                 video_info = {
                     "url": url,
                     "width": 1080,
@@ -374,7 +555,7 @@ def search_videos(visual_queries, fallback_topic=None):
                     "query": visual_query,
                     "segment_index": i,
                     "variation_number": variation_num,
-                    "source": primary_source if video_urls else secondary_source
+                    "source": primary_source if idx == 0 else secondary_source
                 }
                 segment_variations.append(video_info)
             
@@ -430,9 +611,10 @@ def download_video(video_url, output_path):
 
 def download_videos(visual_queries, fallback_topic=None):
     """
-    🎬 A/B/C/D-ROLL DOWNLOAD with GLOBAL DEDUPLICATION: Download configurable variations 
-    per segment for dynamic editing. Each segment gets up to config.SCENE_VIDEO_VARIATIONS 
-    videos saved as segment_N_v1.mp4, segment_N_v2.mp4, ..., segment_N_vN.mp4.
+    🎬 YOUTUBE-FIRST DOWNLOAD with Stock Footage Fallback: Download configurable variations 
+    per segment for dynamic editing. Prioritizes YouTube clips, falls back to Pexels/Pixabay.
+    Each segment gets up to config.SCENE_VIDEO_VARIATIONS videos saved as 
+    segment_N_v1.mp4, segment_N_v2.mp4, ..., segment_N_vN.mp4.
     
     CRITICAL: Global deduplication ensures the same video URL is NEVER downloaded twice,
     even if different search queries return the same top results.
@@ -445,7 +627,7 @@ def download_videos(visual_queries, fallback_topic=None):
         list of lists: [[path_v1, path_v2, ...], ...] nested structure where each
                        inner list contains paths to variations for one segment
     """
-    print(f"\n📹 Downloading videos with A/B/C/D-roll variations + Global Deduplication")
+    print(f"\n📹 YouTube-First Download Strategy + Stock Footage Fallback")
     print(f"   Queries: {len(visual_queries)} segments")
     print(f"   Target: {config.SCENE_VIDEO_VARIATIONS} variations per segment")
     print(f"   Fallback topic: {fallback_topic or 'None'}")
@@ -476,10 +658,24 @@ def download_videos(visual_queries, fallback_topic=None):
             variation_num = video_info["variation_number"]
             output_path = config.ASSETS_DIR / f"segment_{segment_index}_v{variation_num}.mp4"
             
-            if download_video(video_info["url"], output_path):
+            # Check if this is a YouTube clip that was already downloaded
+            if video_info.get("source") == "youtube" and "local_path" in video_info:
+                # Rename the temp file to the proper name
+                temp_path = video_info["local_path"]
+                if temp_path.exists():
+                    # Move/rename temp file to final destination
+                    import shutil
+                    shutil.move(str(temp_path), str(output_path))
+                    variation_paths.append(output_path)
+                    total_downloaded += 1
+                    print(f"    ✓ v{variation_num} (YouTube): '{video_info['query'][:50]}...'")
+                else:
+                    print(f"    ✗ v{variation_num}: YouTube temp file missing")
+            # Otherwise download from stock footage URL
+            elif download_video(video_info["url"], output_path):
                 variation_paths.append(output_path)
                 total_downloaded += 1
-                print(f"    ✓ v{variation_num}: '{video_info['query'][:50]}...'")
+                print(f"    ✓ v{variation_num} (Stock): '{video_info['query'][:50]}...'")
             else:
                 print(f"    ✗ v{variation_num}: Download failed")
         
