@@ -131,6 +131,7 @@ def check_youtube_url_health(url):
             'no_warnings': True,
             'skip_download': True,
             'extract_flat': True,
+            'socket_timeout': 5,  # Prevent hanging on dead links
         }
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -198,10 +199,17 @@ def search_youtube_videos(category, max_results=5):
                 
                 # Filter results
                 for entry in search_results['entries']:
-                    if len(found_urls) >= max_results:
-                        break
-                    
                     if entry is None:
+                        continue
+                    
+                    # Negative Title Filtering: Skip bad clips
+                    title = entry.get('title', '').lower()
+                    bad_keywords = [
+                        'lyrics', 'lyric video', 'official video', 'subtitles',
+                        'karaoke', 'reaction', 'review', 'gameplay', 'trailer', 'tutorial'
+                    ]
+                    if any(keyword in title for keyword in bad_keywords):
+                        print(f"    ✗ Filtered out: {entry.get('title', 'Unknown')[:50]}... (irrelevant content)")
                         continue
                     
                     duration = entry.get('duration', 0)
@@ -213,6 +221,10 @@ def search_youtube_videos(category, max_results=5):
                         if check_youtube_url_health(video_url):
                             found_urls.append(video_url)
                             print(f"    ✓ Found: {entry.get('title', 'Unknown')[:50]}... ({duration//60} min)")
+                            
+                            # Early exit: Stop searching immediately after finding a valid video
+                            if len(found_urls) >= max_results:
+                                break
                         else:
                             print(f"    ✗ Skipped unavailable: {entry.get('title', 'Unknown')[:50]}...")
             
@@ -286,10 +298,10 @@ def download_youtube_clip(category, output_path, clip_duration=4):
         attempted_urls.append(video_url)
         
         # Try multiple format strategies for this video
+        # Priority: High-bitrate video-only streams (no audio) to fix pixelation
         format_strategies = [
-            ('best[height<=1080][ext=mp4]/best[ext=mp4]', 'Pre-merged stream'),
-            ('bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]', 'Video+audio merge'),
-            ('best[ext=mp4]/best', 'Any MP4 format'),
+            ('bestvideo[height>=1080][ext=mp4]/bestvideo[ext=mp4]', 'High-quality video-only (no audio)'),
+            ('best[height>=1080][ext=mp4]', 'High-quality fallback'),
         ]
         
         for format_string, format_desc in format_strategies:
