@@ -259,13 +259,13 @@ def generate_script(topic=None):
     
     ❌ NO RACETRACKS: Never use 'Formula 1', 'Rally', or 'Track'. These often show grass/nature. Use 'Night City', 'Tunnel', or 'Highway' instead.
     
-    ✅ GOOD EXAMPLES (ULTRA-LUXURY AESTHETIC):
-    - "Bugatti interior leather seats night luxury expensive 4k cinematic"
-    - "Kickboxing training professional gym discipline luxury 4k expensive"
-    - "Greek statue marble close up museum luxury expensive 4k"
-    - "Dubai skyline night skyscrapers luxury expensive cinematic 4k"
-    - "Heavy bag workout shirtless muscles luxury gym 4k expensive"
-    - "Monaco yacht harbor luxury boats sunset cinematic 4k expensive"
+    ✅ GOOD EXAMPLES (PURE ADRENALINE):
+    - "Lamborghini aventador night city rain fast cinematic 4k"
+    - "Boxer shadow boxing silhouette street rain night 4k"
+    - "Formula 1 pit stop fast motion night intense"
+    - "Drifting car smoke tires close up cinematic 4k"
+    - "Muay thai knee strike heavy bag sweat night"
+    - "McLaren speeding highway tunnel lights fast 4k"
     
     ❌ BAD EXAMPLES (TOO VAGUE OR FORBIDDEN):
     - "money" (Missing action, camera, luxury keywords)
@@ -344,10 +344,9 @@ def generate_script(topic=None):
        [SUBJECT] + [ACTION] + [CAMERA MOVE] + [LIGHTING]
     
     2. SUBJECT must be one of:
-       - Ultra-Luxury (Bugatti/Ferrari/Rolls Royce interior, Dubai skyline, Monaco harbor, Penthouse)
-       - High-Status Fashion (Bespoke suit, Rolex watch, designer items)
-       - Professional Training (Kickboxing, Heavy bag, Athletic performance)
-       - Old Money (Classic architecture, Marble, Chess, Vintage luxury)
+       - High-Speed Vehicles (Supercars, Formula 1, Rally, Drifting, Private Jet taking off)
+       - Combat & Training (Boxing, MMA, Muay Thai, Calisthenics, Weightlifting)
+       - NO STATIC LUXURY: Do NOT use Yachts, Skylines, Watches, Buildings, or Statues.
     
     3. ACTION must show movement or premium detail:
        - "interior leather seats night"
@@ -364,12 +363,13 @@ def generate_script(topic=None):
        - slow zoom in
        - tilt up
     
-    5. LUXURY QUALITY must include (pick TWO):
-       - "luxury"
-       - "expensive"
-       - "4k"
-       - "cinematic"
-       - "premium"
+    5. ACTION QUALITY must include (pick TWO):
+       - "fast"
+       - "intense"
+       - "aggressive"
+       - "speed"
+       - "power"
+       - "night"
     
     6. MANDATORY keywords in EVERY visual:
        - At least TWO of: "luxury", "expensive", "4k", "cinematic", "premium"

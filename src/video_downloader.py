@@ -27,13 +27,15 @@ DARK_AESTHETIC_FALLBACKS = [
     "kickboxing sparring intense dark"
 ]
 
-# 🚫 STRICT FILTER: Block generic nature, weather, and PASSIVE human actions
+# 🚫 STRICT FILTER: Block generic nature and PASSIVE human actions
 WEAK_VISUAL_TERMS = [
-    # Nature & Weather (Roots)
+    # Nature (Strict Ban)
     "ocean", "sea", "water", "river", "lake", "beach", "sand",
     "forest", "tree", "wood", "nature", "flower", "garden",
-    "sky", "cloud", "sun", "rain", "storm", "fog", "mist", "weather",
-    "grass", "field", "mountain", "landscape", "hill", "cliff",
+    "grass", "field", "mountain", "hill", "cliff",
+    # Note: 'sky' and 'cloud' are kept to prevent generic daytime sky shots, 
+    # but 'rain' is removed to allow "Night City Rain" aesthetics.
+    "sky", "cloud", "sun", "sunrise", "sunset",
     
     # Passive/Boring Human Actions
     "sitting", "standing", "thinking", "walking alone", "looking", 
