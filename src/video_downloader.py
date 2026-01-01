@@ -66,6 +66,52 @@ HIGH_ACTION_FALLBACKS = [
 ]
 
 
+def clean_and_map_query(query):
+    """
+    Simplifies LLM queries into high-performance stock footage tags.
+    Removes fluff words and maps specific brands to broader categories.
+    """
+    query = query.lower()
+    
+    # 1. REMOVE FLUFF WORDS (They confuse the search engine)
+    remove_words = [
+        "4k", "cinematic", "expensive", "luxury", "premium", 
+        "ultra hd", "8k", "detailed", "realistic", "photorealistic",
+        "shot", "angle", "view", "camera"
+    ]
+    for word in remove_words:
+        query = query.replace(word, "")
+    
+    # 2. MAP SPECIFIC TERMS TO BROAD HIGH-QUALITY TAGS
+    # (Free sites have more "Supercar" videos than "McLaren" videos)
+    replacements = {
+        "ferrari": "supercar red",
+        "lamborghini": "supercar",
+        "mclaren": "sportscar",
+        "bugatti": "hypercar",
+        "porsche": "sportscar",
+        "muay thai": "kickboxing",
+        "mma": "mixed martial arts",
+        "calisthenics": "street workout",
+        "jiu jitsu": "grappling",
+        "headlights": "lights",
+        "highway": "road"
+    }
+    
+    for key, value in replacements.items():
+        if key in query:
+            query = query.replace(key, value)
+    
+    # 3. ENSURE 'NIGHT' IS PRESENT (If aesthetic requires it)
+    if "dark" in query and "night" not in query:
+        query += " night"
+        
+    # Clean up multiple spaces
+    query = " ".join(query.split())
+    
+    return query
+
+
 def search_pexels(query, orientation="portrait", seen_video_urls=None):
     """
     Search for videos on Pexels with global deduplication.
@@ -228,7 +274,11 @@ def search_videos(visual_queries, fallback_topic=None):
     # 🔒 GLOBAL DEDUPLICATION: Track used URLs across ALL segments
     seen_video_urls = set()
     
-    for i, visual_query in enumerate(visual_queries):
+    for i, raw_query in enumerate(visual_queries):
+        # ✨ CLEAN THE QUERY FIRST
+        visual_query = clean_and_map_query(raw_query)
+        print(f"  🧹 Cleaned Query: '{raw_query}' -> '{visual_query}'")
+        
         # 🚫 STRICT ACTION ENFORCEMENT (FIXED REGEX LOGIC)
         original_query = visual_query
         query_lower = visual_query.lower()
