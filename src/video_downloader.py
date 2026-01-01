@@ -139,7 +139,7 @@ def download_youtube_clip(category, output_path, clip_duration=4):
     
     # Try up to 3 random videos from the category
     attempted_urls = []
-    for attempt in range(min(3, len(urls))):
+    for attempt in range(min(1, len(urls))):
         # Pick a random URL we haven't tried yet
         available_urls = [url for url in urls if url not in attempted_urls]
         if not available_urls:
@@ -181,16 +181,14 @@ def download_youtube_clip(category, output_path, clip_duration=4):
                 
                 # Download only the specific segment
                 download_opts = {
-                    'format': 'bestvideo[height<=1920][ext=mp4]+bestaudio[ext=m4a]/best[height<=1920][ext=mp4]/best',
+                    # Force single file download (no merging) to prevent ffmpeg errors on partials
+                    'format': 'best[height<=1080][ext=mp4]/best[ext=mp4]',
                     'outtmpl': str(output_path),
                     'quiet': True,
                     'no_warnings': True,
+                    # Ensure we get the exact time range
                     'download_ranges': yt_dlp.utils.download_range_func(None, [(start_time, end_time)]),
                     'force_keyframes_at_cuts': True,
-                    'postprocessors': [{
-                        'key': 'FFmpegVideoConvertor',
-                        'preferedformat': 'mp4',
-                    }],
                 }
                 
                 with yt_dlp.YoutubeDL(download_opts) as ydl_download:
