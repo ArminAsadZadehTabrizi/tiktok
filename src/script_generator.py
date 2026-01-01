@@ -64,77 +64,76 @@ def generate_script(topic=None):
     ❌ NO flowers, gardens, or happy families
     ❌ NO cheerful/uplifting/positive vibes
     
-    🎯 VISUAL TRANSLATION RULE (CRITICAL):
+    🎯 VISUAL TRANSLATION RULE (CRITICAL - ACTION OVER STATIC):
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    Visuals must represent STATUS and POWER, NOT the literal word.
+    Visuals must represent HIGH-ENERGY ACTION and VELOCITY, NOT static items.
     
-    ❌ WRONG: Text mentions "pleasure" → Shows chocolate/food
-    ✅ CORRECT: Text mentions "pleasure" → Shows "Man checking luxury Patek Philippe watch stoic dark office 4k expensive"
+    🏎️ RULE 1: "SPEED OVER STATUS"
+    When the script talks about "Success", "Money", "Progress", or "Winning":
+    ❌ WRONG: Shows watches, suits, static luxury items
+    ✅ CORRECT: Shows FAST CARS in motion:
+      - "Formula 1 racing car dark cinematic fast motion 4k"
+      - "Supercar night drive fast neon city lights 4k"
+      - "Lamborghini driving night rain fast cinematic 4k"
+      - "Ferrari speeding highway night headlights 4k"
     
-    ❌ WRONG: Text mentions "temptation" → Shows candy/sweets
-    ✅ CORRECT: Text mentions "temptation" → Shows "Counting money hands close up night luxury expensive 4k"
+    💪 RULE 2: "PAIN OVER PEACE"
+    When the script talks about "Discipline", "Work", "Grind", or "Stoicism":
+    ❌ WRONG: Shows meditation, walking, thinking in office
+    ✅ CORRECT: Shows PHYSICAL EXERTION:
+      - "Boxer training heavy bag sweat close up slow motion"
+      - "Sprinter running fast track night intense 4k"
+      - "Gym bodybuilder lifting heavy dark sweat 4k"
+      - "MMA fighter training cage aggressive 4k"
     
-    ❌ WRONG: Text mentions "addiction" → Shows drugs/alcohol
-    ✅ CORRECT: Text mentions "addiction" → Shows "Man staring stoically dark luxury penthouse night expensive 4k"
-    
-    RULE: If the text is abstract or metaphorical, translate it into POWER VISUALS (wealth, discipline, dominance).
+    RULE: If the text is abstract, translate it into MOVEMENT VISUALS (speed, intensity, physical power).
     
     🎯 DARKNESS FROM CONTRAST, NOT GRIME: Use premium black backgrounds, night cityscapes, and high-contrast luxury settings.
     
     
-    🎯 YOU MUST ONLY USE THESE 3 ULTRA-LUXURY AESTHETIC CATEGORIES:
+    🎯 YOU MUST ONLY USE THESE 2 HIGH-ADRENALINE ACTION CATEGORIES:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     
-    A. 💎🏆 ULTRA-LUXURY & STATUS (Use 40% of segments - Extreme Wealth, High Status, Power):
-    - 'Bugatti interior leather seats night luxury 4k cinematic expensive'
-    - 'Ferrari dashboard close up night city lights luxury 4k'
-    - 'Dubai skyline night skyscrapers luxury cinematic 4k expensive'
-    - 'Monaco yacht harbor sunset luxury boats 4k cinematic'
-    - 'Private jet leather seats close up luxury expensive 4k'
-    - 'Rolls Royce steering wheel close up night luxury 4k'
-    - 'Penthouse view night city lights luxury expensive cinematic'
-    - 'Man bespoke suit checking Rolex watch luxury close up 4k'
-    - 'Champagne pouring luxury glass slow motion expensive 4k'
-    - 'Luxury penthouse interior marble gold accents 4k expensive'
+    A. 🏎️💨 SPEED & VELOCITY (Use 50% of segments - Fast Cars, Racing, Motion):
+    - 'Formula 1 racing car dark cinematic fast motion 4k'
+    - 'Supercar night drive fast neon city lights 4k'
+    - 'Lamborghini driving night rain fast cinematic 4k'
+    - 'Ferrari speeding highway night headlights 4k expensive'
+    - 'Drifting car smoke cinematic dark fast 4k'
+    - 'Rally car racing dirt night fast headlights 4k'
+    - 'Bugatti veyron accelerating fast dark cinematic 4k'
+    - 'McLaren supercar night city fast motion 4k'
+    - 'Porsche 911 turbo night drive fast rain 4k'
+    - 'Race car cockpit view fast motion night 4k'
     
-    B. 🥊⚡ COMBAT & DISCIPLINE (Use 35% of segments - Professional Training, Power, Focus):
-    - 'Kickboxing training professional gym discipline 4k luxury'
-    - 'Heavy bag workout shirtless muscles slow motion luxury gym 4k'
-    - 'Sprinting hill night city lights discipline luxury 4k'
-    - 'Shadow boxing luxury gym mirrors professional 4k expensive'
-    - 'Boxing gloves close up taping hands discipline luxury 4k'
-    - 'Athletic training professional focus intensity luxury gym 4k'
-    - 'Bodybuilder posing luxury gym professional 4k expensive'
-    - 'Martial arts training professional discipline luxury 4k'
+    B. 💪🥊 INTENSE PHYSICAL EXERTION (Use 50% of segments - Combat Sports, Training, Power):
+    - 'Boxer training heavy bag sweat close up slow motion'
+    - 'Sprinter running fast track night intense 4k'
+    - 'Gym bodybuilder lifting heavy dark sweat 4k'
+    - 'MMA fighter training cage aggressive 4k cinematic'
+    - 'Boxing ring fight intense punches slow motion 4k'
+    - 'Deadlift heavy weights gym struggle veins 4k'
+    - 'Man sprinting city night fast running 4k'
+    - 'Heavy bench press weights struggle gym 4k'
+    - 'Kickboxing sparring intense fast aggressive 4k'
+    - 'Athlete push-ups intense sweat gym dark 4k'
     
-    C. 🏛️♟️ STOIC & OLD MONEY (Use 25% of segments - Wisdom, Timeless Elegance, Class):
-    - 'Greek statue marble museum close up luxury 4k expensive'
-    - 'Classic architecture marble columns night luxury 4k cinematic'
-    - 'Chess board marble pieces close up dark luxury 4k expensive'
-    - 'Dark library leather books shadows luxury 4k expensive cinematic'
-    - 'Marble statue in shadows dramatic lighting luxury 4k expensive'
-    - 'Chess board close up night luxury expensive 4k cinematic'
-    - 'Classic architecture night moonlight luxury expensive 4k'
-    - 'Ancient Roman bust marble dramatic shadows luxury 4k expensive'
-    - 'Lion walking dark night luxury 4k cinematic'
-    - 'Wolf eyes close up night dark luxury 4k expensive'
-    
-    🔄 3-CATEGORY ROTATION RULE (MANDATORY):
+    🔄 2-CATEGORY ALTERNATION RULE (MANDATORY):
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    Rotate through categories - NEVER use the same category twice in a row:
-    1. ULTRA-LUXURY & STATUS → 2. COMBAT & DISCIPLINE → 3. STOIC & OLD MONEY → (repeat)
+    Alternate between categories - NEVER use the same category twice in a row:
+    1. SPEED & VELOCITY → 2. INTENSE PHYSICAL EXERTION → (repeat)
     
     Example sequence (10 segments):
-    Segment 1: ULTRA-LUXURY & STATUS (Bugatti interior)
-    Segment 2: COMBAT & DISCIPLINE (Kickboxing professional)
-    Segment 3: STOIC & OLD MONEY (Greek statue)
-    Segment 4: ULTRA-LUXURY & STATUS (Dubai skyline night)
-    Segment 5: COMBAT & DISCIPLINE (Heavy bag workout)
-    Segment 6: STOIC & OLD MONEY (Dark library shadows)
-    Segment 7: ULTRA-LUXURY & STATUS (Monaco yacht harbor)
-    Segment 8: COMBAT & DISCIPLINE (Shadow boxing luxury gym)
-    Segment 9: STOIC & OLD MONEY (Classic architecture night)
-    Segment 10: ULTRA-LUXURY & STATUS (Penthouse view)
+    Segment 1: SPEED & VELOCITY (Formula 1 racing car)
+    Segment 2: INTENSE PHYSICAL EXERTION (Boxer training heavy bag)
+    Segment 3: SPEED & VELOCITY (Supercar night drive)
+    Segment 4: INTENSE PHYSICAL EXERTION (Sprinter running track)
+    Segment 5: SPEED & VELOCITY (Lamborghini night rain)
+    Segment 6: INTENSE PHYSICAL EXERTION (Gym heavy lifting)
+    Segment 7: SPEED & VELOCITY (Drifting car smoke)
+    Segment 8: INTENSE PHYSICAL EXERTION (MMA fighter training)
+    Segment 9: SPEED & VELOCITY (Ferrari highway night)
+    Segment 10: INTENSE PHYSICAL EXERTION (Boxing ring fight)
     
     🌙 FORCE NIGHT/DARK MODE:
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -189,7 +188,16 @@ def generate_script(topic=None):
     - "prison cells" (FORBIDDEN)
     
     The visual must convey EXTREME WEALTH, DISCIPLINE, TIMELESS CLASS, and HIGH STATUS.
-    Think: BILLIONAIRE LIFESTYLE + PROFESSIONAL ATHLETE + OLD MONEY - not crime movies or generic stock footage."""
+    Think: BILLIONAIRE LIFESTYLE + PROFESSIONAL ATHLETE + OLD MONEY - not crime movies or generic stock footage.
+    
+    🚫 NATURE METAPHOR AVOIDANCE (CRITICAL):
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    AVOID nature metaphors for visuals. If the script says 'Be calm like water', the visual prompt should be 'Man driving luxury car calmly night', NOT 'water'.
+    Translate metaphors to ACTION, not literal nature imagery.
+    
+    🏛️ STOIC TOPIC EXCEPTION:
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    If the topic is purely Stoic, use 'Marble Statue Dark', 'Chess Board Close Up Dark', or 'Thunderstorm Lightning Slow Motion'. Do NOT use bright landscapes."""
     
     # BASE PROMPT: Defines the structure with ENFORCED VISUAL FORMATTING
     base_prompt = """
@@ -287,13 +295,13 @@ def generate_script(topic=None):
     - Each segment text = ONE complete sentence
     - Each visual = FULL CINEMATIC QUERY following the formula above
     
-    ✅ CORRECT VISUAL EXAMPLES (3-CATEGORY ULTRA-LUXURY AESTHETIC):
-    - "Bugatti interior leather seats night luxury expensive 4k cinematic"
-    - "Kickboxing training professional gym discipline luxury 4k expensive"
-    - "Greek statue marble close up museum luxury expensive 4k cinematic"
-    - "Dubai skyline night skyscrapers luxury expensive cinematic 4k"
-    - "Heavy bag workout shirtless muscles luxury gym 4k expensive"
-    - "Monaco yacht harbor luxury boats sunset cinematic 4k expensive"
+    ✅ CORRECT VISUAL EXAMPLES (2-CATEGORY HIGH-ADRENALINE AESTHETIC):
+    - "Formula 1 racing car dark cinematic fast motion 4k"
+    - "Boxer training heavy bag sweat close up slow motion 4k"
+    - "Supercar night drive fast neon city lights 4k cinematic"
+    - "Sprinter running fast track night intense 4k expensive"
+    - "Lamborghini driving night rain fast cinematic 4k luxury"
+    - "Gym bodybuilder lifting heavy dark sweat 4k expensive"
     
     ❌ WRONG VISUAL EXAMPLES (DO NOT USE):
     - "money" (too short, missing luxury keywords)
@@ -307,8 +315,8 @@ def generate_script(topic=None):
     - NEVER use generic phrases like "Get uncomfortable" or "Hustle hard"
     - ALWAYS name the specific theory/law
     - The Hook MUST be MAXIMUM 7 words with ending punctuation
-    - EVERY visual must be a COMPLETE query with Subject + Action + Camera + Luxury Keywords (TWO of: luxury/expensive/4k/cinematic/premium)
-    - Rotate through the 3 categories: ULTRA-LUXURY & STATUS → COMBAT & DISCIPLINE → STOIC & OLD MONEY
+    - EVERY visual must be a COMPLETE query with Subject + Action + Camera + Motion Keywords (TWO of: fast/slow motion/4k/cinematic/intense)
+    - Alternate between the 2 categories: SPEED & VELOCITY → INTENSE PHYSICAL EXERTION
     """
 
     # DYNAMIC TOPIC INSERTION

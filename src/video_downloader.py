@@ -10,24 +10,44 @@ import config
 CLIP_DURATION = 2.5  # Each video clip duration in seconds (matches video_editor.py)
 MIN_VIDEO_DURATION = 15  # Minimum video duration in seconds to avoid looping with sped-up edits
 
-# Ultra-Luxury / High-Value Man aesthetic fallback keywords for when specific searches fail
+# High-Adrenaline Action aesthetic fallback keywords for when specific searches fail
 DARK_AESTHETIC_FALLBACKS = [
-    "luxury car night drive 4k",
-    "dubai night city cinematic",
-    "boxer training sweat slow motion",
-    "lion walking dark",
-    "man in suit dark office thinking",
-    "counting money hands close up",
-    "black panther walking dark",
-    "mafia aesthetic night",
-    "luxury car steering wheel night",
-    "man suit walking skyscraper night",
-    "bugatti interior luxury 4k night",
-    "kickboxing professional training aggressive",
-    "greek statue marble shadows dark",
-    "penthouse view night expensive dark",
-    "wolf eyes close up dark",
-    "chess board marble night luxury"
+    "formula 1 racing car dark cinematic",
+    "boxer training heavy bag sweat",
+    "supercar night drive fast neon",
+    "sprinter running fast track night",
+    "gym bodybuilder lifting heavy dark",
+    "drifting car smoke cinematic",
+    "mma fighter training cage",
+    "lamborghini driving night rain",
+    "lion running slow motion dark",  # Kept one animal, but active
+    "man sprinting city night"
+]
+
+# 🚫 STRICT ACTION ENFORCEMENT: Intercept weak nature/atmospheric queries
+WEAK_VISUAL_TERMS = [
+    "ocean", "sea", "water", "river", "lake", "beach", "sand",
+    "forest", "tree", "woods", "nature", "flower",
+    "sky", "cloud", "sun", "sunrise", "sunset",
+    "grass", "field", "mountain", "landscape"
+]
+
+STOIC_EXCEPTIONS = [
+    "statue", "marble", "sculpture", "chess",
+    "lion", "wolf", "eagle", "storm", "thunder", "rain"
+]
+
+HIGH_ACTION_FALLBACKS = [
+    "luxury car night city drive",
+    "boxer training dark gym sweat",
+    "supercar accelerating flame",
+    "money counting machine close up",
+    "man in suit walking night rear view",
+    "gym bodybuilder lifting heavy",
+    "mma fighting cage slow motion",
+    "neon city cyber aesthetics",
+    "private jet interior luxury",
+    "lamborghini driving fast"
 ]
 
 
@@ -194,6 +214,22 @@ def search_videos(visual_queries, fallback_topic=None):
     seen_video_urls = set()
     
     for i, visual_query in enumerate(visual_queries):
+        # 🚫 STRICT ACTION ENFORCEMENT: Intercept weak nature/atmospheric queries
+        original_query = visual_query
+        query_lower = visual_query.lower()
+        query_words = query_lower.split()
+        
+        # Check if query contains any weak visual terms
+        has_weak_term = any(weak_term in query_words for weak_term in WEAK_VISUAL_TERMS)
+        
+        # Check if query contains any stoic exceptions
+        has_stoic_exception = any(stoic_term in query_words for stoic_term in STOIC_EXCEPTIONS)
+        
+        # If weak term detected AND no stoic exception, replace query with high-action fallback
+        if has_weak_term and not has_stoic_exception:
+            visual_query = random.choice(HIGH_ACTION_FALLBACKS)
+            print(f"  🚫 Intercepted weak query '{original_query}'. Replaced with Action Fallback: '{visual_query}'")
+        
         print(f"  🔍 Searching for segment {i} ({config.SCENE_VIDEO_VARIATIONS} variations): '{visual_query}'")
         
         # HYBRID SEARCH: Randomly choose between Pexels and Pixabay
