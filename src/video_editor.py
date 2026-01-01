@@ -115,28 +115,24 @@ def resize_to_vertical(clip):
 def create_word_clip(text, start, duration, is_exact=False):
     if duration < 0.2: duration = 0.2
     
-    # 🎬 SUCCESS AESTHETIC: Clean, Professional Typography
-    # White text with black outline for maximum readability
-    # Highlight important words in Gold or Emerald Green
+    # 🎬 AGGRESSIVE DOMINANCE AESTHETIC: LOUD, BOLD, COMMANDING
+    # Massive text with thick outline to dominate the screen
+    # Bright Yellow highlighting for key words to command attention
     
     # Determine if word is significant (longer than 5 letters OR capitalized)
     clean_word = text.strip('.,!?;:')
     is_significant = len(clean_word) > 5 or (len(clean_word) > 0 and clean_word[0].isupper())
     
-    # Color rotation for significant words: Gold and Emerald Green
-    # Use time-based alternation for visual variety
+    # VISUAL DOMINANCE: Use Bright Yellow for maximum impact
+    # Enlarged font size (15% increase) to fill more screen space
     if is_significant:
-        # Alternate between Gold and Emerald based on start time
-        if int(start * 2) % 2 == 0:
-            foreground_color = "#FFD700"  # Bright Yellow/Gold
-        else:
-            foreground_color = "#50C878"  # Emerald Green
-        font_size = config.CAPTION_FONTSIZE + 15  # Larger for emphasis
+        foreground_color = "#FFFF00"  # BRIGHT YELLOW - Maximum visibility
+        font_size = int(config.CAPTION_FONTSIZE * 1.15) + 15  # 15% increase + emphasis boost
     else:
         foreground_color = "white"  # Pure white for normal words
-        font_size = config.CAPTION_FONTSIZE
+        font_size = int(config.CAPTION_FONTSIZE * 1.15)  # 15% increase across the board
     
-    stroke_width = 6  # Consistent stroke for readability
+    stroke_width = 5  # Thick black outline (5px) for maximum pop
     
     try:
         # 🎬 PREMIUM READABILITY: Drop Shadow / Glow
