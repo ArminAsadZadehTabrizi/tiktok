@@ -451,74 +451,152 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                     print(f"    ✗ Fallback skipped: FFmpeg not available")
                     continue
                 
-                print(f"    🔄 Method 2: Full video download + local FFmpeg cut (slower, but guaranteed)...")
-                
-                # Create temporary file for full video
-                temp_full_video = output_path.parent / f"temp_full_{output_path.name}"
-                
+                # ROBUST MULTI-LAYER FALLBACK: Try 1080p first, then 720p as last resort
                 try:
-                    # Download full video (1080p video-only, no audio merge)
-                    fallback_opts = {
-                        'format': 'bestvideo[height<=1080][ext=mp4]',
-                        'outtmpl': str(temp_full_video),
-                        'quiet': True,
-                        'no_warnings': True,
-                    }
+                    print(f"    🔄 Method 2: Full video download + local FFmpeg cut (1080p)...")
                     
-                    if cookie_file:
-                        fallback_opts['cookiefile'] = str(cookie_file)
+                    # Create temporary file for full video
+                    temp_full_video = output_path.parent / f"temp_full_{output_path.name}"
                     
-                    with yt_dlp.YoutubeDL(fallback_opts) as ydl:
-                        ydl.download([video_url])
+                    try:
+                        # Download full video (1080p video-only, no audio merge)
+                        # ✅ ANDROID CLIENT: Prevents 403 errors on high-res streams
+                        fallback_opts = {
+                            'format': 'bestvideo[height<=1080][ext=mp4]',
+                            'outtmpl': str(temp_full_video),
+                            'quiet': True,
+                            'no_warnings': True,
+                            'extractor_args': {'youtube': {'player_client': ['android', 'web']}},  # Android API resistance
+                            'cachedir': False,  # Prevent stale cache issues
+                        }
+                        
+                        if cookie_file:
+                            fallback_opts['cookiefile'] = str(cookie_file)
+                        
+                        with yt_dlp.YoutubeDL(fallback_opts) as ydl:
+                            ydl.download([video_url])
+                        
+                        if not temp_full_video.exists():
+                            print(f"    ✗ Full video download failed")
+                            raise Exception("1080p download produced no file")
+                        
+                        print(f"    ✓ Full video downloaded, cutting segment with FFmpeg...")
+                        
+                        # Cut the segment locally with FFmpeg
+                        ffmpeg_cmd = [
+                            ffmpeg_path,
+                            '-y',
+                            '-ss', str(start_time),
+                            '-i', str(temp_full_video),
+                            '-t', str(clip_duration),
+                            '-c', 'copy',
+                            '-movflags', '+faststart',
+                            str(output_path)
+                        ]
+                        
+                        result = subprocess.run(
+                            ffmpeg_cmd,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            timeout=30
+                        )
+                        
+                        # Clean up temp file
+                        if temp_full_video.exists():
+                            temp_full_video.unlink()
+                        
+                        if result.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0:
+                            print(f"    ✓ Method 2 successful: Full download + FFmpeg cut ({start_time}s-{end_time}s)")
+                            return True
+                        else:
+                            print(f"    ✗ FFmpeg cut failed")
+                            if output_path.exists():
+                                output_path.unlink()
+                            raise Exception("FFmpeg cut failed")
                     
-                    if not temp_full_video.exists():
-                        print(f"    ✗ Full video download failed")
-                        continue
+                    except Exception as method2_error:
+                        error_msg = str(method2_error)[:60]
+                        print(f"    ✗ Method 2 error: {error_msg}")
+                        
+                        # Clean up temp files
+                        if temp_full_video.exists():
+                            temp_full_video.unlink()
+                        if output_path.exists():
+                            output_path.unlink()
+                        
+                        # RE-RAISE to trigger Method 3
+                        raise
+                
+                except Exception as method2_outer_error:
+                    # METHOD 3: LAST RESORT - 720p guaranteed download
+                    print(f"    ⚠️  1080p failed, trying 720p last resort...")
                     
-                    print(f"    ✓ Full video downloaded, cutting segment with FFmpeg...")
+                    temp_full_video_720p = output_path.parent / f"temp_720p_{output_path.name}"
                     
-                    # Cut the segment locally with FFmpeg
-                    ffmpeg_cmd = [
-                        ffmpeg_path,
-                        '-y',
-                        '-ss', str(start_time),
-                        '-i', str(temp_full_video),
-                        '-t', str(clip_duration),
-                        '-c', 'copy',
-                        '-movflags', '+faststart',
-                        str(output_path)
-                    ]
+                    try:
+                        # Download full video (best quality, any resolution)
+                        last_resort_opts = {
+                            'format': 'best[ext=mp4]',  # Universal format, guaranteed to work
+                            'outtmpl': str(temp_full_video_720p),
+                            'quiet': True,
+                            'no_warnings': True,
+                            'cachedir': False,
+                        }
+                        
+                        if cookie_file:
+                            last_resort_opts['cookiefile'] = str(cookie_file)
+                        
+                        with yt_dlp.YoutubeDL(last_resort_opts) as ydl:
+                            ydl.download([video_url])
+                        
+                        if not temp_full_video_720p.exists():
+                            print(f"    ✗ 720p download failed")
+                            continue
+                        
+                        print(f"    ✓ 720p video downloaded, cutting segment with FFmpeg...")
+                        
+                        # Cut the segment locally with FFmpeg
+                        ffmpeg_cmd_720p = [
+                            ffmpeg_path,
+                            '-y',
+                            '-ss', str(start_time),
+                            '-i', str(temp_full_video_720p),
+                            '-t', str(clip_duration),
+                            '-c', 'copy',
+                            '-movflags', '+faststart',
+                            str(output_path)
+                        ]
+                        
+                        result = subprocess.run(
+                            ffmpeg_cmd_720p,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            timeout=30
+                        )
+                        
+                        # Clean up temp file
+                        if temp_full_video_720p.exists():
+                            temp_full_video_720p.unlink()
+                        
+                        if result.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0:
+                            print(f"    ✓ Method 3 successful: 720p fallback ({start_time}s-{end_time}s)")
+                            return True
+                        else:
+                            print(f"    ✗ 720p FFmpeg cut failed")
+                            if output_path.exists():
+                                output_path.unlink()
+                            continue
                     
-                    result = subprocess.run(
-                        ffmpeg_cmd,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        timeout=30
-                    )
-                    
-                    # Clean up temp file
-                    if temp_full_video.exists():
-                        temp_full_video.unlink()
-                    
-                    if result.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0:
-                        print(f"    ✓ Fallback successful: Full download + FFmpeg cut ({start_time}s-{end_time}s)")
-                        return True
-                    else:
-                        print(f"    ✗ FFmpeg cut failed")
+                    except Exception as method3_error:
+                        error_msg = str(method3_error)[:60]
+                        print(f"    ✗ Method 3 error: {error_msg}")
+                        
+                        # Clean up temp files
+                        if temp_full_video_720p.exists():
+                            temp_full_video_720p.unlink()
                         if output_path.exists():
                             output_path.unlink()
                         continue
-                
-                except Exception as fallback_error:
-                    error_msg = str(fallback_error)[:60]
-                    print(f"    ✗ Fallback error: {error_msg}")
-                    
-                    # Clean up temp files
-                    if temp_full_video.exists():
-                        temp_full_video.unlink()
-                    if output_path.exists():
-                        output_path.unlink()
-                    continue
         
         except Exception as e:
             error_msg = str(e)[:80]
