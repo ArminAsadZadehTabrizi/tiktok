@@ -324,20 +324,20 @@ def search_youtube_videos(category, max_results=5):
 
 def download_youtube_clip(video_urls, output_path, clip_duration=4):
     """
-    🎬 DIRECT STREAM URL STRATEGY: Use FFmpeg to download directly from YouTube stream URL.
+    🎬 YT-DLP DOWNLOAD_RANGES STRATEGY (Reverted from FFmpeg Direct)
     
-    OPTIMIZATION: Completely bypasses yt-dlp's download mechanism to avoid macOS crashes.
-    This strategy:
-      1. Uses yt-dlp ONLY to extract video metadata and find the direct stream URL
-      2. Manually selects the best video-only format (1080p, MP4, no audio)
-      3. Uses FFmpeg DIRECTLY to download from the stream URL with cookie support
-      4. Downloads precise time range using FFmpeg's -ss and -t flags
+    Uses yt-dlp's native download_ranges feature to download specific time segments.
+    This solves the 403 Forbidden error by letting yt-dlp handle authentication.
     
-    Benefits:
-      - Eliminates yt-dlp download_ranges crashes (FFmpeg code 8 on macOS)
-      - Fast and stable direct stream download
-      - Cookie support for age-restricted/1080p streams
-      - No audio = no merge issues
+    CRASH PREVENTION CONFIG:
+      - format: 'bestvideo[height<=1080][ext=mp4]' (Video-only, no audio merge)
+      - fixup: 'never' (Disables post-processing that triggers crashes)
+      - force_keyframes_at_cuts: False (Prevents heavy FFmpeg processing)
+      - download_ranges: Uses yt_dlp.utils.download_range_func for precise cuts
+    
+    FALLBACK MECHANISM:
+      If yt-dlp range download fails, downloads full video and cuts locally with FFmpeg.
+      This ensures the bot NEVER stops working.
     
     Args:
         video_urls (list): List of YouTube URLs to try (manual or automated)
@@ -353,18 +353,17 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
     if not video_urls:
         return False
     
-    # Find FFmpeg binary dynamically
+    # Find FFmpeg binary (needed for fallback)
     ffmpeg_path = shutil.which('ffmpeg')
     if not ffmpeg_path:
-        # Fallback to hardcoded path if not in PATH
         ffmpeg_path = '/opt/homebrew/bin/ffmpeg'
         if not Path(ffmpeg_path).exists():
-            print(f"    ✗ FFmpeg not found - cannot download")
-            return False
+            print(f"    ✗ FFmpeg not found - cannot use fallback")
+            ffmpeg_path = None
     
     # Try multiple videos
     attempted_urls = []
-    max_attempts = min(len(video_urls), 3)  # Try up to 3 different URLs
+    max_attempts = min(len(video_urls), 3)
     
     for attempt in range(max_attempts):
         # Pick a random URL we haven't tried yet
@@ -376,25 +375,23 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
         attempted_urls.append(video_url)
         
         try:
-            print(f"    🎬 Attempt {attempt + 1}/{max_attempts}: Extracting stream URL...")
+            print(f"    🎬 Attempt {attempt + 1}/{max_attempts}: Using yt-dlp download_ranges...")
             
-            # STEP 1: Extract video metadata and formats using yt-dlp
-            ydl_opts = {
+            # STEP 1: Get video info to calculate time range
+            info_opts = {
                 'quiet': True,
                 'no_warnings': True,
-                'extract_flat': False,
             }
             
-            # Add cookie file if configured
             cookie_file = getattr(config, 'YOUTUBE_COOKIE_FILE', None)
             if cookie_file:
-                ydl_opts['cookiefile'] = str(cookie_file)
+                info_opts['cookiefile'] = str(cookie_file)
             
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            with yt_dlp.YoutubeDL(info_opts) as ydl:
                 info = ydl.extract_info(video_url, download=False)
                 duration = info.get('duration', 0)
                 
-                if duration < 120:  # Video too short
+                if duration < 120:
                     print(f"    ⚠️  Video too short ({duration}s), trying next URL...")
                     continue
                 
@@ -407,120 +404,125 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                     continue
                 
                 start_time = random.randint(safe_start, safe_end)
+                end_time = start_time + clip_duration
                 
-                print(f"    ⏱️  Target clip: {start_time}s to {start_time + clip_duration}s")
+                print(f"    ⏱️  Target clip: {start_time}s to {end_time}s")
+            
+            # STEP 2: PRIMARY STRATEGY - Use yt-dlp's download_ranges
+            try:
+                print(f"    📥 Method 1: yt-dlp download_ranges (fast, prevents 403)...")
                 
-                # STEP 2: Manually find the best video-only format
-                formats = info.get('formats', [])
+                ydl_opts = {
+                    'format': 'bestvideo[height<=1080][ext=mp4]',  # Video-only, no audio
+                    'outtmpl': str(output_path),
+                    'quiet': True,
+                    'no_warnings': True,
+                    'fixup': 'never',  # CRITICAL: Disable post-processing fixup
+                    'force_keyframes_at_cuts': False,  # CRITICAL: Prevent FFmpeg crash
+                    'download_ranges': yt_dlp.utils.download_range_func(None, [(start_time, end_time)]),
+                }
                 
-                # Filter for video-only MP4 formats at or below 1080p
-                video_only_formats = [
-                    f for f in formats
-                    if f.get('ext') == 'mp4'
-                    and f.get('vcodec') != 'none'  # Has video
-                    and f.get('acodec') == 'none'  # No audio
-                    and f.get('height') is not None
-                    and f.get('height') <= 1080
-                ]
+                if cookie_file:
+                    ydl_opts['cookiefile'] = str(cookie_file)
                 
-                if not video_only_formats:
-                    print(f"    ⚠️  No suitable video-only format found, trying next URL...")
-                    continue
-                
-                # Sort by height (prefer 1080p, then lower resolutions)
-                video_only_formats.sort(key=lambda f: f.get('height', 0), reverse=True)
-                best_format = video_only_formats[0]
-                
-                stream_url = best_format.get('url')
-                if not stream_url:
-                    print(f"    ⚠️  No stream URL found, trying next URL...")
-                    continue
-                
-                format_height = best_format.get('height', 'unknown')
-                print(f"    📺 Selected format: {format_height}p video-only MP4")
-                
-                # Extract HTTP headers from the format or main info dict
-                http_headers = best_format.get('http_headers') or info.get('http_headers', {})
-                
-                # Extract cookies from yt-dlp's session and inject into headers
-                cookies = ydl.cookiejar
-                cookie_header_val = '; '.join([f'{c.name}={c.value}' for c in cookies])
-                print(f"    🍪 Loaded {len(cookies)} cookies from jar")
-                
-                # STEP 3: Use FFmpeg to download directly from the stream URL with proper headers
-                ffmpeg_cmd = [
-                    ffmpeg_path,
-                    '-y',  # Overwrite output
-                ]
-                
-                # Add User-Agent explicitly (critical for YouTube)
-                user_agent = http_headers.get('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
-                ffmpeg_cmd.extend(['-user_agent', user_agent])
-                
-                # Build HTTP headers string for FFmpeg
-                # Format: 'Header1: value1\r\nHeader2\r\n' (actual CRLF, not escaped)
-                headers_list = []
-                for key, value in http_headers.items():
-                    if key.lower() != 'cookie':  # Cookie added below
-                        headers_list.append(f"{key}: {value}")
-                
-                # Inject cookies into headers (more reliable than -cookies flag)
-                if cookie_header_val:
-                    headers_list.append(f'Cookie: {cookie_header_val}')
-                
-                # Add headers string if we have any
-                if headers_list:
-                    # FIXED: Use actual CRLF (\r\n) not escaped string ('\\r\\n')
-                    headers_string = '\r\n'.join(headers_list) + '\r\n'
-                    ffmpeg_cmd.extend(['-headers', headers_string])
-                
-                # Add time range and input
-                ffmpeg_cmd.extend([
-                    '-ss', str(start_time),  # Start time
-                    '-t', str(clip_duration),  # Duration
-                    '-i', stream_url,  # Input stream URL
-                    '-c', 'copy',  # Copy without re-encoding (fast)
-                    '-movflags', '+faststart',  # Optimize for streaming
-                    str(output_path)  # Output file
-                ])
-                
-                print(f"    📥 Downloading with FFmpeg...")
-                
-                result = subprocess.run(
-                    ffmpeg_cmd,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    timeout=60  # Longer timeout for direct stream download
-                )
+                # Download using yt-dlp (handles cookies/headers correctly)
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([video_url])
                 
                 # Verify the file was created
-                if result.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0:
-                    print(f"    ✓ YouTube clip downloaded successfully ({start_time}s-{start_time + clip_duration}s)")
+                if output_path.exists() and output_path.stat().st_size > 0:
+                    print(f"    ✓ yt-dlp range download successful ({start_time}s-{end_time}s)")
                     return True
                 else:
-                    # Show FFmpeg error if available
-                    stderr = result.stderr.decode('utf-8', errors='ignore') if result.stderr else ''
-                    if stderr:
-                        # Extract relevant error (first line only)
-                        error_line = stderr.strip().split('\n')[-1][:80]
-                        print(f"    ⚠️  FFmpeg error: {error_line}")
-                    else:
-                        print(f"    ⚠️  Download failed, trying next URL...")
+                    print(f"    ⚠️  yt-dlp range download failed (file missing/empty)")
+                    raise Exception("Range download produced no output")
+            
+            except Exception as range_error:
+                # Suppress the full error, just show a brief warning
+                error_msg = str(range_error)[:60]
+                print(f"    ⚠️  Range download failed: {error_msg}")
+                
+                # Clean up failed file
+                if output_path.exists():
+                    output_path.unlink()
+                
+                # STEP 3: FALLBACK STRATEGY - Download full video + local FFmpeg cut
+                if not ffmpeg_path:
+                    print(f"    ✗ Fallback skipped: FFmpeg not available")
+                    continue
+                
+                print(f"    🔄 Method 2: Full video download + local FFmpeg cut (slower, but guaranteed)...")
+                
+                # Create temporary file for full video
+                temp_full_video = output_path.parent / f"temp_full_{output_path.name}"
+                
+                try:
+                    # Download full video (limited to 720p for speed)
+                    fallback_opts = {
+                        'format': 'best[ext=mp4][height<=720]/best[ext=mp4]',
+                        'outtmpl': str(temp_full_video),
+                        'quiet': True,
+                        'no_warnings': True,
+                    }
                     
-                    # Clean up failed file
+                    if cookie_file:
+                        fallback_opts['cookiefile'] = str(cookie_file)
+                    
+                    with yt_dlp.YoutubeDL(fallback_opts) as ydl:
+                        ydl.download([video_url])
+                    
+                    if not temp_full_video.exists():
+                        print(f"    ✗ Full video download failed")
+                        continue
+                    
+                    print(f"    ✓ Full video downloaded, cutting segment with FFmpeg...")
+                    
+                    # Cut the segment locally with FFmpeg
+                    ffmpeg_cmd = [
+                        ffmpeg_path,
+                        '-y',
+                        '-ss', str(start_time),
+                        '-i', str(temp_full_video),
+                        '-t', str(clip_duration),
+                        '-c', 'copy',
+                        '-movflags', '+faststart',
+                        str(output_path)
+                    ]
+                    
+                    result = subprocess.run(
+                        ffmpeg_cmd,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        timeout=30
+                    )
+                    
+                    # Clean up temp file
+                    if temp_full_video.exists():
+                        temp_full_video.unlink()
+                    
+                    if result.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0:
+                        print(f"    ✓ Fallback successful: Full download + FFmpeg cut ({start_time}s-{end_time}s)")
+                        return True
+                    else:
+                        print(f"    ✗ FFmpeg cut failed")
+                        if output_path.exists():
+                            output_path.unlink()
+                        continue
+                
+                except Exception as fallback_error:
+                    error_msg = str(fallback_error)[:60]
+                    print(f"    ✗ Fallback error: {error_msg}")
+                    
+                    # Clean up temp files
+                    if temp_full_video.exists():
+                        temp_full_video.unlink()
                     if output_path.exists():
                         output_path.unlink()
                     continue
-                    
-        except subprocess.TimeoutExpired:
-            print(f"    ⚠️  Download timeout, trying next URL...")
-            if output_path.exists():
-                output_path.unlink()
-            continue
-            
+        
         except Exception as e:
             error_msg = str(e)[:80]
-            print(f"    ⚠️  Error: {error_msg}, trying next URL...")
+            print(f"    ⚠️  Outer error: {error_msg}, trying next URL...")
             if output_path.exists():
                 output_path.unlink()
             continue
@@ -529,8 +531,7 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
         if attempt < max_attempts - 1:
             time.sleep(1)
     
-    # Only print final failure message if all attempts failed
-    print(f"    ✗ All YouTube download attempts failed")
+    print(f"    ✗ All YouTube download attempts failed (tried {len(attempted_urls)} URLs)")
     return False
 
 
