@@ -442,6 +442,10 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                 # Extract HTTP headers from the format or main info dict
                 http_headers = best_format.get('http_headers') or info.get('http_headers', {})
                 
+                # Extract cookies from yt-dlp's session and inject into headers
+                cookies = ydl.cookiejar
+                cookie_header_val = '; '.join([f'{c.name}={c.value}' for c in cookies])
+                
                 # STEP 3: Use FFmpeg to download directly from the stream URL with proper headers
                 ffmpeg_cmd = [
                     ffmpeg_path,
@@ -453,15 +457,20 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                 ffmpeg_cmd.extend(['-user_agent', user_agent])
                 
                 # Build HTTP headers string for FFmpeg
-                # Format: 'Header1: value1\r\nHeader2: value2\r\n'
+                # Format: 'Header1: value1\r\nHeader2: value2\r\n' (actual CRLF, not escaped)
                 headers_list = []
                 for key, value in http_headers.items():
-                    if key.lower() not in ['user-agent']:  # User-Agent added separately
+                    if key.lower() not in ['user-agent', 'cookie']:  # User-Agent added separately, Cookie added below
                         headers_list.append(f"{key}: {value}")
+                
+                # Inject cookies into headers (more reliable than -cookies flag)
+                if cookie_header_val:
+                    headers_list.append(f'Cookie: {cookie_header_val}')
                 
                 # Add headers string if we have any
                 if headers_list:
-                    headers_string = '\\r\\n'.join(headers_list) + '\\r\\n'
+                    # FIXED: Use actual CRLF (\r\n) not escaped string ('\\r\\n')
+                    headers_string = '\r\n'.join(headers_list) + '\r\n'
                     ffmpeg_cmd.extend(['-headers', headers_string])
                 
                 # Add cookie file for FFmpeg if configured (additional auth layer)
