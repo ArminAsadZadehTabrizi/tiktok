@@ -445,6 +445,7 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                 # Extract cookies from yt-dlp's session and inject into headers
                 cookies = ydl.cookiejar
                 cookie_header_val = '; '.join([f'{c.name}={c.value}' for c in cookies])
+                print(f"    🍪 Loaded {len(cookies)} cookies from jar")
                 
                 # STEP 3: Use FFmpeg to download directly from the stream URL with proper headers
                 ffmpeg_cmd = [
@@ -457,10 +458,10 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                 ffmpeg_cmd.extend(['-user_agent', user_agent])
                 
                 # Build HTTP headers string for FFmpeg
-                # Format: 'Header1: value1\r\nHeader2: value2\r\n' (actual CRLF, not escaped)
+                # Format: 'Header1: value1\r\nHeader2\r\n' (actual CRLF, not escaped)
                 headers_list = []
                 for key, value in http_headers.items():
-                    if key.lower() not in ['user-agent', 'cookie']:  # User-Agent added separately, Cookie added below
+                    if key.lower() != 'cookie':  # Cookie added below
                         headers_list.append(f"{key}: {value}")
                 
                 # Inject cookies into headers (more reliable than -cookies flag)
@@ -472,10 +473,6 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                     # FIXED: Use actual CRLF (\r\n) not escaped string ('\\r\\n')
                     headers_string = '\r\n'.join(headers_list) + '\r\n'
                     ffmpeg_cmd.extend(['-headers', headers_string])
-                
-                # Add cookie file for FFmpeg if configured (additional auth layer)
-                if cookie_file and Path(cookie_file).exists():
-                    ffmpeg_cmd.extend(['-cookies', str(cookie_file)])
                 
                 # Add time range and input
                 ffmpeg_cmd.extend([
