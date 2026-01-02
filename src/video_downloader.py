@@ -324,11 +324,14 @@ def search_youtube_videos(category, max_results=5):
 
 def download_youtube_clip(video_urls, output_path, clip_duration=4):
     """
-    🎬 BUFFERED RANGE STRATEGY: Download a small buffered segment, then cut to exact clip.
+    🎬 VIDEO-ONLY HIGH QUALITY STRATEGY: Download 1080p video stream without audio.
     
-    OPTIMIZATION: Instead of downloading the full video, downloads (start-10) to (end+10)
-    with a 10-second buffer on each side. This prevents FFmpeg code 8 errors while keeping
-    downloads fast for long videos (e.g., 2-hour compilations).
+    OPTIMIZATION: Downloads only the video stream (no audio) in 1080p MP4 format.
+    Since background music is added separately, audio is not needed. This strategy:
+      - Fetches high-quality 1080p visuals directly
+      - Eliminates FFmpeg audio/video merge crashes (no merging needed)
+      - Uses buffered range download (target ±5s) for speed on long videos
+      - Requires cookie file to access 1080p streams
     
     If a URL fails (403 or any error), it silently tries the next URL in the list.
     
@@ -346,8 +349,8 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
     if not video_urls:
         return False
     
-    # Buffer size in seconds (prevents FFmpeg sync errors)
-    BUFFER_SECONDS = 10
+    # Buffer size in seconds (smaller buffer since video-only downloads are stable)
+    BUFFER_SECONDS = 5
     
     # Try multiple videos with the buffered range strategy
     attempted_urls = []
@@ -401,18 +404,18 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                 buffer_end = min(duration, end_time + BUFFER_SECONDS)
                 
                 print(f"    ⏱️  Target clip: {start_time}s-{end_time}s")
-                print(f"    📦 Downloading buffered range: {buffer_start}s-{buffer_end}s (avoids full download)")
+                print(f"    📦 Downloading buffered range: {buffer_start}s-{buffer_end}s (±{BUFFER_SECONDS}s buffer)")
                 
-                # 🎬 HIGH-QUALITY 1080p STRATEGY with BUFFERED RANGE
-                # Uses 'bestvideo+bestaudio' to get separate high-quality streams and merge them
-                # Requires cookie file to prevent 403 errors (configured in config.py)
-                # Falls back to pre-merged files if merging fails
+                # 🎬 VIDEO-ONLY HIGH QUALITY STRATEGY
+                # Downloads 1080p video stream WITHOUT audio (audio added separately by user)
+                # This eliminates FFmpeg merge crashes since no stream merging is required
+                # Requires cookie file to prevent 403 errors and access 1080p streams
                 download_opts = {
-                    'format': 'bestvideo[height<=1080]+bestaudio/best[ext=mp4]/best',  # 1080p quality with fallbacks
+                    'format': 'bestvideo[height<=1080][ext=mp4]',  # Video-only, no audio (prevents FFmpeg crashes)
                     'outtmpl': str(output_path),
                     'quiet': True,  # Suppress most output
                     'no_warnings': True,
-                    'ffmpeg_location': '/opt/homebrew/bin/ffmpeg',  # Enforce ffmpeg path to prevent code 8 errors
+                    'ffmpeg_location': '/opt/homebrew/bin/ffmpeg',  # Enforce ffmpeg path for range cutting
                     # ✅ BUFFERED RANGE ENABLED: Download only the buffered segment (not full video)
                     'download_ranges': yt_dlp.utils.download_range_func(None, [(buffer_start, buffer_end)]),
                     'force_keyframes_at_cuts': True,
