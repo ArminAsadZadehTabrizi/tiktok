@@ -324,10 +324,11 @@ def search_youtube_videos(category, max_results=5):
 
 def download_youtube_clip(video_urls, output_path, clip_duration=4):
     """
-    🎬 REFACTORED: Download a clip from curated YouTube URLs with robust 403 error handling.
+    🎬 BUFFERED RANGE STRATEGY: Download a small buffered segment, then cut to exact clip.
     
-    CRITICAL FIX: Uses 'best[ext=mp4]/best' format to prioritize single-file downloads.
-    This prevents HTTP 403 errors that occur when yt-dlp tries to merge separate audio/video streams.
+    OPTIMIZATION: Instead of downloading the full video, downloads (start-10) to (end+10)
+    with a 10-second buffer on each side. This prevents FFmpeg code 8 errors while keeping
+    downloads fast for long videos (e.g., 2-hour compilations).
     
     If a URL fails (403 or any error), it silently tries the next URL in the list.
     
@@ -345,7 +346,10 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
     if not video_urls:
         return False
     
-    # Try multiple videos with the stable format strategy
+    # Buffer size in seconds (prevents FFmpeg sync errors)
+    BUFFER_SECONDS = 10
+    
+    # Try multiple videos with the buffered range strategy
     attempted_urls = []
     max_attempts = min(len(video_urls), 3)  # Try up to 3 different URLs
     
@@ -392,9 +396,14 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                 start_time = random.randint(safe_start, safe_end)
                 end_time = start_time + clip_duration
                 
-                print(f"    ⏱️  Extracting {start_time}s-{end_time}s from {duration}s video")
+                # 🔥 BUFFERED RANGE: Add buffer to prevent FFmpeg sync errors
+                buffer_start = max(0, start_time - BUFFER_SECONDS)
+                buffer_end = min(duration, end_time + BUFFER_SECONDS)
                 
-                # 🎬 HIGH-QUALITY 1080p STRATEGY: Merge best video + best audio
+                print(f"    ⏱️  Target clip: {start_time}s-{end_time}s")
+                print(f"    📦 Downloading buffered range: {buffer_start}s-{buffer_end}s (avoids full download)")
+                
+                # 🎬 HIGH-QUALITY 1080p STRATEGY with BUFFERED RANGE
                 # Uses 'bestvideo+bestaudio' to get separate high-quality streams and merge them
                 # Requires cookie file to prevent 403 errors (configured in config.py)
                 # Falls back to pre-merged files if merging fails
@@ -404,10 +413,9 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                     'quiet': True,  # Suppress most output
                     'no_warnings': True,
                     'ffmpeg_location': '/opt/homebrew/bin/ffmpeg',  # Enforce ffmpeg path to prevent code 8 errors
-                    # NOTE: download_ranges disabled - downloading full video then cutting
-                    # On-the-fly stream cutting causes ffmpeg code 8 errors with merged formats
-                    # 'download_ranges': yt_dlp.utils.download_range_func(None, [(start_time, end_time)]),
-                    # 'force_keyframes_at_cuts': True,
+                    # ✅ BUFFERED RANGE ENABLED: Download only the buffered segment (not full video)
+                    'download_ranges': yt_dlp.utils.download_range_func(None, [(buffer_start, buffer_end)]),
+                    'force_keyframes_at_cuts': True,
                 }
                 
                 # Add cookie file if configured
@@ -419,18 +427,20 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                 
                 # Verify the file was created
                 if output_path.exists() and output_path.stat().st_size > 0:
-                    # 🎬 POST-PROCESSING: Extract clip from full video using ffmpeg
-                    # This avoids code 8 errors from on-the-fly stream cutting
-                    temp_full_video = output_path.with_suffix('.temp.mp4')
-                    output_path.rename(temp_full_video)
+                    # 🎬 POST-PROCESSING: Extract exact clip from buffered segment using ffmpeg
+                    # Calculate offset within the buffered segment
+                    offset_in_buffer = start_time - buffer_start
+                    
+                    temp_buffered_video = output_path.with_suffix('.buffered.mp4')
+                    output_path.rename(temp_buffered_video)
                     
                     try:
-                        # Use ffmpeg to extract the precise clip
+                        # Use ffmpeg to extract the precise clip from the buffered segment
                         ffmpeg_cmd = [
                             '/opt/homebrew/bin/ffmpeg',
                             '-y',  # Overwrite output
-                            '-ss', str(start_time),  # Start time
-                            '-i', str(temp_full_video),  # Input file
+                            '-ss', str(offset_in_buffer),  # Start time within buffered segment
+                            '-i', str(temp_buffered_video),  # Input file (buffered segment)
                             '-t', str(clip_duration),  # Duration
                             '-c', 'copy',  # Copy without re-encoding (fast)
                             str(output_path)  # Output file
@@ -444,24 +454,24 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                         )
                         
                         # Clean up temp file
-                        if temp_full_video.exists():
-                            temp_full_video.unlink()
+                        if temp_buffered_video.exists():
+                            temp_buffered_video.unlink()
                         
                         if result.returncode == 0 and output_path.exists():
                             print(f"    ✓ YouTube clip extracted successfully ({start_time}s-{end_time}s)")
                             return True
                         else:
                             print(f"    ⚠️  Clip extraction failed, trying next URL...")
-                            if temp_full_video.exists():
-                                temp_full_video.unlink()
+                            if temp_buffered_video.exists():
+                                temp_buffered_video.unlink()
                             if output_path.exists():
                                 output_path.unlink()
                             continue
                             
                     except Exception as extract_error:
                         print(f"    ⚠️  Extraction error: {str(extract_error)[:50]}, trying next URL...")
-                        if temp_full_video.exists():
-                            temp_full_video.unlink()
+                        if temp_buffered_video.exists():
+                            temp_buffered_video.unlink()
                         if output_path.exists():
                             output_path.unlink()
                         continue
