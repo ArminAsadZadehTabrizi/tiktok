@@ -457,9 +457,9 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                 temp_full_video = output_path.parent / f"temp_full_{output_path.name}"
                 
                 try:
-                    # Download full video (limited to 720p for speed)
+                    # Download full video (1080p video-only, no audio merge)
                     fallback_opts = {
-                        'format': 'best[ext=mp4][height<=720]/best[ext=mp4]',
+                        'format': 'bestvideo[height<=1080][ext=mp4]',
                         'outtmpl': str(temp_full_video),
                         'quiet': True,
                         'no_warnings': True,
