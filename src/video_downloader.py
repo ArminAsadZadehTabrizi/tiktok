@@ -439,21 +439,39 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                 format_height = best_format.get('height', 'unknown')
                 print(f"    📺 Selected format: {format_height}p video-only MP4")
                 
-                # STEP 3: Use FFmpeg to download directly from the stream URL
+                # Extract HTTP headers from the format or main info dict
+                http_headers = best_format.get('http_headers') or info.get('http_headers', {})
+                
+                # STEP 3: Use FFmpeg to download directly from the stream URL with proper headers
                 ffmpeg_cmd = [
                     ffmpeg_path,
                     '-y',  # Overwrite output
-                    '-ss', str(start_time),  # Start time
-                    '-t', str(clip_duration),  # Duration
                 ]
                 
-                # Add cookie file for FFmpeg if configured
+                # Add User-Agent explicitly (critical for YouTube)
+                user_agent = http_headers.get('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+                ffmpeg_cmd.extend(['-user_agent', user_agent])
+                
+                # Build HTTP headers string for FFmpeg
+                # Format: 'Header1: value1\r\nHeader2: value2\r\n'
+                headers_list = []
+                for key, value in http_headers.items():
+                    if key.lower() not in ['user-agent']:  # User-Agent added separately
+                        headers_list.append(f"{key}: {value}")
+                
+                # Add headers string if we have any
+                if headers_list:
+                    headers_string = '\\r\\n'.join(headers_list) + '\\r\\n'
+                    ffmpeg_cmd.extend(['-headers', headers_string])
+                
+                # Add cookie file for FFmpeg if configured (additional auth layer)
                 if cookie_file and Path(cookie_file).exists():
-                    # FFmpeg uses -cookies flag (pass cookies as a file)
-                    # We need to read the Netscape cookie file and pass it
                     ffmpeg_cmd.extend(['-cookies', str(cookie_file)])
                 
+                # Add time range and input
                 ffmpeg_cmd.extend([
+                    '-ss', str(start_time),  # Start time
+                    '-t', str(clip_duration),  # Duration
                     '-i', stream_url,  # Input stream URL
                     '-c', 'copy',  # Copy without re-encoding (fast)
                     '-movflags', '+faststart',  # Optimize for streaming
