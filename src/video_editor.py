@@ -102,15 +102,58 @@ def apply_ken_burns_zoom(clip, zoom_factor=1.05):
 
 
 def resize_to_vertical(clip):
-    target_ratio = config.VIDEO_HEIGHT / config.VIDEO_WIDTH
-    if clip.h / clip.w > target_ratio:
-        new_width = config.VIDEO_WIDTH
-        new_height = int(clip.h * (config.VIDEO_WIDTH / clip.w))
+    """
+    🎬 CINEMATIC CROP: Resize to 9:16 with automatic letterbox removal.
+    
+    For LANDSCAPE videos (width > height):
+      - Apply 20% overscan (cinematic zoom) to push black bars out of frame
+      - Then crop to 9:16 aspect ratio
+    
+    For VERTICAL videos (already portrait):
+      - Use standard resize/crop (no overscan needed)
+    
+    This ensures hardcoded black bars in source footage are eliminated.
+    """
+    target_ratio = config.VIDEO_HEIGHT / config.VIDEO_WIDTH  # 9:16 = 1.777...
+    source_ratio = clip.h / clip.w
+    
+    # Detect landscape videos (width > height)
+    is_landscape = clip.w > clip.h
+    
+    if is_landscape:
+        # 🎬 CINEMATIC OVERSCAN: Apply 20% zoom to remove letterboxing
+        overscan_factor = 1.20  # 20% zoom (configurable: 1.15-1.25)
+        
+        # Calculate dimensions with overscan applied
+        if source_ratio > target_ratio:
+            # Source is taller relative to target - fit to width first
+            new_width = int(config.VIDEO_WIDTH * overscan_factor)
+            new_height = int(clip.h * (new_width / clip.w))
+        else:
+            # Source is wider relative to target - fit to height first
+            new_height = int(config.VIDEO_HEIGHT * overscan_factor)
+            new_width = int(clip.w * (new_height / clip.h))
+        
+        print(f"    🎬 Applying cinematic overscan ({overscan_factor}x) to landscape video")
     else:
-        new_height = config.VIDEO_HEIGHT
-        new_width = int(clip.w * (config.VIDEO_HEIGHT / clip.h))
+        # Standard resize for already-vertical videos (no overscan)
+        if source_ratio > target_ratio:
+            new_width = config.VIDEO_WIDTH
+            new_height = int(clip.h * (config.VIDEO_WIDTH / clip.w))
+        else:
+            new_height = config.VIDEO_HEIGHT
+            new_width = int(clip.w * (config.VIDEO_HEIGHT / clip.h))
+    
+    # Resize to calculated dimensions
     clip = clip.resize((new_width, new_height))
-    return clip.crop(x_center=new_width/2, y_center=new_height/2, width=config.VIDEO_WIDTH, height=config.VIDEO_HEIGHT)
+    
+    # Crop to exact 9:16 from center (removing any black bars pushed to edges)
+    return clip.crop(
+        x_center=new_width/2, 
+        y_center=new_height/2, 
+        width=config.VIDEO_WIDTH, 
+        height=config.VIDEO_HEIGHT
+    )
 
 def create_word_clip(text, start, duration, is_exact=False):
     if duration < 0.2: duration = 0.2

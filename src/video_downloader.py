@@ -102,18 +102,51 @@ def get_local_footage_files():
     return []
 
 
-def get_manual_youtube_urls():
+def get_manual_youtube_urls(category=None):
     """
-    🎯 PRIORITY 2: Check for manually curated YouTube URLs.
+    🎯 PRIORITY 2: Check for manually curated YouTube URLs (Category-Based).
+    
+    Args:
+        category (str): Category to select from (CARS/COMBAT/GYM/LUXURY/STOIC)
     
     Returns:
-        list: Manual YouTube URLs from config, or empty list if none defined
+        list: Manual YouTube URLs for the specified category, or empty list
     """
-    manual_urls = getattr(config, 'MANUAL_YOUTUBE_URLS', [])
+    manual_urls_dict = getattr(config, 'MANUAL_YOUTUBE_URLS', {})
     
-    if manual_urls:
-        print(f"    🎯 Found {len(manual_urls)} manual YouTube URL(s)")
-        return [url for url in manual_urls if url.strip()]  # Filter empty strings
+    # If manual URLs is still a flat list (old format), return it as-is for backward compatibility
+    if isinstance(manual_urls_dict, list):
+        if manual_urls_dict:
+            print(f"    🎯 Found {len(manual_urls_dict)} manual YouTube URL(s) (legacy flat list)")
+            return [url for url in manual_urls_dict if url.strip()]
+        return []
+    
+    # Handle dictionary format (new category-based structure)
+    if not isinstance(manual_urls_dict, dict) or not manual_urls_dict:
+        return []
+    
+    # If no category specified, return all URLs (legacy behavior)
+    if category is None:
+        all_urls = []
+        for cat_urls in manual_urls_dict.values():
+            all_urls.extend(cat_urls)
+        if all_urls:
+            print(f"    🎯 Found {len(all_urls)} manual YouTube URL(s) (all categories)")
+        return [url for url in all_urls if url.strip()]
+    
+    # Category-based selection
+    urls = manual_urls_dict.get(category, [])
+    
+    # Fallback to DEFAULT_CATEGORY if category not found
+    if not urls:
+        default_cat = getattr(config, 'DEFAULT_CATEGORY', 'LUXURY')
+        if category != default_cat:  # Avoid infinite recursion
+            print(f"    ⚠️  Category '{category}' not found, falling back to '{default_cat}'")
+            urls = manual_urls_dict.get(default_cat, [])
+    
+    if urls:
+        print(f"    🎯 Found {len(urls)} manual YouTube URL(s) for category '{category}'")
+        return [url for url in urls if url.strip()]
     
     return []
 
@@ -126,7 +159,7 @@ def detect_category_from_query(query):
         query (str): Visual search query
     
     Returns:
-        str or None: Category name (CARS/COMBAT/GYM/LUXURY) or None if no match
+        str or None: Category name (CARS/COMBAT/GYM/LUXURY/STOIC) or None if no match
     """
     query_lower = query.lower()
     
@@ -148,6 +181,12 @@ def detect_category_from_query(query):
         "pushup", "pull up", "push up", "bodyweight", "street workout"
     ]):
         return "GYM"
+    
+    if any(keyword in query_lower for keyword in [
+        "statue", "marble", "sculpture", "bust", "ancient", "rome", "roman", 
+        "greece", "greek", "philosophy", "stoic", "temple", "column", "ruins"
+    ]):
+        return "STOIC"
     
     if any(keyword in query_lower for keyword in [
         "money", "rich", "yacht", "villa", "jet", "luxury", "wealth", 
@@ -355,10 +394,12 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                 
                 print(f"    ⏱️  Extracting {start_time}s-{end_time}s from {duration}s video")
                 
-                # 🛡️ CRITICAL FIX: Use 'best[ext=mp4]/best' format for maximum stability
-                # This prioritizes pre-merged MP4 files and avoids 403 errors from stream merging
+                # 🎬 HIGH-QUALITY 1080p STRATEGY: Merge best video + best audio
+                # Uses 'bestvideo+bestaudio' to get separate high-quality streams and merge them
+                # Requires cookie file to prevent 403 errors (configured in config.py)
+                # Falls back to pre-merged files if merging fails
                 download_opts = {
-                    'format': 'best[ext=mp4]/best',  # CRITICAL: Single file, no audio merging
+                    'format': 'bestvideo[height<=1080]+bestaudio/best[ext=mp4]/best',  # 1080p quality with fallbacks
                     'outtmpl': str(output_path),
                     'quiet': True,  # Suppress most output
                     'no_warnings': True,
@@ -663,9 +704,67 @@ def search_videos(visual_queries, fallback_topic=None):
         return all_segment_variations
     
     # 🎯 PRIORITY 2: Check for manual YouTube URLs (CURATED METHOD)
-    manual_urls = get_manual_youtube_urls()
-    if manual_urls:
-        print(f"\n  🎯 PRIORITY 2 ACTIVE: Using {len(manual_urls)} curated YouTube URL(s)")
+    # NOW WITH CATEGORY-BASED SELECTION!
+    manual_urls_dict = getattr(config, 'MANUAL_YOUTUBE_URLS', {})
+    
+    # Check if we have a categorized manual URL dictionary
+    if manual_urls_dict and isinstance(manual_urls_dict, dict):
+        print(f"\n  🎯 PRIORITY 2 ACTIVE: Using categorized manual YouTube URLs")
+        print(f"     ✓ AUTOMATED SEARCH DISABLED: Manual quality control active\n")
+        
+        for i, raw_query in enumerate(visual_queries):
+            print(f"  🔍 Segment {i}: '{raw_query}'")
+            segment_variations = []
+            
+            # 🎯 CATEGORY DETECTION: Determine which category to use
+            category = detect_category_from_query(raw_query)
+            if category:
+                print(f"    🎯 Detected category: {category}")
+            else:
+                default_cat = getattr(config, 'DEFAULT_CATEGORY', 'LUXURY')
+                category = default_cat
+                print(f"    ⚠️  No category detected, using default: {category}")
+            
+            # Get category-specific URLs
+            category_urls = get_manual_youtube_urls(category)
+            
+            if not category_urls:
+                print(f"    ✗ No manual URLs available for category '{category}'")
+                all_segment_variations.append(segment_variations)
+                continue
+            
+            # Try to fill variations from category-specific manual URLs
+            for variation_num in range(1, config.SCENE_VIDEO_VARIATIONS + 1):
+                temp_output = config.ASSETS_DIR / f"segment_{i}_v{variation_num}_temp.mp4"
+                
+                # Use the refactored download function with category-specific URLs
+                if download_youtube_clip(category_urls, temp_output):
+                    video_info = {
+                        "url": "youtube_manual",  # Special marker
+                        "local_path": temp_output,
+                        "width": 1080,
+                        "height": 1920,
+                        "query": raw_query,
+                        "segment_index": i,
+                        "variation_number": variation_num,
+                        "source": "youtube_manual",
+                        "category": category  # Track which category was used
+                    }
+                    segment_variations.append(video_info)
+                    print(f"    ✓ v{variation_num} downloaded from '{category}' category")
+                else:
+                    print(f"    ✗ v{variation_num} failed (will retry with different URL)")
+            
+            all_segment_variations.append(segment_variations)
+            time.sleep(0.5)
+        
+        print(f"\n  ✓ Category-based manual download complete")
+        return all_segment_variations
+    
+    # Legacy support: Handle flat list format (old config structure)
+    elif manual_urls_dict and isinstance(manual_urls_dict, list):
+        manual_urls = manual_urls_dict
+        print(f"\n  🎯 PRIORITY 2 ACTIVE: Using {len(manual_urls)} curated YouTube URL(s) (flat list)")
         print(f"     ✓ AUTOMATED SEARCH DISABLED: Manual quality control active\n")
         
         for i, raw_query in enumerate(visual_queries):

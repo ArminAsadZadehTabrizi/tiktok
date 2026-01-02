@@ -28,23 +28,35 @@ BACKGROUND_MUSIC_PATH = ASSETS_DIR / "background_music.mp3"
 # 📹 VIDEO SOURCE CONFIGURATION (PRIORITY SYSTEM)
 # ==============================================================================
 # Priority 1: Local Files (assets/my_footage/*.mp4)
-# Priority 2: Curated YouTube List (Below)
+# Priority 2: Curated YouTube List (Below) - NOW CATEGORY-BASED
 # Priority 3: Automated Search (Fallback)
 
-# ✅ MANUAL CURATED LIST (High Quality / No Text / Dark Aesthetic)
-MANUAL_YOUTUBE_URLS = [
-    "https://www.youtube.com/watch?v=OZBP9lP_WlU",
-    "https://www.youtube.com/watch?v=zMQ3PYM-7lE",
-    "https://www.youtube.com/watch?v=pIHpE3PX4Tg",
-    "https://www.youtube.com/watch?v=6Ny64-5xSk4",
-    "https://www.youtube.com/watch?v=GUrr0vRGke0",
-    "https://www.youtube.com/watch?v=BH6zVRKSOD0",
-    "https://www.youtube.com/watch?v=S_X6WCZZSa8",
-    "https://www.youtube.com/watch?v=w_0kDNPJ2oQ",
-    "https://www.youtube.com/watch?v=_iHuB7tbdXQ",
-    "https://www.youtube.com/watch?v=Vjd4NJaoxIs",
-    "https://www.youtube.com/watch?v=160tqFcKXZM"
-]
+# 📹 VIDEO SOURCE CONFIGURATION (CATEGORIZED MANUAL LIST)
+# Categories: "CARS", "COMBAT", "LUXURY", "STOIC" (matches detection logic)
+MANUAL_YOUTUBE_URLS = {
+    "STOIC": [
+        "https://www.youtube.com/watch?v=OZBP9lP_WlU",  # Rome 4K
+        "https://www.youtube.com/watch?v=zMQ3PYM-7lE",  # Greek Gods
+    ],
+    "COMBAT": [
+        "https://www.youtube.com/watch?v=pIHpE3PX4Tg",  # Boxing Dark
+        "https://www.youtube.com/watch?v=6Ny64-5xSk4",  # Go Again
+        "https://www.youtube.com/watch?v=GUrr0vRGke0",  # Way of Life
+        "https://www.youtube.com/watch?v=BH6zVRKSOD0",  # Training BMPCC
+    ],
+    "LUXURY": [
+        "https://www.youtube.com/watch?v=S_X6WCZZSa8",  # Billionaire Empire
+        "https://www.youtube.com/watch?v=w_0kDNPJ2oQ",  # Mansion
+    ],
+    "CARS": [
+        "https://www.youtube.com/watch?v=_iHuB7tbdXQ",  # Porsche Night
+        "https://www.youtube.com/watch?v=Vjd4NJaoxIs",  # Ferrari F40
+        "https://www.youtube.com/watch?v=160tqFcKXZM",  # McLaren POV
+    ]
+}
+
+# Fallback for unknown categories
+DEFAULT_CATEGORY = "LUXURY"
 
 # ⚙️ DOWNLOAD SETTINGS
 YOUTUBE_DOWNLOAD_STRATEGY = "stable"  # 'stable' (pre-merged) or 'quality' (separate streams)
@@ -97,10 +109,10 @@ LLM_TEMPERATURE = 0.8
 # Enable/disable dynamic search fallback when configured URLs fail
 YOUTUBE_ENABLE_SEARCH = True
 
-# Path to YouTube cookies file for age-restricted content (optional)
+# Path to YouTube cookies file for age-restricted content (required for 1080p)
 # To export cookies: Use browser extension "Get cookies.txt LOCALLY"
-# Set to: YOUTUBE_COOKIE_FILE = BASE_DIR / "youtube_cookies.txt"
-YOUTUBE_COOKIE_FILE = None
+# The file will be automatically used when present to prevent 403 errors
+YOUTUBE_COOKIE_FILE = BASE_DIR / "youtube_cookies.txt"
 
 # Minimum video duration for search results (in seconds)
 YOUTUBE_MIN_DURATION = 600  # 10 minutes
