@@ -403,9 +403,11 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                     'outtmpl': str(output_path),
                     'quiet': True,  # Suppress most output
                     'no_warnings': True,
-                    # Precise cutting
-                    'download_ranges': yt_dlp.utils.download_range_func(None, [(start_time, end_time)]),
-                    'force_keyframes_at_cuts': True,
+                    'ffmpeg_location': '/opt/homebrew/bin/ffmpeg',  # Enforce ffmpeg path to prevent code 8 errors
+                    # NOTE: download_ranges disabled - downloading full video then cutting
+                    # On-the-fly stream cutting causes ffmpeg code 8 errors with merged formats
+                    # 'download_ranges': yt_dlp.utils.download_range_func(None, [(start_time, end_time)]),
+                    # 'force_keyframes_at_cuts': True,
                 }
                 
                 # Add cookie file if configured
@@ -417,8 +419,52 @@ def download_youtube_clip(video_urls, output_path, clip_duration=4):
                 
                 # Verify the file was created
                 if output_path.exists() and output_path.stat().st_size > 0:
-                    print(f"    ✓ YouTube clip downloaded successfully")
-                    return True
+                    # 🎬 POST-PROCESSING: Extract clip from full video using ffmpeg
+                    # This avoids code 8 errors from on-the-fly stream cutting
+                    temp_full_video = output_path.with_suffix('.temp.mp4')
+                    output_path.rename(temp_full_video)
+                    
+                    try:
+                        # Use ffmpeg to extract the precise clip
+                        ffmpeg_cmd = [
+                            '/opt/homebrew/bin/ffmpeg',
+                            '-y',  # Overwrite output
+                            '-ss', str(start_time),  # Start time
+                            '-i', str(temp_full_video),  # Input file
+                            '-t', str(clip_duration),  # Duration
+                            '-c', 'copy',  # Copy without re-encoding (fast)
+                            str(output_path)  # Output file
+                        ]
+                        
+                        result = subprocess.run(
+                            ffmpeg_cmd,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            timeout=30
+                        )
+                        
+                        # Clean up temp file
+                        if temp_full_video.exists():
+                            temp_full_video.unlink()
+                        
+                        if result.returncode == 0 and output_path.exists():
+                            print(f"    ✓ YouTube clip extracted successfully ({start_time}s-{end_time}s)")
+                            return True
+                        else:
+                            print(f"    ⚠️  Clip extraction failed, trying next URL...")
+                            if temp_full_video.exists():
+                                temp_full_video.unlink()
+                            if output_path.exists():
+                                output_path.unlink()
+                            continue
+                            
+                    except Exception as extract_error:
+                        print(f"    ⚠️  Extraction error: {str(extract_error)[:50]}, trying next URL...")
+                        if temp_full_video.exists():
+                            temp_full_video.unlink()
+                        if output_path.exists():
+                            output_path.unlink()
+                        continue
                 else:
                     print(f"    ⚠️  Download failed - file not created, trying next URL...")
                     continue  # Try next URL
