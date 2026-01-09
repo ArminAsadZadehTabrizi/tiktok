@@ -1286,7 +1286,7 @@ def download_videos(visual_queries, fallback_topic=None):
       - Keyword-based matching (e.g., "Lamborghini" → "lamborghini_compilation.mp4")
       - Random start time selection with safe buffers
       - Stream-copy (-c copy) for instant, lossless cutting
-      - Fallback to full copy for videos \u003c10 seconds
+      - Fallback to full copy for videos <10 seconds
     
     Args:
         visual_queries (list): List of visual search queries (one per segment)
@@ -1366,13 +1366,13 @@ def download_videos(visual_queries, fallback_topic=None):
                 # ===================================================================
                 # STEP 3: SMART RANDOM CUT (if video is long enough)
                 # ===================================================================
-                if duration \u003e 10.0:
+                if duration > 10.0:
                     # Calculate safe random start time
                     # Buffer: 5s from start, 2s from end (to ensure full 4s clip fits)
                     min_start = 5.0
                     max_start = duration - clip_duration - 2.0
                     
-                    if max_start \u003c min_start:
+                    if max_start < min_start:
                         # Edge case: video is barely long enough
                         max_start = min_start
                     
@@ -1398,7 +1398,7 @@ def download_videos(visual_queries, fallback_topic=None):
                         timeout=30
                     )
                     
-                    if cut_result.returncode == 0 and output_path.exists() and output_path.stat().st_size \u003e 0:
+                    if cut_result.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0:
                         print(f"    ✓ Smart cut successful ({output_path.stat().st_size // 1024} KB)")
                         variation_paths.append(output_path)
                     else:
@@ -1409,7 +1409,7 @@ def download_videos(visual_queries, fallback_topic=None):
                 
                 else:
                     # ===================================================================
-                    # FALLBACK: Video too short (\u003c10s), copy full file
+                    # FALLBACK: Video too short (<10s), copy full file
                     # ===================================================================
                     print(f"    ⚠️  Video too short ({duration:.1f}s), copying full file")
                     shutil.copy(str(source_file), str(output_path))
