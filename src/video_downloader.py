@@ -1325,12 +1325,12 @@ def download_videos(visual_queries, fallback_topic=None):
             print(f"   ✗ FFprobe not found - cannot determine video durations!")
             return [[] for _ in visual_queries]
     
-    downloaded_segment_paths = []
+    downloaded_segment_variations = []  # Changed from paths to metadata dicts
     clip_duration = 4.0  # Seconds per clip
     
     for i, query in enumerate(visual_queries):
         print(f"\n  📥 Segment {i}: '{query}'")
-        variation_paths = []
+        segment_variations = []  # Changed to store metadata dicts
         
         for v in range(1, config.SCENE_VIDEO_VARIATIONS + 1):
             output_path = config.ASSETS_DIR / f"segment_{i}_v{v}.mp4"
@@ -1340,6 +1340,9 @@ def download_videos(visual_queries, fallback_topic=None):
             # ===================================================================
             source_file = find_best_matching_local_file(query, local_files)
             print(f"    🎯 v{v}: Matched '{source_file.name}' for query '{query}'")
+            
+            # Detect category from query for metadata
+            detected_category = detect_category_from_query(query)
             
             try:
                 # ===================================================================
@@ -1400,12 +1403,38 @@ def download_videos(visual_queries, fallback_topic=None):
                     
                     if cut_result.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0:
                         print(f"    ✓ Smart cut successful ({output_path.stat().st_size // 1024} KB)")
-                        variation_paths.append(output_path)
+                        # Create metadata dict for smart selection
+                        video_info = {
+                            "url": "local",
+                            "local_path": output_path,
+                            "width": 1080,
+                            "height": 1920,
+                            "query": query,
+                            "segment_index": i,
+                            "variation_number": v,
+                            "source": "local",
+                            "category": detected_category or "UNKNOWN",
+                            "source_file": source_file.name
+                        }
+                        segment_variations.append(video_info)
                     else:
                         # FFmpeg cut failed, fallback to full copy
                         print(f"    ⚠️  FFmpeg cut failed, falling back to full copy")
                         shutil.copy(str(source_file), str(output_path))
-                        variation_paths.append(output_path)
+                        # Create metadata dict even for fallback copy
+                        video_info = {
+                            "url": "local",
+                            "local_path": output_path,
+                            "width": 1080,
+                            "height": 1920,
+                            "query": query,
+                            "segment_index": i,
+                            "variation_number": v,
+                            "source": "local",
+                            "category": detected_category or "UNKNOWN",
+                            "source_file": source_file.name
+                        }
+                        segment_variations.append(video_info)
                 
                 else:
                     # ===================================================================
@@ -1413,22 +1442,60 @@ def download_videos(visual_queries, fallback_topic=None):
                     # ===================================================================
                     print(f"    ⚠️  Video too short ({duration:.1f}s), copying full file")
                     shutil.copy(str(source_file), str(output_path))
-                    variation_paths.append(output_path)
+                    # Create metadata dict for short videos
+                    video_info = {
+                        "url": "local",
+                        "local_path": output_path,
+                        "width": 1080,
+                        "height": 1920,
+                        "query": query,
+                        "segment_index": i,
+                        "variation_number": v,
+                        "source": "local",
+                        "category": detected_category or "UNKNOWN",
+                        "source_file": source_file.name
+                    }
+                    segment_variations.append(video_info)
             
             except subprocess.TimeoutExpired:
                 print(f"    ✗ Timeout during ffprobe/ffmpeg, falling back to full copy")
                 shutil.copy(str(source_file), str(output_path))
-                variation_paths.append(output_path)
+                video_info = {
+                    "url": "local",
+                    "local_path": output_path,
+                    "width": 1080,
+                    "height": 1920,
+                    "query": query,
+                    "segment_index": i,
+                    "variation_number": v,
+                    "source": "local",
+                    "category": detected_category or "UNKNOWN",
+                    "source_file": source_file.name
+                }
+                segment_variations.append(video_info)
             
             except Exception as e:
                 print(f"    ✗ Error: {str(e)[:60]}, falling back to full copy")
                 shutil.copy(str(source_file), str(output_path))
-                variation_paths.append(output_path)
+                video_info = {
+                    "url": "local",
+                    "local_path": output_path,
+                    "width": 1080,
+                    "height": 1920,
+                    "query": query,
+                    "segment_index": i,
+                    "variation_number": v,
+                    "source": "local",
+                    "category": detected_category or "UNKNOWN",
+                    "source_file": source_file.name
+                }
+                segment_variations.append(video_info)
         
-        downloaded_segment_paths.append(variation_paths)
+        downloaded_segment_variations.append(segment_variations)
     
     print(f"\n✓ All {len(visual_queries)} segment(s) ready from local library with smart cuts!")
-    return downloaded_segment_paths
+    print(f"  📊 Returning metadata structure for smart clip selection")
+    return downloaded_segment_variations
 
 
 if __name__ == "__main__":

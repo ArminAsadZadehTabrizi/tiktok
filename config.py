@@ -181,3 +181,77 @@ YOUTUBE_SOURCES = {
         "https://www.youtube.com/watch?v=Bearq7QeJk0",  # Billionaire Yacht (Darker parts)
     ]
 }
+# ==============================================================================
+# 🎯 SEMANTIC MATCHING CONFIGURATION (Smart Clip Selection)
+# ==============================================================================
+# Maps keywords/sentiment to video categories for context-aware clip selection
+SEMANTIC_KEYWORDS = {
+    "CARS": [
+        # Speed & Motion
+        "drive", "speed", "fast", "accelerate", "racing", "drift", "turbo",
+        "tunnel", "highway", "road", "cruise", "velocity", "momentum",
+        # Luxury Cars
+        "supercar", "sports car", "exotic", "ferrari", "lamborghini", 
+        "porsche", "mclaren", "bugatti",
+        # Aesthetic
+        "neon", "night drive", "cityscape", "rain", "cyberpunk"
+    ],
+    "COMBAT": [
+        # Fighting Actions
+        "fight", "punch", "strike", "combat", "battle", "war", "attack",
+        "kick", "spar", "clash", "brawl", "struggle", "opponent",
+        # Intensity
+        "aggressive", "violent", "ruthless", "savage", "fierce",
+        "dominate", "destroy", "conquer", "crush",
+        # Training
+        "shadow boxing", "heavy bag", "sparring", "ring", "cage"
+    ],
+    "GYM": [
+        # Training & Discipline
+        "train", "workout", "exercise", "grind", "discipline", "hustle",
+        "sweat", "pain", "sacrifice", "dedication", "commit",
+        # Physical Development
+        "muscle", "strength", "power", "build", "gain", "transform",
+        "push", "pull", "lift", "rep", "set",
+        # Specific Exercises
+        "pullup", "pushup", "squat", "deadlift", "bench", "calisthenics",
+        "bodyweight", "street workout", "pull up", "push up"
+    ],
+    "LUXURY": [
+        # Wealth & Success
+        "wealth", "rich", "money", "cash", "empire", "fortune", "affluent",
+        "millionaire", "billionaire", "success", "power", "elite",
+        # Luxury Items
+        "yacht", "jet", "private jet", "mansion", "penthouse", "villa",
+        "champagne", "watch", "rolex", "suit", "tailored",
+        # Aesthetic
+        "old money", "mafia", "boss", "executive", "mogul", "tycoon"
+    ],
+    "STOIC": [
+        # Philosophy & Wisdom
+        "wisdom", "philosophy", "stoic", "marcus aurelius", "seneca",
+        "epictetus", "ancient", "rome", "roman", "greece", "greek",
+        # Mental Strength
+        "mind", "mental", "control", "discipline", "patience", "endure",
+        "resilience", "virtue", "reason", "logic", "rational",
+        # Symbols
+        "statue", "marble", "sculpture", "bust", "temple", "column",
+        "ruins", "emperor", "philosopher", "sage"
+    ],
+    "MOODY": [
+        # Atmospheric (fallback for ambiguous scripts)
+        "dark", "shadow", "noir", "cinematic", "moody", "atmospheric",
+        "mysterious", "enigmatic", "dramatic", "intense"
+    ]
+}
+
+# Category Variety Constraints (Anti-Boredom Rules)
+MAX_CONSECUTIVE_SAME_CATEGORY = 2  # Max times same category can play in a row
+CATEGORY_HISTORY_WINDOW = 5  # How many recent scenes to track for variety
+
+# Semantic Scoring Weights (Fine-tune based on testing)
+SCORE_EXACT_KEYWORD_MATCH = 10  # Points per exact keyword match
+SCORE_PARTIAL_KEYWORD_MATCH = 5  # Points per partial/substring match
+SCORE_CATEGORY_ALIGNMENT = 15  # Bonus if clip's category matches script sentiment
+SCORE_VARIETY_PENALTY = -50  # Penalty for violating variety constraint
+SCORE_NATURAL_TRANSITION_BONUS = 10  # Bonus for smooth category changes
