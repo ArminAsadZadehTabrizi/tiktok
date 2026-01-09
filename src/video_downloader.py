@@ -1178,113 +1178,120 @@ def download_video(video_url, output_path):
         return False
 
 
+# =========================================================================
+# 🛠️ HELPER: Duration & Matching
+# =========================================================================
+def get_video_duration(file_path):
+    """Get duration of a local video file using ffprobe."""
+    try:
+        cmd = [
+            'ffprobe', '-v', 'error', 
+            '-show_entries', 'format=duration', 
+            '-of', 'default=noprint_wrappers=1:nokey=1', 
+            str(file_path)
+        ]
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return float(result.stdout.strip())
+    except Exception:
+        return 0.0
+
+def find_best_matching_local_file(query, local_files):
+    """
+    Finds the best matching local file based on filename keywords.
+    Example: Query "Lamborghini fast" matches "lamborghini_night.mp4"
+    """
+    query_parts = query.lower().split()
+    matching_files = []
+    
+    # 1. Score files based on keyword matches
+    for file in local_files:
+        filename = file.name.lower()
+        hits = sum(1 for part in query_parts if len(part) > 3 and part in filename)
+        if hits > 0:
+            matching_files.append((file, hits))
+    
+    # Sort by hits (best match first)
+    matching_files.sort(key=lambda x: x[1], reverse=True)
+    
+    if matching_files:
+        return matching_files[0][0]
+    
+    # 2. Fallback: Random file if no keyword matches
+    return random.choice(local_files)
+
+# =========================================================================
+# 🎬 MAIN DOWNLOADER: SMART LOCAL CUTS
+# =========================================================================
 def download_videos(visual_queries, fallback_topic=None):
     """
-    🎬 REFACTORED: Manual Curation + YouTube-First Download with Stock Footage Fallback
-    
-    Downloads configurable variations per segment for dynamic editing. 
-    Prioritizes manual sources (local files, then manual YouTube URLs), 
-    then falls back to automated search.
-    
-    Each segment gets up to config.SCENE_VIDEO_VARIATIONS videos saved as 
-    segment_N_v1.mp4, segment_N_v2.mp4, ..., segment_N_vN.mp4.
-    
-    CRITICAL: Global deduplication ensures the same video URL is NEVER downloaded twice.
-    
-    Args:
-        visual_queries (list): List of specific visual search queries (from script segments)
-        fallback_topic (str): Generic topic keyword for fallback searches
-    
-    Returns:
-        list of lists: [[path_v1, path_v2, ...], ...] nested structure where each
-                       inner list contains paths to variations for one segment
+    🎬 PRIORITY 1: LOCAL FILES (SMART CUT & MATCHING)
+    Bypasses YouTube downloads to use high-quality local compilations.
     """
-    print(f"\n📹 Manual Curation Priority System")
-    print(f"   1️⃣ Local Files: {config.LOCAL_FOOTAGE_DIR}")
-    print(f"   2️⃣ Manual URLs: {len(getattr(config, 'MANUAL_YOUTUBE_URLS', []))} curated link(s)")
-    print(f"   3️⃣ Auto Search: YouTube → Pexels → Pixabay")
-    print(f"   Queries: {len(visual_queries)} segments")
-    print(f"   Target: {config.SCENE_VIDEO_VARIATIONS} variations per segment")
-    print(f"   Fallback topic: {fallback_topic or 'None'}")
+    print(f"\n📹 Manual Curation Priority System (Smart Local Mode)")
+    print(f"   1️⃣ Local Files: {config.LOCAL_FOOTAGE_DIR} (Active)")
+    print(f"   2️⃣ YouTube/Stock: Disabled (Bypassed for Quality)")
     
-    # Search for videos using semantic queries (returns nested list)
-    all_segment_variations = search_videos(visual_queries, fallback_topic=fallback_topic)
+    local_files = get_local_footage_files()
+    if not local_files:
+        # Fallback to empty list or raise error depending on preference
+        print(f"   ⚠️ No local files found! Please add .mp4 files to {config.LOCAL_FOOTAGE_DIR}")
+        return [[] for _ in visual_queries]
     
-    if not all_segment_variations or all(len(seg) == 0 for seg in all_segment_variations):
-        raise Exception("No videos found. Check your API keys and visual queries.")
-    
-    # Download all variations with segment-based naming
     downloaded_segment_paths = []
-    total_downloaded = 0
+    ffmpeg_path = shutil.which('ffmpeg') or '/opt/homebrew/bin/ffmpeg'
     
-    for segment_variations in all_segment_variations:
-        if not segment_variations:
-            # No variations found for this segment - add empty list as placeholder
-            print(f"  ⚠️  Segment {len(downloaded_segment_paths)}: No variations available")
-            downloaded_segment_paths.append([])
-            continue
-        
-        segment_index = segment_variations[0]["segment_index"]
+    for i, query in enumerate(visual_queries):
+        print(f"\n  📥 Segment {i}: '{query}'")
         variation_paths = []
         
-        print(f"\n  📥 Segment {segment_index}: Processing {len(segment_variations)} variation(s)")
-        
-        for video_info in segment_variations:
-            variation_num = video_info["variation_number"]
-            output_path = config.ASSETS_DIR / f"segment_{segment_index}_v{variation_num}.mp4"
+        for v in range(1, config.SCENE_VIDEO_VARIATIONS + 1):
+            output_path = config.ASSETS_DIR / f"segment_{i}_v{v}.mp4"
             
-            # Check if this is a LOCAL file (Priority 1)
-            if video_info.get("source") == "local" and "local_path" in video_info:
-                local_path = video_info["local_path"]
-                if local_path.exists():
-                    # Copy local file to output location
-                    shutil.copy(str(local_path), str(output_path))
-                    variation_paths.append(output_path)
-                    total_downloaded += 1
-                    print(f"    ✓ v{variation_num} (Local): {local_path.name}")
+            # 1. Smart Matching
+            source_file = find_best_matching_local_file(query, local_files)
+            
+            try:
+                # 2. Smart Random Cut
+                duration = get_video_duration(source_file)
+                clip_len = 4.0 
+                
+                if duration > 10:
+                    # Random start time (buffer at start and end)
+                    max_start = duration - clip_len - 2
+                    if max_start < 5: max_start = 5
+                    start_time = random.uniform(5, max_start)
+                    
+                    print(f"    ✂️  Cutting from '{source_file.name}' ({start_time:.1f}s)")
+                    
+                    cmd = [
+                        ffmpeg_path, '-y',
+                        '-ss', str(start_time),
+                        '-i', str(source_file),
+                        '-t', str(clip_len),
+                        '-c', 'copy',
+                        '-avoid_negative_ts', '1',
+                        str(output_path)
+                    ]
+                    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 else:
-                    print(f"    ✗ v{variation_num}: Local file missing")
-            
-            # Check if this is a YouTube clip that was already downloaded (Priority 2 or 3)
-            elif video_info.get("source") in ["youtube", "youtube_manual"] and "local_path" in video_info:
-                # Rename the temp file to the proper name
-                temp_path = video_info["local_path"]
-                if temp_path.exists():
-                    # Move/rename temp file to final destination
-                    shutil.move(str(temp_path), str(output_path))
+                    # Fallback for short files
+                    print(f"    ⚠️  File too short, copying full file.")
+                    shutil.copy(str(source_file), str(output_path))
+                
+                if output_path.exists() and output_path.stat().st_size > 0:
                     variation_paths.append(output_path)
-                    total_downloaded += 1
-                    source_label = "Manual YT" if video_info.get("source") == "youtube_manual" else "YouTube"
-                    print(f"    ✓ v{variation_num} ({source_label}): '{video_info['query'][:50]}...'")
                 else:
-                    print(f"    ✗ v{variation_num}: YouTube temp file missing")
-            
-            # Otherwise download from stock footage URL
-            elif download_video(video_info["url"], output_path):
+                    # Fail-safe copy
+                    shutil.copy(str(source_file), str(output_path))
+                    variation_paths.append(output_path)
+            except Exception as e:
+                print(f"    ✗ Error: {e}")
+                shutil.copy(str(source_file), str(output_path))
                 variation_paths.append(output_path)
-                total_downloaded += 1
-                print(f"    ✓ v{variation_num} (Stock): '{video_info['query'][:50]}...'")
-            else:
-                print(f"    ✗ v{variation_num}: Download failed")
-        
-        if not variation_paths:
-            print(f"    ⚠️  Warning: All downloads failed for segment {segment_index}")
         
         downloaded_segment_paths.append(variation_paths)
     
-    # Validate that we have at least some videos
-    valid_segments = [seg for seg in downloaded_segment_paths if len(seg) > 0]
-    if not valid_segments:
-        raise Exception("Failed to download any videos")
-    
-    # Ensure at least variation 1 exists for each segment (critical for fallback)
-    segments_with_v1 = sum(1 for seg in downloaded_segment_paths if len(seg) > 0)
-    
-    print(f"\n✓ Download Summary:")
-    print(f"  Total videos: {total_downloaded}")
-    print(f"  Segments with variations: {len(valid_segments)}/{len(visual_queries)}")
-    print(f"  Segments with v1 (required): {segments_with_v1}/{len(visual_queries)}")
-    
+    print(f"\n✓ All segments ready from local library.")
     return downloaded_segment_paths
 
 
